@@ -3,11 +3,18 @@ export class AuthService {
   private static SUPABASE_URL = 'https://idngwsekicptfluqumys.supabase.co';
   private static SUPABASE_KEY =
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbmd3c2VraWNwdGZsdXF1bXlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1OTcyMDcsImV4cCI6MjA1NDE3MzIwN30.sBCVdh7CxLpbtJkhtKyGeQ-mWZXZrVxWWiINhtBxhso';
+  private static SUPABASE_ADMIN_KEY =
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbmd3c2VraWNwdGZsdXF1bXlzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczODU5NzIwNywiZXhwIjoyMDU0MTczMjA3fQ.Q75g9bfHTCvtWT-z01IJZUHFhUHg3gclC0MRK0WE46g';
 
   private static supabase: SupabaseClient = createClient(
     AuthService.SUPABASE_URL,
     AuthService.SUPABASE_KEY,
   );
+  private static supabaseAdmin: SupabaseClient = createClient(
+    AuthService.SUPABASE_URL,
+    AuthService.SUPABASE_ADMIN_KEY,
+  );
+
   static async crearUsuarioAuth(
     correo: string,
     contrasena: string,
@@ -22,6 +29,30 @@ export class AuthService {
       throw new Error(error.message);
     }
 
+    // Autoconfirmar el usuario
+    if (data.user) {
+      const {error: updateError} =
+        await AuthService.supabaseAdmin.auth.admin.updateUserById(
+          data.user.id,
+          {
+            email_confirm: true,
+          },
+        );
+
+      if (updateError) {
+        console.error(`Error al confirmar usuario: ${updateError.message}`);
+        throw new Error(updateError.message);
+      }
+    }
+    const {error: errorLogin} =
+      await AuthService.supabase.auth.signInWithPassword({
+        email: correo,
+        password: contrasena,
+      });
+    if (errorLogin) {
+      console.error(`Error al confirmar usuario: ${errorLogin.message}`);
+      throw new Error(errorLogin.message);
+    }
     return data.user?.id || '';
   }
 
@@ -29,10 +60,23 @@ export class AuthService {
     userId: string,
     nombre: string,
     telefono: string,
+    esProveedor = false,
   ): Promise<void> {
-    const {error} = await AuthService.supabase
-      .from('profiles')
-      .insert([{user_id: userId, name: nombre, phone: telefono}]);
+    const user = AuthService.supabase.auth.getUser();
+    if (!user) {
+      throw new Error('Usuario no autenticado');
+    }
+    const {error} = await AuthService.supabase.from('profiles').insert([
+      {
+        user_id: userId,
+        name: nombre,
+        phone: telefono,
+        role_id: esProveedor ? 2 : 1,
+        rating: 0,
+        profile_pic_url: '',
+        is_verified: false,
+      },
+    ]);
 
     if (error) {
       console.error(`Error al guardar el perfil: ${error.message}`);
@@ -40,22 +84,20 @@ export class AuthService {
     }
   }
 
-  static async autenticarUsuario(
-    correo: string,
-    contrasena: string,
-  ): Promise<boolean> {
-    const {error} = await AuthService.supabase.auth.signInWithPassword({
+  static async autenticarUsuario(correo: string, contrasena: string) {
+    const {data, error} = await AuthService.supabase.auth.signInWithPassword({
       email: correo,
       password: contrasena,
     });
 
     if (error) {
-      console.error(`Error de autenticación: ${error.message}`);
-      return false;
+      console.error(`Error de autenticación: ${error.message}`, error);
+      return {success: false, error};
     }
-    return true;
-  }
 
+    console.log('Autenticación exitosa:', data);
+    return {success: true, data};
+  }
   static async obtenerUsuarioActual() {
     const {data, error} = await AuthService.supabase.auth.getUser();
 

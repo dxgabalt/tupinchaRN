@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import AuthService from '../services/AuthService';
+import {AuthService} from 'src/services/AuthService';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
