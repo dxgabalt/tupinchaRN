@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {HistorialItem} from '../models/HistorialItem';
-import supabaseService from '../services/SupabaseService';
+import SolicitudService from 'src/services/SolicitudService';
 
 export function useHistorialUsuarioViewModel(userId: string) {
   const [historial, setHistorial] = useState<HistorialItem[]>([]);
@@ -8,7 +8,7 @@ export function useHistorialUsuarioViewModel(userId: string) {
   useEffect(() => {
     const fetchHistorial = async () => {
       const historialData =
-        await supabaseService.obtenerHistorialUsuario(userId);
+        await SolicitudService.obtenerHistorialUsuario(userId);
       setHistorial(historialData);
     };
 

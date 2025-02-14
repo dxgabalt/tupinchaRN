@@ -1,8 +1,9 @@
 export interface Solicitud {
   providerId: number;
   serviceId: number;
-  descripcion: string;
-  fechaServicio: string;
-  imagenesUrl?: string;
+  request_description: string;
+  service_date: string;
+  images?: string;
   status: string;
+  user_id: string;
 }

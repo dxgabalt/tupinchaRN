@@ -1,5 +1,6 @@
 import {useState} from 'react';
 import supabaseService from '../services/SupabaseService';
+import SolicitudService from 'src/services/SolicitudService';
 
 export function useSolicitudServicioViewModel() {
   const [mensajeEstado, setMensajeEstado] = useState<string>('');
@@ -12,7 +13,7 @@ export function useSolicitudServicioViewModel() {
     imagenesUrl?: string,
   ) => {
     try {
-      await supabaseService.crearSolicitudDeServicio(
+      await SolicitudService.crearSolicitudDeServicio(
         providerId,
         serviceId,
         descripcion,

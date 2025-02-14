@@ -1,8 +1,7 @@
 import React, {useState} from 'react';
 import {View, Text, TextInput, Button, StyleSheet, Alert} from 'react-native';
 import {useRoute, useNavigation} from '@react-navigation/native';
-import SupabaseService from '../services/SupabaseService';
-import {StackNavigation} from '../types/navigation';
+import SolicitudService from 'src/services/SolicitudService';
 
 const PantallaSolicitudServicio = () => {
   const route = useRoute();
@@ -15,7 +14,7 @@ const PantallaSolicitudServicio = () => {
 
   const enviarSolicitud = async () => {
     try {
-      await SupabaseService.crearSolicitudDeServicio(
+      await SolicitudService.crearSolicitudDeServicio(
         parseInt(idProveedor),
         1,
         descripcion,

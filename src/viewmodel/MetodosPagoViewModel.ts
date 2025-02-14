@@ -1,13 +1,13 @@
 import {useEffect, useState} from 'react';
 import {MetodoPago} from '../models/MetodoPago';
-import supabaseService from '../services/SupabaseService';
+import TransactionTypeService from 'src/services/TransactionType';
 
 export function useMetodosPagoViewModel() {
   const [metodosPago, setMetodosPago] = useState<MetodoPago[]>([]);
 
   useEffect(() => {
     const fetchMetodosPago = async () => {
-      const metodos = await supabaseService.obtenerMetodosPago();
+      const metodos = await TransactionTypeService.obtenerMetodosPago();
       setMetodosPago(metodos);
     };
 

@@ -78,7 +78,9 @@ export class SolicitudService {
     return await SupabaseService.eliminarRegistro(this.TABLE_NAME, 'id', id);
   }
 
-  async obtenerHistorialUsuario(userId: string): Promise<HistorialItem[]> {
+  static async obtenerHistorialUsuario(
+    userId: string,
+  ): Promise<HistorialItem[]> {
     const {data, error} = await SolicitudService.supabase
       .from(SolicitudService.TABLE_NAME)
       .select(

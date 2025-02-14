@@ -1,6 +1,6 @@
 import {useEffect, useState} from 'react';
 import {Freelancer} from '../models/Freelancer';
-import supabaseService from '../services/SupabaseService';
+import FreelancerService from 'src/services/FreelancerService';
 
 export function useDetallesProveedorViewModel(providerId: number) {
   const [freelancer, setFreelancer] = useState<Freelancer | null>(null);
@@ -8,7 +8,7 @@ export function useDetallesProveedorViewModel(providerId: number) {
   useEffect(() => {
     const fetchFreelancer = async () => {
       const freelancerData =
-        await supabaseService.obtenerDetallesProveedor(providerId);
+        await FreelancerService.obtenerFreelancerPorId(providerId);
       setFreelancer(freelancerData);
     };
 
