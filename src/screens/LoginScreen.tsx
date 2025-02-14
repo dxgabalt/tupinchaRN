@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
+import AuthService from '../services/AuthService';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -25,17 +26,18 @@ const LoginScreen = () => {
     }
 
     setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
-      Alert.alert('Inicio de sesión exitoso');      
+    try {
+      const response = await AuthService.autenticarUsuario(correo, contrasena); // Llama al método login
+      Alert.alert('Éxito', response.message);
       navigation.reset({
         index: 0,
-        routes: [{ name: 'PantallaNegocios' }],
+        routes: [{name: 'PantallaNegocios'}],
       });
-      
-      
-    }, 1500);
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,18 +60,23 @@ const LoginScreen = () => {
           secureTextEntry={!mostrarContrasena}
           onChangeText={setContrasena}
         />
-        <TouchableOpacity onPress={() => setMostrarContrasena(!mostrarContrasena)}>
+        <TouchableOpacity
+          onPress={() => setMostrarContrasena(!mostrarContrasena)}>
           <Text style={styles.textoMostrar}>
             {mostrarContrasena ? '🙈' : '👁️'}
           </Text>
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity onPress={() => navigation.navigate('OlvidarContrasenaScreen')}>
+      <TouchableOpacity
+        onPress={() => navigation.navigate('OlvidarContrasenaScreen')}>
         <Text style={styles.link}>¿Olvidaste tu contraseña?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.boton} onPress={handleLogin} disabled={loading}>
+      <TouchableOpacity
+        style={styles.boton}
+        onPress={handleLogin}
+        disabled={loading}>
         {loading ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
