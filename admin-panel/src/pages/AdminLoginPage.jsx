@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/adminLogin.css";
-
+import {AuthService} from "../services/AuthService";
 const AdminLoginPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -17,12 +17,22 @@ const AdminLoginPage = () => {
 
     // Simulación de autenticación (Reemplazar con la autenticación real)
     setTimeout(() => {
-      if (email === "admin@panel.com" && password === "admin123") {
+      // Iniciar sesión con el correo y contraseña
+      let  is_auth= AuthService.autenticarUsuario(email, password)
+      console.log(is_auth)
+      if(is_auth){
+        localStorage.setItem("adminAuth", "true"); // Guardar sesión
+        navigate("/dashboard"); // Redirigir al Dashboard
+      }else{
+        setError("❌ Credenciales incorrectas.");
+      }
+
+      /*if (email === "admin@panel.com" && password === "admin123") {
         localStorage.setItem("adminAuth", "true"); // Guardar sesión
         navigate("/dashboard"); // Redirigir al Dashboard
       } else {
         setError("❌ Credenciales incorrectas.");
-      }
+      }*/
       setLoading(false);
     }, 1500);
   };
