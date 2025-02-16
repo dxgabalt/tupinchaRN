@@ -1,0 +1,60 @@
+/* 📌 Contenedor principal */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(to right, #ff0314, #0033cc);
+  }
+  
+  /* 🔐 Caja de login */
+  .login-box {
+    background: white;
+    padding: 30px;
+    width: 350px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* 📧 Input fields */
+  .login-box label {
+    display: block;
+    font-weight: bold;
+    margin: 10px 0 5px;
+    text-align: left;
+  }
+  
+  .login-box input {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #0033cc;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  
+  /* 🚀 Botón de inicio de sesión */
+  .login-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1.1rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    background-color: #ff0314;
+    color: white;
+    font-weight: bold;
+    margin-top: 15px;
+  }
+  
+  .login-btn:hover {
+    background-color: darkred;
+  }
+  
+  /* ❌ Mensaje de error */
+  .error-message {
+    color: red;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  

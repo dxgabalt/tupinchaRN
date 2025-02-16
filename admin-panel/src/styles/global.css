@@ -35,3 +35,762 @@ body {
     flex: 1;
   }
   
+  /* 🌍 Estilos Generales */
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    margin: 0;
+  }
+  
+  /* 📌 Dashboard Layout */
+  .dashboard {
+    display: flex;
+  }
+  
+  .content {
+    flex-grow: 1;
+    padding: 20px;
+    background: #fff;
+  }
+  
+  /* 🔢 Tarjetas de Métricas */
+  .stats-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .stat-card {
+    background: linear-gradient(135deg, red, blue);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    flex: 1;
+    text-align: center;
+    margin: 10px;
+    font-size: 1.2rem;
+  }
+  
+  /* 📊 Gráficos */
+  .charts-container {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .chart {
+    width: 48%;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* 📌 Tabla de Últimas Solicitudes */
+  .solicitudes-container {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+  
+  th, td {
+    border-bottom: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+  }
+  
+  th {
+    background: blue;
+    color: white;
+  }
+  
+  /* 📌 Barra de Filtros */
+.filters {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.input-search {
+  width: 60%;
+  padding: 10px;
+  border: 2px solid blue;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.filter-select {
+  padding: 10px;
+  border: 2px solid red;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* 🔹 Estilos Generales */
+.user-management {
+  display: flex;
+  font-family: "Arial", sans-serif;
+}
+
+/* 🔹 Contenedor Principal */
+.content {
+  flex-grow: 1;
+  padding: 20px;
+  background: #f9f9f9;
+  min-height: 100vh;
+}
+
+/* 🔹 Título */
+h1 {
+  color: #1a237e; /* Azul oscuro */
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* 🔹 Tabla de Usuarios */
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.user-table th {
+  background: #d32f2f; /* Rojo */
+  color: #fff;
+  padding: 12px;
+  text-align: left;
+}
+
+.user-table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.user-table tr:hover {
+  background: #e3f2fd; /* Azul claro */
+}
+
+/* 🔹 Botones de Acción */
+.btn-ver,
+.btn-editar,
+.btn-eliminar {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.btn-ver {
+  background: #1976d2; /* Azul */
+  color: #fff;
+}
+
+.btn-editar {
+  background: #ffa000; /* Amarillo */
+  color: #fff;
+}
+
+.btn-eliminar {
+  background: #d32f2f; /* Rojo */
+  color: #fff;
+}
+
+/* 🔹 Botones Hover */
+.btn-ver:hover {
+  background: #1565c0;
+}
+
+.btn-editar:hover {
+  background: #ff8f00;
+}
+
+.btn-eliminar:hover {
+  background: #b71c1c;
+}
+
+/* 🔹 Estado de Usuario */
+.estado-activo {
+  color: #2e7d32; /* Verde */
+  font-weight: bold;
+}
+
+.estado-suspendido {
+  color: #d32f2f; /* Rojo */
+  font-weight: bold;
+}
+
+/* 🔹 Contenedor de Filtros */
+.filtros-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.filtros-container select,
+.filtros-container input {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+/* 📌 Filtros */
+.filters {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.input-search {
+  width: 60%;
+  padding: 10px;
+  border: 2px solid blue;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.filter-select {
+  padding: 10px;
+  border: 2px solid red;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* 📌 Tabla de Servicios */
+.service-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.service-table th, .service-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+.service-table th {
+  background-color: red;
+  color: white;
+}
+
+/* 🎯 Estado de Servicio */
+.estado {
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.estado.pendiente {
+  background-color: yellow;
+  color: black;
+}
+
+.estado.en-proceso {
+  background-color: blue;
+  color: white;
+}
+
+.estado.completado {
+  background-color: green;
+  color: white;
+}
+
+/* 🎛 Botones de Acción */
+.btn-approve, .btn-reject, .btn-complete {
+  padding: 8px 12px;
+  margin-right: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 5px;
+}
+
+.btn-approve {
+  background-color: blue;
+  color: white;
+}
+
+.btn-reject {
+  background-color: red;
+  color: white;
+}
+
+.btn-complete {
+  background-color: green;
+  color: white;
+}
+
+/* 🛑 Sin resultados */
+.no-results {
+  text-align: center;
+  font-style: italic;
+}
+
+/* 💼 Configuración de Comisión */
+.comision-config {
+  margin-bottom: 20px;
+}
+
+.comision-input {
+  width: 100px;
+  padding: 10px;
+  border: 2px solid blue;
+  border-radius: 5px;
+  font-size: 1rem;
+  margin-left: 10px;
+}
+
+/* 📌 Tabla de Comisiones */
+.commission-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.commission-table th, .commission-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+.commission-table th {
+  background-color: red;
+  color: white;
+}
+
+/* 🎯 Estado de Pago */
+.estado {
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.estado.pagado {
+  background-color: green;
+  color: white;
+}
+
+.estado.pendiente {
+  background-color: yellow;
+  color: black;
+}
+
+.estado.atrasado {
+  background-color: red;
+  color: white;
+}
+
+.estado.prórroga {
+  background-color: orange;
+  color: white;
+}
+
+/* 🎛 Botones de Acción */
+.btn-approve, .btn-prorroga {
+  padding: 8px 12px;
+  margin-right: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 5px;
+}
+
+.btn-approve {
+  background-color: blue;
+  color: white;
+}
+
+.btn-prorroga {
+  background-color: orange;
+  color: white;
+}
+
+/* 🛑 Sin resultados */
+.no-results {
+  text-align: center;
+  font-style: italic;
+}
+
+/* 🔍 Filtro de Estado */
+.filtro-container {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.filtro-container label {
+  margin-right: 10px;
+}
+
+.filtro-container select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 2px solid blue;
+  font-size: 1rem;
+}
+
+/* 📥 Botón de Exportar CSV */
+.btn-exportar {
+  background-color: red;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.btn-exportar:hover {
+  background-color: darkred;
+}
+
+/* 📌 Tabla de Pagos */
+.payment-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.payment-table th, .payment-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+.payment-table th {
+  background-color: red;
+  color: white;
+}
+
+/* 🎯 Estado de Pago */
+.estado {
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.estado.aprobado {
+  background-color: green;
+  color: white;
+}
+
+.estado.pendiente {
+  background-color: yellow;
+  color: black;
+}
+
+.estado.rechazado {
+  background-color: red;
+  color: white;
+}
+
+/* 🎛 Botones de Acción */
+.btn-approve {
+  padding: 8px 12px;
+  margin-right: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  background-color: blue;
+  color: white;
+}
+
+.btn-approve:hover {
+  background-color: darkblue;
+}
+
+/* 🛑 Sin resultados */
+.no-results {
+  text-align: center;
+  font-style: italic;
+}
+
+/* 🔍 Filtro de Estado */
+.filtro-container {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.filtro-container label {
+  margin-right: 10px;
+}
+
+.filtro-container select {
+  padding: 8px;
+  border-radius: 5px;
+  border: 2px solid blue;
+  font-size: 1rem;
+}
+
+/* 📌 Tabla de Tickets de Soporte */
+.support-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.support-table th, .support-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 2px solid #ddd;
+}
+
+.support-table th {
+  background-color: red;
+  color: white;
+}
+
+/* 🎯 Estado del Ticket */
+.estado {
+  font-weight: bold;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.estado.pendiente {
+  background-color: yellow;
+  color: black;
+}
+
+.estado["en proceso"] {
+  background-color: blue;
+  color: white;
+}
+
+.estado.resuelto {
+  background-color: green;
+  color: white;
+}
+
+/* 🎛 Botones de Acción */
+.btn-process {
+  padding: 8px 12px;
+  margin-right: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  background-color: blue;
+  color: white;
+}
+
+.btn-process:hover {
+  background-color: darkblue;
+}
+
+.btn-resolved {
+  padding: 8px 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-radius: 5px;
+  background-color: green;
+  color: white;
+}
+
+.btn-resolved:hover {
+  background-color: darkgreen;
+}
+
+/* 🛑 Sin resultados */
+.no-results {
+  text-align: center;
+  font-style: italic;
+}
+
+/* 📌 Sección de Configuración */
+.config-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid blue;
+  border-radius: 5px;
+}
+
+.config-section label {
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.config-section input,
+.config-section select {
+  padding: 8px;
+  border: 2px solid red;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* 💾 Botón de Guardar */
+.btn-save {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  background-color: red;
+  color: white;
+  font-weight: bold;
+}
+
+.btn-save:hover {
+  background-color: darkred;
+}
+
+/* 📌 Estilos del perfil */
+.profile-section {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.profile-section p {
+  font-size: 16px;
+  margin: 8px 0;
+}
+
+/* 📌 Lista de servicios */
+.services-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.service-card {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  width: 300px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.service-card p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+/* 📌 Botón de volver */
+.btn-back {
+  margin-top: 20px;
+  padding: 10px 15px;
+  background-color: #003366;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-back:hover {
+  background-color: #002255;
+}
+
+/* 📌 Estado de cuenta */
+.estadoActivo {
+  color: green;
+  font-weight: bold;
+}
+
+.estadoSuspendido {
+  color: red;
+  font-weight: bold;
+}
+
+/* 📌 Lista de servicios */
+.services-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.service-card {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  width: 300px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.service-card p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+/* 📌 Botón de volver */
+.btn-back {
+  margin-top: 20px;
+  padding: 10px 15px;
+  background-color: #003366;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.btn-back:hover {
+  background-color: #002255;
+}
+
+/* 📌 Estado de usuario */
+.estadoActivo {
+  color: green;
+  font-weight: bold;
+}
+
+.estadoSuspendido {
+  color: red;
+  font-weight: bold;
+}
+
+/* 📌 Botones */
+.btn-ver, .btn-estado, .btn-volver {
+  padding: 8px 12px;
+  margin: 5px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.btn-ver {
+  background-color: #007BFF;
+  color: white;
+}
+
+.btn-estado {
+  background-color: #FFA500;
+  color: white;
+}
+
+.btn-volver {
+  background-color: #DC3545;
+  color: white;
+}
+
+.btn-ver:hover, .btn-estado:hover, .btn-volver:hover {
+  opacity: 0.8;
+}
+
+/* 📌 Sección de perfil */
+.profile-section {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  margin-top: 10px;
+}
