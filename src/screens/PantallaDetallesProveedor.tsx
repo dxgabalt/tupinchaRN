@@ -4,11 +4,12 @@ import {
   Text,
   Image,
   TouchableOpacity,
-  StyleSheet,
   ScrollView,
   Alert,
+  Animated,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import styles from 'src/styles/stylesDetallesProveedor';
 
 // 📌 Datos simulados del proveedor
 const proveedorSimulado = {
@@ -20,8 +21,8 @@ const proveedorSimulado = {
   calificacion: 4.8,
   telefono: '+53 5555 5555',
   correo: 'fontaneria@email.com',
-  imagenPortada: 'https://source.unsplash.com/600x300/?plumbing,work',
-  imagenPerfil: 'https://source.unsplash.com/100x100/?man,worker',
+  imagenPortada: 'https://tupincha.com/wp-content/uploads/2024/03/ORIGINAL75.png',
+  imagenPerfil: 'https://tupincha.com/wp-content/uploads/2024/03/ORIGINAL75.png',
 };
 
 const PantallaDetallesProveedor = () => {
@@ -30,6 +31,8 @@ const PantallaDetallesProveedor = () => {
   const { idProveedor } = route.params || {};
 
   const [proveedor, setProveedor] = useState(proveedorSimulado);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const menuAnim = new Animated.Value(menuVisible ? 0 : -300);
 
   // 📌 Función para contactar al proveedor
   const contactarProveedor = () => {
@@ -39,58 +42,88 @@ const PantallaDetallesProveedor = () => {
     );
   };
 
+  // 📌 Función para alternar el menú hamburguesa
+  const toggleMenu = () => {
+    setMenuVisible(!menuVisible);
+    Animated.timing(menuAnim, {
+      toValue: menuVisible ? -300 : 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      {/* Imagen de Portada */}
-      <Image source={{ uri: proveedor.imagenPortada }} style={styles.imagenPortada} />
+    <View style={styles.container}>
+      {/* 🔥 Menú Lateral con Animación */}
+      {menuVisible && <View style={styles.overlay} />}
+      <Animated.View style={[styles.menuContainer, { transform: [{ translateX: menuAnim }] }]}>
+        <ScrollView>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaInicio')}>
+            <Text style={styles.menuText}>🏠 Inicio</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaNegocios')}>
+            <Text style={styles.menuText}>🔍 Buscar Negocios</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaResultadosBusqueda')}>
+            <Text style={styles.menuText}>📌 Resultados</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaHistorialUsuario')}>
+            <Text style={styles.menuText}>🕒 Historial</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaSoporteFAQ')}>
+            <Text style={styles.menuText}>❓ Soporte</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MiPerfil')}>
+            <Text style={styles.menuText}>👤 Mi Perfil</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuCerrar} onPress={toggleMenu}>
+            <Text style={styles.menuCerrarTexto}>Cerrar</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </Animated.View>
 
-      {/* Foto de Perfil e Información */}
-      <View style={styles.perfilContainer}>
-        <Image source={{ uri: proveedor.imagenPerfil }} style={styles.imagenPerfil} />
-        <Text style={styles.nombre}>{proveedor.nombre}</Text>
-        <Text style={styles.especialidad}>{proveedor.especialidad}</Text>
-        <Text style={styles.ubicacion}>📍 {proveedor.ubicacion}</Text>
-        <Text style={styles.calificacion}>⭐ {proveedor.calificacion} / 5</Text>
-      </View>
-
-      {/* Descripción */}
-      <View style={styles.detallesContainer}>
-        <Text style={styles.tituloSeccion}>Sobre el Servicio</Text>
-        <Text style={styles.descripcion}>{proveedor.descripcion}</Text>
-      </View>
-
-      {/* Botones de Acción */}
-      <View style={styles.botonesContainer}>
-        <TouchableOpacity style={styles.botonContacto} onPress={contactarProveedor}>
-          <Text style={styles.textoBoton}>📞 Contactar</Text>
+      {/* 🔥 Encabezado con Menú Hamburguesa */}
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
+          <Text style={styles.menuIcon}>☰</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.botonSolicitar}
-          onPress={() => navigation.navigate('PantallaSolicitudServicio', { idProveedor })}
-        >
-          <Text style={styles.textoBoton}>🛠️ Solicitar Servicio</Text>
-        </TouchableOpacity>
+        <Text style={styles.tituloHeader}>Detalles del Proveedor</Text>
       </View>
-    </ScrollView>
+
+      <ScrollView>
+        {/* 📌 Imagen de Portada */}
+        <Image source={{ uri: proveedor.imagenPortada }} style={styles.imagenPortada} />
+
+        {/* 📌 Información del Proveedor */}
+        <View style={styles.perfilContainer}>
+          <Image source={{ uri: proveedor.imagenPerfil }} style={styles.imagenPerfil} />
+          <Text style={styles.nombre}>{proveedor.nombre}</Text>
+          <Text style={styles.especialidad}>{proveedor.especialidad}</Text>
+          <Text style={styles.ubicacion}>📍 {proveedor.ubicacion}</Text>
+          <Text style={styles.calificacion}>⭐ {proveedor.calificacion} / 5</Text>
+        </View>
+
+        {/* 📌 Descripción */}
+        <View style={styles.detallesContainer}>
+          <Text style={styles.tituloSeccion}>Sobre el Servicio</Text>
+          <Text style={styles.descripcion}>{proveedor.descripcion}</Text>
+        </View>
+
+        {/* 📌 Botones de Acción */}
+        <View style={styles.botonesContainer}>
+          <TouchableOpacity style={styles.botonContacto} onPress={contactarProveedor}>
+            <Text style={styles.textoBoton}>📞 Contactar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.botonSolicitar}
+            onPress={() => navigation.navigate('PantallaSolicitudServicio', { idProveedor })}
+          >
+            <Text style={styles.textoBoton}>🛠️ Solicitar Servicio</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff' },
-  imagenPortada: { width: '100%', height: 200 },
-  perfilContainer: { alignItems: 'center', marginTop: -50 },
-  imagenPerfil: { width: 100, height: 100, borderRadius: 50, borderWidth: 3, borderColor: '#ffffff' },
-  nombre: { fontSize: 22, fontWeight: 'bold', color: '#003366', marginTop: 10 },
-  especialidad: { fontSize: 16, color: '#666' },
-  ubicacion: { fontSize: 14, color: '#444', marginTop: 5 },
-  calificacion: { fontSize: 14, fontWeight: 'bold', color: '#FF0314', marginTop: 5 },
-  detallesContainer: { padding: 16 },
-  tituloSeccion: { fontSize: 18, fontWeight: 'bold', color: '#003366', marginBottom: 10 },
-  descripcion: { fontSize: 14, color: '#666', textAlign: 'justify' },
-  botonesContainer: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 20 },
-  botonContacto: { backgroundColor: '#28A745', padding: 12, borderRadius: 10, width: '45%', alignItems: 'center' },
-  botonSolicitar: { backgroundColor: '#FF0314', padding: 12, borderRadius: 10, width: '45%', alignItems: 'center' },
-  textoBoton: { fontSize: 16, color: '#ffffff', fontWeight: 'bold' },
-});
 
 export default PantallaDetallesProveedor;

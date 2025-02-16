@@ -1,16 +1,17 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
-  Button,
+  TouchableOpacity,
   Switch,
-  StyleSheet,
   Alert,
   ActivityIndicator,
+  ScrollView,
+  Image,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
-import {AuthService} from 'src/services/AuthService';
+import { useNavigation } from '@react-navigation/native';
+import styles from 'src/styles/stylesRegistro';
 
 const RegistroScreen = () => {
   const navigation = useNavigation();
@@ -21,124 +22,96 @@ const RegistroScreen = () => {
   const [esProveedor, setEsProveedor] = useState(false);
   const [especialidad, setEspecialidad] = useState('');
   const [descripcion, setDescripcion] = useState('');
+  const [imagenPerfil, setImagenPerfil] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const registrarUsuario = async () => {
-    if (!correo.trim() || !contrasena.trim()) {
-      Alert.alert('Error', 'Correo y contraseña son obligatorios.');
-      return;
+  // 📌 Validar campos antes de registrar
+  const validarCampos = () => {
+    if (!nombre.trim() || !correo.trim() || !contrasena.trim() || !telefono.trim()) {
+      Alert.alert('Error', 'Todos los campos son obligatorios.');
+      return false;
     }
 
-    setLoading(true);
+    if (!correo.includes('@')) {
+      Alert.alert('Error', 'Por favor, ingresa un correo válido.');
+      return false;
+    }
 
+    if (contrasena.length < 6) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres.');
+      return false;
+    }
+
+    if (esProveedor && !imagenPerfil) {
+      Alert.alert('Error', 'Los proveedores deben subir una imagen de perfil.');
+      return false;
+    }
+
+    return true;
+  };
+
+  // 📌 Función simulada para registrar usuario
+  const registrarUsuario = async () => {
+    if (!validarCampos()) return;
+
+    setLoading(true);
     try {
-      const userId = await AuthService.crearUsuarioAuth(
-        correo.trim(),
-        contrasena.trim(),
-      );
-      if (userId !== null) {
-        await AuthService.guardarPerfil(userId, nombre, telefono, esProveedor);
+      // Simulación de registro exitoso
+      setTimeout(() => {
+        setLoading(false);
         Alert.alert('Registro exitoso', 'Tu cuenta ha sido creada.');
-        navigation.navigate('Login');
-      }
-    } catch (error: any) {
-      Alert.alert('Error', error.message || 'No se pudo registrar el usuario.');
-    } finally {
+        navigation.navigate('Login'); // Redirigir a la pantalla de Login
+      }, 2000);
+    } catch (error) {
       setLoading(false);
+      Alert.alert('Error', 'No se pudo registrar el usuario.');
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Registro de Cuenta</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.titulo}>📝 Registro de Cuenta</Text>
 
-      <TextInput
-        placeholder="Nombre Completo"
-        style={styles.input}
-        value={nombre}
-        onChangeText={setNombre}
-      />
-      <TextInput
-        placeholder="Correo Electrónico"
-        style={styles.input}
-        value={correo}
-        keyboardType="email-address"
-        onChangeText={setCorreo}
-      />
-      <TextInput
-        placeholder="Contraseña"
-        style={styles.input}
-        value={contrasena}
-        secureTextEntry
-        onChangeText={setContrasena}
-      />
-      <TextInput
-        placeholder="Teléfono"
-        style={styles.input}
-        value={telefono}
-        keyboardType="phone-pad"
-        onChangeText={setTelefono}
-      />
+      {/* 📸 Foto de perfil (No funcional en esta versión) */}
+      <TouchableOpacity style={styles.fotoPerfilContainer}>
+        {imagenPerfil ? (
+          <Image source={{ uri: imagenPerfil }} style={styles.fotoPerfil} />
+        ) : (
+          <Text style={styles.textoFotoPerfil}>📷 Subir Imagen (No disponible)</Text>
+        )}
+      </TouchableOpacity>
 
+      {/* 📌 Campos de entrada */}
+      <TextInput placeholder="Nombre Completo" style={styles.input} value={nombre} onChangeText={setNombre} />
+      <TextInput placeholder="Correo Electrónico" style={styles.input} value={correo} keyboardType="email-address" onChangeText={setCorreo} />
+      <TextInput placeholder="Contraseña" style={styles.input} value={contrasena} secureTextEntry onChangeText={setContrasena} />
+      <TextInput placeholder="Teléfono" style={styles.input} value={telefono} keyboardType="phone-pad" onChangeText={setTelefono} />
+
+      {/* 📌 Toggle para proveedores */}
       <View style={styles.switchContainer}>
-        <Text>¿Te registras como proveedor?</Text>
+        <Text style={styles.labelSwitch}>¿Te registras como proveedor?</Text>
         <Switch value={esProveedor} onValueChange={setEsProveedor} />
       </View>
 
+      {/* 📌 Campos adicionales para proveedores */}
       {esProveedor && (
         <>
-          <TextInput
-            placeholder="Especialidad (Ej: Fontanería, Electricidad)"
-            style={styles.input}
-            value={especialidad}
-            onChangeText={setEspecialidad}
-          />
-          <TextInput
-            placeholder="Descripción del servicio"
-            style={styles.input}
-            value={descripcion}
-            onChangeText={setDescripcion}
-          />
+          <TextInput placeholder="Especialidad (Ej: Fontanería, Electricidad)" style={styles.input} value={especialidad} onChangeText={setEspecialidad} />
+          <TextInput placeholder="Descripción del servicio" style={styles.input} value={descripcion} onChangeText={setDescripcion} multiline />
         </>
       )}
 
-      <Button
-        title="Registrarse"
-        onPress={registrarUsuario}
-        color="#FF0314"
-        disabled={loading}
-      />
-      {loading && (
-        <ActivityIndicator
-          size="large"
-          color="#FF0314"
-          style={{marginTop: 10}}
-        />
-      )}
+      {/* 📌 Botón de registro */}
+      <TouchableOpacity style={styles.botonRegistrar} onPress={registrarUsuario} disabled={loading}>
+        <Text style={styles.textoBoton}>✅ Registrarse</Text>
+      </TouchableOpacity>
 
-      <Text style={styles.link} onPress={() => navigation.navigate('Login')}>
-        ¿Ya tienes una cuenta? Iniciar sesión
-      </Text>
-    </View>
+      {loading && <ActivityIndicator size="large" color="#FF0314" style={{ marginTop: 10 }} />}
+
+      {/* 🔗 Link para iniciar sesión */}
+      <Text style={styles.link} onPress={() => navigation.navigate('Login')}>¿Ya tienes una cuenta? Iniciar sesión</Text>
+    </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {flex: 1, padding: 16, backgroundColor: '#ffffff'},
-  title: {fontSize: 24, fontWeight: 'bold', color: '#003366', marginBottom: 16},
-  input: {
-    borderWidth: 1,
-    borderColor: '#cccccc',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  link: {color: '#FF0314', marginTop: 10, textAlign: 'center'},
-});
 
 export default RegistroScreen;

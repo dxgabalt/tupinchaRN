@@ -4,10 +4,11 @@ import {
   Text,
   FlatList,
   TouchableOpacity,
-  StyleSheet,
   Image,
+  Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import styles from 'src/styles/stylesHistorialUsuario';
 
 // 📌 Datos simulados para mostrar historial de pedidos
 const pedidosSimulados = [
@@ -41,11 +42,21 @@ const PantallaHistorialUsuario = () => {
   const navigation = useNavigation();
   const [filtro, setFiltro] = useState('Todos');
 
+  // 📌 Animación para la selección de filtro
+  const animacionFiltro = new Animated.Value(1);
+
+  const animarFiltro = () => {
+    Animated.sequence([
+      Animated.timing(animacionFiltro, { toValue: 0.9, duration: 100, useNativeDriver: true }),
+      Animated.timing(animacionFiltro, { toValue: 1, duration: 100, useNativeDriver: true }),
+    ]).start();
+  };
+
   // 📌 Filtrar por estado
   const pedidosFiltrados =
     filtro === 'Todos'
       ? pedidosSimulados
-      : pedidosSimulados.filter((pedido) => pedido.estado === filtro);
+      : pedidosSimulados.filter(pedido => pedido.estado === filtro);
 
   return (
     <View style={styles.container}>
@@ -53,24 +64,25 @@ const PantallaHistorialUsuario = () => {
 
       {/* 🔍 Filtros de estado */}
       <View style={styles.filtrosContainer}>
-        {['Todos', 'Completado', 'Pendiente'].map((estado) => (
-          <TouchableOpacity
-            key={estado}
-            style={[
-              styles.botonFiltro,
-              filtro === estado && styles.botonFiltroActivo,
-            ]}
-            onPress={() => setFiltro(estado)}
-          >
-            <Text style={styles.textoFiltro}>{estado}</Text>
-          </TouchableOpacity>
+        {['Todos', 'Completado', 'Pendiente'].map(estado => (
+          <Animated.View key={estado} style={{ transform: [{ scale: animacionFiltro }] }}>
+            <TouchableOpacity
+              style={[styles.botonFiltro, filtro === estado && styles.botonFiltroActivo]}
+              onPress={() => {
+                setFiltro(estado);
+                animarFiltro();
+              }}
+            >
+              <Text style={styles.textoFiltro}>{estado}</Text>
+            </TouchableOpacity>
+          </Animated.View>
         ))}
       </View>
 
       {/* 📌 Lista de pedidos */}
       <FlatList
         data={pedidosFiltrados}
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
@@ -91,26 +103,10 @@ const PantallaHistorialUsuario = () => {
             </View>
           </TouchableOpacity>
         )}
+        ListEmptyComponent={<Text style={styles.textoVacio}>No hay pedidos en el historial.</Text>}
       />
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#ffffff' },
-  titulo: { fontSize: 24, fontWeight: 'bold', color: '#003366', textAlign: 'center', marginBottom: 16 },
-  filtrosContainer: { flexDirection: 'row', justifyContent: 'center', marginBottom: 10 },
-  botonFiltro: { padding: 10, backgroundColor: '#e0e0e0', marginHorizontal: 5, borderRadius: 5 },
-  botonFiltroActivo: { backgroundColor: '#FF0314' },
-  textoFiltro: { color: '#fff' },
-  card: { flexDirection: 'row', padding: 15, backgroundColor: '#f5f5f5', borderRadius: 10, marginBottom: 10, alignItems: 'center' },
-  imagenServicio: { width: 50, height: 50, marginRight: 10 },
-  textosCard: { flex: 1 },
-  servicio: { fontSize: 16, fontWeight: 'bold' },
-  proveedor: { fontSize: 14, color: '#555' },
-  estado: { fontSize: 14, marginTop: 5 },
-  estadoTexto: { fontWeight: 'bold' },
-  fecha: { fontSize: 12, color: '#888', marginTop: 5 },
-});
 
 export default PantallaHistorialUsuario;

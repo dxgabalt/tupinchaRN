@@ -4,31 +4,68 @@ import {
   Text,
   TouchableOpacity,
   FlatList,
-  StyleSheet,
   Linking,
+  Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import styles from 'src/styles/stylesSoporteFAQ';
 
 // 📌 Datos simulados de preguntas frecuentes
 const faqsSimuladas = [
-  { id: '1', pregunta: '¿Cómo puedo registrar un negocio?', respuesta: 'Para registrar un negocio, ve a la sección de perfil y selecciona "Registrar mi negocio".' },
-  { id: '2', pregunta: '¿Cuáles son los métodos de pago aceptados?', respuesta: 'Aceptamos pagos con tarjeta de crédito, PayPal y transferencias bancarias.' },
-  { id: '3', pregunta: '¿Cómo puedo contactar a un proveedor?', respuesta: 'En la pantalla de detalles del proveedor, hay un botón para contactarlo directamente.' },
+  {
+    id: '1',
+    pregunta: '¿Cómo puedo registrar un negocio?',
+    respuesta: 'Para registrar un negocio, ve a la sección de perfil y selecciona "Registrar mi negocio".',
+  },
+  {
+    id: '2',
+    pregunta: '¿Cuáles son los métodos de pago aceptados?',
+    respuesta: 'Aceptamos pagos con Transfermovil, EnZona, PayPal, Zelle, Cash App y efectivo.',
+  },
+  {
+    id: '3',
+    pregunta: '¿Cómo puedo contactar a un proveedor?',
+    respuesta: 'En la pantalla de detalles del proveedor, hay un botón para contactarlo directamente.',
+  },
+  {
+    id: '4',
+    pregunta: '¿Cómo modificar mi perfil?',
+    respuesta: 'Desde la sección de "Mi Perfil", puedes actualizar tus datos personales y de negocio.',
+  },
+  {
+    id: '5',
+    pregunta: '¿Cómo cancelo una solicitud de servicio?',
+    respuesta: 'En la pantalla de "Historial de Pedidos", selecciona la solicitud y presiona "Cancelar".',
+  },
 ];
 
 const PantallaSoporteFAQ = () => {
   const navigation = useNavigation();
-  const [faqs, setFaqs] = useState(faqsSimuladas);
   const [faqActiva, setFaqActiva] = useState<string | null>(null);
+  const [animacionAltura] = useState(new Animated.Value(0));
 
-  // 📌 Alternar visibilidad de respuestas
+  // 📌 Alternar visibilidad de respuestas con animación
   const toggleFaq = (id: string) => {
-    setFaqActiva(faqActiva === id ? null : id);
+    if (faqActiva === id) {
+      setFaqActiva(null);
+      Animated.timing(animacionAltura, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    } else {
+      setFaqActiva(id);
+      Animated.timing(animacionAltura, {
+        toValue: 100,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    }
   };
 
   // 📌 Función para abrir WhatsApp de soporte
   const abrirWhatsApp = () => {
-    const numero = '+50588887777';
+    const numero = '+12813305912';
     const mensaje = encodeURIComponent('Hola, necesito ayuda con la aplicación.');
     Linking.openURL(`https://wa.me/${numero}?text=${mensaje}`);
   };
@@ -39,14 +76,18 @@ const PantallaSoporteFAQ = () => {
 
       {/* 📝 Lista de Preguntas Frecuentes */}
       <FlatList
-        data={faqs}
+        data={faqsSimuladas}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <TouchableOpacity onPress={() => toggleFaq(item.id)}>
+            <TouchableOpacity style={styles.preguntaContainer} onPress={() => toggleFaq(item.id)}>
               <Text style={styles.pregunta}>➜ {item.pregunta}</Text>
             </TouchableOpacity>
-            {faqActiva === item.id && <Text style={styles.respuesta}>💬 {item.respuesta}</Text>}
+            {faqActiva === item.id && (
+              <Animated.View style={[styles.respuestaContainer, { maxHeight: animacionAltura }]}>
+                <Text style={styles.respuesta}>💬 {item.respuesta}</Text>
+              </Animated.View>
+            )}
           </View>
         )}
       />
@@ -63,17 +104,5 @@ const PantallaSoporteFAQ = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#ffffff' },
-  titulo: { fontSize: 24, fontWeight: 'bold', color: '#003366', marginBottom: 16, textAlign: 'center' },
-  card: { backgroundColor: '#f5f5f5', padding: 12, borderRadius: 8, marginBottom: 10 },
-  pregunta: { fontSize: 16, fontWeight: 'bold' },
-  respuesta: { fontSize: 14, color: '#555', marginTop: 5 },
-  botonWhatsApp: { backgroundColor: '#25D366', padding: 12, borderRadius: 8, alignItems: 'center', marginBottom: 10 },
-  textoBoton: { fontSize: 16, color: '#ffffff', fontWeight: 'bold' },
-  botonVolver: { backgroundColor: '#ccc', padding: 10, borderRadius: 8, alignItems: 'center' },
-  textoBotonVolver: { fontSize: 14, color: '#000', fontWeight: 'bold' },
-});
 
 export default PantallaSoporteFAQ;

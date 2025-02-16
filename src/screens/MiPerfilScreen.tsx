@@ -5,17 +5,19 @@ import {
   TextInput,
   Image,
   TouchableOpacity,
-  StyleSheet,
   Alert,
+  ScrollView,
+  Animated,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import styles from 'src/styles/stylesMiPerfil';
 
 // 📌 Datos simulados de usuario
 const usuarioSimulado = {
   nombre: 'Juan Pérez',
   correo: 'juanperez@email.com',
   telefono: '+505 8888 7777',
-  fotoPerfil: 'https://via.placeholder.com/100',
+  fotoPerfil: 'https://via.placeholder.com/150',
 };
 
 const MiPerfilScreen = () => {
@@ -24,6 +26,7 @@ const MiPerfilScreen = () => {
   const [editando, setEditando] = useState(false);
   const [nuevoNombre, setNuevoNombre] = useState(usuario.nombre);
   const [nuevoTelefono, setNuevoTelefono] = useState(usuario.telefono);
+  const animacionBoton = new Animated.Value(1);
 
   // 📌 Guardar cambios en el perfil
   const guardarCambios = () => {
@@ -41,13 +44,31 @@ const MiPerfilScreen = () => {
     Alert.alert('Perfil actualizado', 'Los cambios se guardaron correctamente.');
   };
 
+  // 📌 Animación para el botón de guardar
+  const animarBoton = () => {
+    Animated.sequence([
+      Animated.timing(animacionBoton, {
+        toValue: 0.9,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(animacionBoton, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.titulo}>👤 Mi Perfil</Text>
 
       {/* 📸 Foto de perfil */}
       <Image source={{ uri: usuario.fotoPerfil }} style={styles.fotoPerfil} />
-      <TouchableOpacity style={styles.botonFoto} onPress={() => Alert.alert('Cargar nueva foto')}>
+      <TouchableOpacity
+        style={styles.botonFoto}
+        onPress={() => Alert.alert('Cargar nueva foto')}>
         <Text style={styles.textoBoton}>📷 Cambiar Foto</Text>
       </TouchableOpacity>
 
@@ -86,12 +107,19 @@ const MiPerfilScreen = () => {
 
       {/* 📌 Botón para editar/guardar */}
       {editando ? (
-        <TouchableOpacity style={styles.botonGuardar} onPress={guardarCambios}>
-          <Text style={styles.textoBoton}>💾 Guardar Cambios</Text>
-        </TouchableOpacity>
+        <Animated.View style={{ transform: [{ scale: animacionBoton }] }}>
+          <TouchableOpacity
+            style={styles.botonGuardar}
+            onPress={() => {
+              guardarCambios();
+              animarBoton();
+            }}>
+            <Text style={styles.textoBoton}>💾 Guardar Cambios</Text>
+          </TouchableOpacity>
+        </Animated.View>
       ) : (
         <TouchableOpacity style={styles.botonEditar} onPress={() => setEditando(true)}>
-          <Text style={styles.textoBoton}>✏️ Editar Perfil</Text>
+          <Text style={styles.textoBotton}>✏️ Editar Perfil</Text>
         </TouchableOpacity>
       )}
 
@@ -99,24 +127,8 @@ const MiPerfilScreen = () => {
       <TouchableOpacity style={styles.botonVolver} onPress={() => navigation.goBack()}>
         <Text style={styles.textoBotonVolver}>⬅️ Volver</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#ffffff', alignItems: 'center' },
-  titulo: { fontSize: 24, fontWeight: 'bold', color: '#003366', marginBottom: 16 },
-  fotoPerfil: { width: 100, height: 100, borderRadius: 50, marginBottom: 10 },
-  botonFoto: { backgroundColor: '#ddd', padding: 8, borderRadius: 5, marginBottom: 15 },
-  textoBoton: { fontSize: 16, fontWeight: 'bold', color: '#333' },
-  campoContainer: { width: '100%', marginBottom: 10 },
-  label: { fontSize: 14, fontWeight: 'bold', color: '#555' },
-  texto: { fontSize: 16, color: '#333', paddingVertical: 4 },
-  input: { borderWidth: 1, borderColor: '#ccc', padding: 8, borderRadius: 5 },
-  botonEditar: { backgroundColor: '#007bff', padding: 10, borderRadius: 5, marginTop: 10, width: '100%', alignItems: 'center' },
-  botonGuardar: { backgroundColor: '#28a745', padding: 10, borderRadius: 5, marginTop: 10, width: '100%', alignItems: 'center' },
-  botonVolver: { backgroundColor: '#ccc', padding: 10, borderRadius: 5, marginTop: 10, width: '100%', alignItems: 'center' },
-  textoBotonVolver: { fontSize: 14, fontWeight: 'bold', color: '#000' },
-});
 
 export default MiPerfilScreen;
