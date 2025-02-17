@@ -1,20 +1,30 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "../styles/global.css";
-
-const usuariosSimulados = [
-  { id: "1", nombre: "Rogelio Martínez", tipo: "Proveedor", categoria: "Fontanería", correo: "rogelio@email.com", telefono: "+505 8888 1111", calificacion: 4.8, estado: "Activo", orden: 1 },
-  { id: "2", nombre: "Andrés López", tipo: "Proveedor", categoria: "Electricidad", correo: "andres@email.com", telefono: "+505 8888 2222", calificacion: 4.5, estado: "Activo", orden: 2 },
-  { id: "3", nombre: "Ramiro Sánchez", tipo: "Cliente", correo: "ramiro@email.com", telefono: "+505 8888 3333", calificacion: null, estado: "Suspendido", orden: 3 },
-];
+import { AuthService } from "../services/AuthService";
 
 const UserManagementPage = () => {
   const navigate = useNavigate();
-  const [usuarios, setUsuarios] = useState(usuariosSimulados);
+  const [usuarios, setUsuarios] = useState([]);
   const [editandoUsuario, setEditandoUsuario] = useState(null);
 
-  // ✏ Guardar cambios en usuario editado
+  // Cargar usuarios desde el servicio
+  useEffect(() => {
+    const cargarUsuarios = async () => {
+      try {
+        const usuariosObtenidos = await AuthService.obtenerUsuarios();
+        console.log("Usuarios obtenidos:", usuariosObtenidos);
+        setUsuarios(usuariosObtenidos);
+      } catch (error) {
+        console.error("Error obteniendo usuarios:", error);
+      }
+    };
+
+    cargarUsuarios();
+  }, []);
+
+  // Guardar cambios en usuario editado
   const guardarEdicion = (id, nuevoNombre, nuevoEstado, nuevaCategoria) => {
     setUsuarios(prev =>
       prev.map(user =>
@@ -24,14 +34,14 @@ const UserManagementPage = () => {
     setEditandoUsuario(null);
   };
 
-  // ❌ Eliminar usuario
+  // Eliminar usuario
   const eliminarUsuario = id => {
     if (window.confirm("¿Seguro que quieres eliminar este usuario?")) {
       setUsuarios(prev => prev.filter(user => user.id !== id));
     }
   };
 
-  // 🔼🔽 Ordenar manualmente los proveedores
+  // Ordenar manualmente los proveedores
   const moverProveedor = (id, direccion) => {
     const index = usuarios.findIndex(user => user.id === id);
     if (index < 0) return;
@@ -50,7 +60,6 @@ const UserManagementPage = () => {
       <Sidebar />
       <main className="content">
         <h1>👥 Gestión de Usuarios</h1>
-
         <table className="table">
           <thead>
             <tr>
@@ -69,7 +78,6 @@ const UserManagementPage = () => {
               <tr key={usuario.id}>
                 <td>{index + 1}</td>
 
-                {/* ✏ Editar usuario en línea */}
                 <td>
                   {editandoUsuario === usuario.id ? (
                     <input
@@ -98,28 +106,23 @@ const UserManagementPage = () => {
                 </td>
 
                 <td>
-                  {/* 🔍 Ver perfil */}
                   <button
-  className="btn-ver"
-  onClick={() => {
-    if (usuario && usuario.id) {
-      navigate(`/user-profile/${usuario.id}`, { state: { usuario } });
-    } else {
-      alert("⚠ Error: Usuario no encontrado.");
-    }
-  }}
->
-  🔍 Ver Perfil
-</button>
+                    className="btn-ver"
+                    onClick={() => {
+                      if (usuario && usuario.id) {
+                        navigate(`/user-profile/${usuario.id}`, { state: { usuario } });
+                      } else {
+                        alert("⚠ Error: Usuario no encontrado.");
+                      }
+                    }}
+                  >
+                    🔍 Ver Perfil
+                  </button>
 
-
-                  {/* ✏ Editar usuario */}
                   <button className="btn-editar" onClick={() => setEditandoUsuario(usuario.id)}>✏ Editar</button>
 
-                  {/* ❌ Eliminar usuario */}
                   <button className="btn-eliminar" onClick={() => eliminarUsuario(usuario.id)}>❌ Eliminar</button>
 
-                  {/* 🔼🔽 Ordenar proveedores manualmente */}
                   {usuario.tipo === "Proveedor" && (
                     <>
                       <button className="btn-orden" onClick={() => moverProveedor(usuario.id, "arriba")}>🔼</button>
