@@ -1,55 +1,45 @@
-import React, { useState } from "react";
+import  { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import "../styles/global.css";
+import SolicitudService from "../services/SolicitudService";
 
 const ServiceManagementPage = () => {
-  // 🔢 Datos Simulados de Servicios
-  const [servicios, setServicios] = useState([
-    {
-      id: 1,
-      categoria: "Fontanería",
-      proveedor: "Carlos López",
-      cliente: "Ana Pérez",
-      estado: "Pendiente",
-    },
-    {
-      id: 2,
-      categoria: "Electricidad",
-      proveedor: "Luis Ramírez",
-      cliente: "María González",
-      estado: "En Proceso",
-    },
-    {
-      id: 3,
-      categoria: "Reparación de Electrodomésticos",
-      proveedor: "Juan Pérez",
-      cliente: "Jorge Rivera",
-      estado: "Completado",
-    },
-  ]);
-
+  const [servicios, setServicios] = useState([]);
   const [filtro, setFiltro] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("Todos");
 
+  // 📌 Cargar servicios desde el servicio
+  useEffect(() => {
+    const cargarServicios = async () => {
+      const data = await SolicitudService.obtenerTodosLosSolicitudes();
+      setServicios(data);
+    };
+    cargarServicios();
+  }, []);
+
   // 📌 Cambiar estado del servicio
-  const cambiarEstado = (id, nuevoEstado) => {
-    setServicios((prevServicios) =>
-      prevServicios.map((servicio) =>
-        servicio.id === id ? { ...servicio, estado: nuevoEstado } : servicio
-      )
-    );
+  const cambiarEstado = async (id, nuevoEstado) => {
+    await SolicitudService.actualizarEstadoSolicitud(id, nuevoEstado);
+      setServicios((prevServicios) =>
+        prevServicios.map((servicio) =>
+          servicio.id === id ? { ...servicio, status: nuevoEstado } : servicio
+        )
+      );
   };
 
   // 📌 Eliminar servicio
-  const eliminarServicio = (id) => {
-    setServicios((prevServicios) => prevServicios.filter((servicio) => servicio.id !== id));
+  const eliminarServicio = async (id) => {
+    const eliminado = await SolicitudService.eliminarSolicitud(id);
+    if (eliminado) {
+      setServicios((prevServicios) => prevServicios.filter((servicio) => servicio.id !== id));
+    }
   };
 
   // 📌 Filtrar servicios según búsqueda y estado
   const serviciosFiltrados = servicios.filter(
     (servicio) =>
-      servicio.categoria.toLowerCase().includes(filtro.toLowerCase()) &&
-      (estadoFiltro === "Todos" || servicio.estado === estadoFiltro)
+      servicio.services.category.toLowerCase().includes(filtro.toLowerCase()) &&
+      (estadoFiltro === "Todos" || servicio.status === estadoFiltro)
   );
 
   return (
@@ -90,20 +80,20 @@ const ServiceManagementPage = () => {
             {serviciosFiltrados.length > 0 ? (
               serviciosFiltrados.map((servicio) => (
                 <tr key={servicio.id}>
-                  <td>{servicio.categoria}</td>
-                  <td>{servicio.proveedor}</td>
-                  <td>{servicio.cliente}</td>
+                  <td>{servicio.services.category}</td>
+                  <td>{servicio.providers.profiles.name}</td>
+                  <td>{servicio.usuarioPerfil.name}</td>
                   <td>
-                    <span className={`estado ${servicio.estado.toLowerCase()}`}>
-                      {servicio.estado}
+                    <span className={`estado ${servicio.status.toLowerCase()}`}>
+                      {servicio.status}
                     </span>
                   </td>
                   <td>
-                    {servicio.estado === "Pendiente" && (
+                    {servicio.status === "Pendiente" && (
                       <>
                         <button
                           className="btn-approve"
-                          onClick={() => cambiarEstado(servicio.id, "En Proceso")}
+                          onClick={() => cambiarEstado(servicio.id, "Aprobado")}
                         >
                           Aprobar
                         </button>
@@ -115,7 +105,7 @@ const ServiceManagementPage = () => {
                         </button>
                       </>
                     )}
-                    {servicio.estado === "En Proceso" && (
+                    {servicio.status === "En Proceso" && (
                       <button
                         className="btn-complete"
                         onClick={() => cambiarEstado(servicio.id, "Completado")}
@@ -123,7 +113,7 @@ const ServiceManagementPage = () => {
                         Completar
                       </button>
                     )}
-                    {servicio.estado === "Completado" && (
+                    {servicio.status === "Completado" && (
                       <span className="completado">✅ Finalizado</span>
                     )}
                   </td>

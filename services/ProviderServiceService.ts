@@ -2,11 +2,11 @@ import {ProviderService} from '../models/ProviderService';
 import SupabaseService from './SupabaseService';
 
 export class ProviderServiceService {
-  private static readonly TABLE_NAME = 'providerservices';
+  private static readonly TABLE_NAME = 'provider_services';
 
   // Obtener todos los Cities
   static async obtenerTodos(): Promise<ProviderService[]> {
-    return await SupabaseService.obtenerDatos<ProviderService>(this.TABLE_NAME);
+    return await SupabaseService.obtenerDatos<ProviderService>(this.TABLE_NAME,'id,provider_id,service_id,providers(id,phone,profile_id,profiles(name,rating,profile_pic_url,phone),description,speciality,availability),services(id,category,tags))');
   }
 
   // Obtener un PROVIDERSERVICE por ID

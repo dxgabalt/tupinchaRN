@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,46 +11,9 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import styles from '../styles/stylesResultadosBusqueda';
-
-// 📌 Datos simulados de negocios
-const negociosSimulados = [
-  {
-    id: '1',
-    nombre: 'Fontanería Express',
-    categoria: 'Fontanería',
-    descripcion: 'Reparaciones de tuberías y grifos.',
-    ubicacion: 'La Habana, Playa',
-    calificacion: 4.8,
-    imagen: 'https://tupincha.com/wp-content/uploads/2024/03/ORIGINAL75.png',
-  },
-  {
-    id: '2',
-    nombre: 'Electricidad Segura',
-    categoria: 'Electricidad',
-    descripcion: 'Instalaciones y mantenimiento eléctrico.',
-    ubicacion: 'Matanzas, Varadero',
-    calificacion: 4.5,
-    imagen: 'https://tupincha.com/wp-content/uploads/2024/03/ORIGINAL75.png',
-  },
-  {
-    id: '3',
-    nombre: 'Carpintería Fina',
-    categoria: 'Carpintería',
-    descripcion: 'Muebles a medida y reparaciones.',
-    ubicacion: 'Villa Clara, Santa Clara',
-    calificacion: 4.9,
-    imagen: 'https://tupincha.com/wp-content/uploads/2024/03/ORIGINAL75.png',
-  },
-  {
-    id: '4',
-    nombre: 'Limpieza Total',
-    categoria: 'Servicios de Limpieza',
-    descripcion: 'Limpieza profunda de hogares y oficinas.',
-    ubicacion: 'Santiago de Cuba, Centro',
-    calificacion: 4.7,
-    imagen: 'https://tupincha.com/wp-content/uploads/2024/03/ORIGINAL75.png',
-  },
-];
+import { Negocio } from '../models/Negocio';
+import { NegocioService } from '../services/NegocioService';
+import { ProviderServiceService } from '../services/ProviderServiceService';
 
 const PantallaResultadosBusqueda = () => {
   const navigation = useNavigation();
@@ -58,8 +21,8 @@ const PantallaResultadosBusqueda = () => {
   const { servicio } = route.params || {};
 
   const [busqueda, setBusqueda] = useState('');
-  const [negocios, setNegocios] = useState(negociosSimulados);
   const [fadeAnim] = useState(new Animated.Value(0));
+  const [negocios, setNegocios] = useState<Negocio[]>([]);
 
   // 🔥 Animación de entrada
   React.useEffect(() => {
@@ -69,13 +32,37 @@ const PantallaResultadosBusqueda = () => {
       useNativeDriver: true,
     }).start();
   }, []);
-
+  useEffect(() => {
+    const obtenerNegocios = async () => {
+      try {
+        const providers_services = await ProviderServiceService.obtenerTodos();
+        
+        const negocios = providers_services.map((servicio) => ({
+          id: servicio.id,
+          nombre: servicio.providers?.profiles?.name ||'',
+          tags: servicio.services.tags,
+          categoria: servicio.services?.category,
+          descripcion: servicio.providers.description,
+          ubicacion: '',
+          imagen: servicio.providers.profiles.profile_pic_url,
+          calificacion:0,
+        }));
+        setNegocios(negocios);
+      } catch (error) {
+        console.error("Error obteniendo servicios:", error);
+      }
+    };
+    obtenerNegocios();
+  }, []);
   // 🔍 Filtrar negocios según la búsqueda o el servicio seleccionado
-  const negociosFiltrados = negocios.filter(
-    negocio =>
-      negocio.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-      negocio.categoria.toLowerCase().includes(servicio?.toLowerCase() || '')
-  );
+  const negociosFiltrados = negocios.filter(negocio => {
+    // Filtro por nombre
+    console.log(negocio.categoria)
+    const matchNombre = busqueda.length === 0?negocio.nombre.toLowerCase().includes(servicio?.toLowerCase()):negocio.nombre.toLowerCase().includes(busqueda?.toLowerCase());
+    const matchCategoria = busqueda.length === 0?negocio.categoria.toLowerCase().includes(servicio?.toLowerCase()):negocio.categoria.toLowerCase().includes(busqueda?.toLowerCase());
+    return matchNombre || matchCategoria;
+  });
+
 
   return (
     <View style={styles.container}>

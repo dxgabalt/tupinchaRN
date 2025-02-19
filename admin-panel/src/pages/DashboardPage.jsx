@@ -1,46 +1,46 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import "../styles/global.css";
+import { EstadisticasService } from "../services/EstadisticasService";
+import SolicitudService from "../services/SolicitudService"; // Importamos el servicio
 
 const DashboardPage = () => {
-  // 🔢 Datos Simulados
-  const totalUsuarios = 1200;
-  const totalProveedores = 450;
-  const totalServicios = 650;
-  const totalPagos = 12500;
-  const porcentajeCompletado = 85;
+  // Estado para las estadísticas
+  const [estadisticas, setEstadisticas] = useState({
+    totalUsuarios: 0,
+    totalProveedores: 0,
+    totalServicios: 0,
+    totalPagos: 0,
+    porcentajeCompletado: 0,
+  });
 
-  const ultimasSolicitudes = [
-    { id: 1, usuario: "Carlos Lopez", servicio: "Fontanería", estado: "Pendiente" },
-    { id: 2, usuario: "Ana Pérez", servicio: "Electricidad", estado: "En Proceso" },
-    { id: 3, usuario: "Luis Ramírez", servicio: "Reparación", estado: "Completado" },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [solicitudes, setSolicitudes] = useState([]); // Estado para solicitudes
 
-  // 📊 Datos para Gráfico de Línea (Ingresos)
-  const ingresosData = {
-    labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Ingresos en USD",
-        data: [1200, 1500, 1100, 2500, 2000, 2800],
-        borderColor: "red",
-        backgroundColor: "rgba(255, 0, 0, 0.2)",
-        tension: 0.4,
-      },
-    ],
-  };
+  // Cargar estadísticas al montar el componente
+  useEffect(() => {
+    const fetchEstadisticas = async () => {
+      const data = await EstadisticasService.obtenerEstadisticas();
+      if (data) {
+        setEstadisticas(data);
+      }
+      setLoading(false);
+    };
 
-  // 📊 Datos para Gráfico de Distribución de Servicios
-  const serviciosData = {
-    labels: ["Fontanería", "Electricidad", "Jardinería", "Construcción"],
-    datasets: [
-      {
-        label: "Servicios",
-        data: [30, 40, 20, 50],
-        backgroundColor: ["blue", "red", "orange", "green"],
-      },
-    ],
-  };
+    fetchEstadisticas();
+  }, []);
+
+  // Cargar solicitudes al montar el componente
+  useEffect(() => {
+    const fetchSolicitudes = async () => {
+      const data = await SolicitudService.obtenerTodosLosSolicitudes();
+      if (data) {
+        setSolicitudes(data);
+      }
+    };
+
+    fetchSolicitudes();
+  }, []);
 
   return (
     <div className="dashboard">
@@ -50,13 +50,17 @@ const DashboardPage = () => {
 
         {/* 🔢 Tarjetas de Métricas */}
         <div className="stats-container">
-          <div className="stat-card">👤 Usuarios: {totalUsuarios}</div>
-          <div className="stat-card">🛠️ Proveedores: {totalProveedores}</div>
-          <div className="stat-card">🔧 Servicios: {totalServicios}</div>
-          <div className="stat-card">💰 Pagos: ${totalPagos}</div>
+          {loading ? (
+            <p>Cargando estadísticas...</p>
+          ) : (
+            <>
+              <div className="stat-card">👤 Usuarios: {estadisticas.totalUsuarios}</div>
+              <div className="stat-card">🛠️ Proveedores: {estadisticas.totalProveedores}</div>
+              <div className="stat-card">🔧 Servicios: {estadisticas.totalServicios}</div>
+              <div className="stat-card">💰 Pagos: ${estadisticas.totalPagos}</div>
+            </>
+          )}
         </div>
-
-
 
         {/* 📌 Últimas Solicitudes */}
         <div className="solicitudes-container">
@@ -70,13 +74,19 @@ const DashboardPage = () => {
               </tr>
             </thead>
             <tbody>
-              {ultimasSolicitudes.map((solicitud) => (
-                <tr key={solicitud.id}>
-                  <td>{solicitud.usuario}</td>
-                  <td>{solicitud.servicio}</td>
-                  <td>{solicitud.estado}</td>
+              {solicitudes.length > 0 ? (
+                solicitudes.map((solicitud) => (
+                  <tr key={solicitud.id}>
+                    <td>{solicitud.usuarioPerfil.name || "Desconocido"}</td>
+                    <td>{solicitud.services?.category || "No especificado"}</td>
+                    <td>{solicitud.status}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3">No hay solicitudes registradas.</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

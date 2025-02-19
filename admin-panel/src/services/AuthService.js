@@ -1,5 +1,6 @@
 import { supabase_admin } from './supabaseAdmin';
 import { supabase_client } from './supabaseClient';
+import SupabaseService from './SupabaseService';
 
 export class AuthService {
     static async autenticarUsuario(correo, contrasena) {
@@ -51,4 +52,44 @@ export class AuthService {
             };
         });
     }
-}
+    static async actualizarPerfilPanel(
+        idUsuario,
+        nuevoNombre,
+        status
+      ) {
+        const {error} = await supabase_client
+          .from('profiles')
+          .update({name: nuevoNombre, is_verified: status})
+          .eq('user_id', idUsuario);
+    
+        if (error) {
+          throw new Error(`Error al actualizar el nombre: ${error.message}`);
+        }
+      }
+      static async actualizarPerfil(id,datosActualizados){
+        return await SupabaseService.actualizarRegistro('profiles', datosActualizados, 'user_id', id);
+
+      }
+      static async eliminarPerfil(id){
+        try {
+                 // Eliminar perfil de la tabla de usuarios
+                 const { error: profileError } = await supabase_client
+                 .from('profiles')
+                 .delete()
+                 .eq("user_id", id);
+         
+               if (profileError) throw new Error(profileError.message);
+         
+            // Eliminar usuario de autenticación en Supabase
+            const { error: authError } = await supabase_admin.auth.admin.deleteUser(id);
+            if (authError) throw new Error(authError.message);
+      
+       
+            return { success: true, message: "Se ha eliminado exitosamente" };
+          } catch (error) {
+            console.error("Error al eliminar usuario:", error);
+            return { success: false, message: (error).message };
+          }
+        }
+      }
+

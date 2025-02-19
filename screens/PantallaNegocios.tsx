@@ -1,38 +1,46 @@
-import React, { useState, useRef } from 'react';
-import { 
-  View, Text, TextInput, TouchableOpacity, FlatList, Modal, Image, ScrollView, Animated 
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import styles from '../styles/stylesPantallaNegocios';
+import React, { useState, useRef, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  Modal,
+  Image,
+  ScrollView,
+  Animated,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import styles from "../styles/stylesPantallaNegocios";
+import { ServiceService } from "../services/ServiceService";
+import { Service } from "../models/Service";
+import { CitiesService } from "../services/CitiesService";
 
-// 🔥 Datos de categorías y ubicaciones
-const categoriasSimuladas = [
-  { id: '1', nombre: 'Fontanería', icono: '🚰' },
-  { id: '2', nombre: 'Electricidad', icono: '⚡' },
-  { id: '3', nombre: 'Carpintería', icono: '🪵' },
-  { id: '4', nombre: 'Construcción', icono: '🏗️' },
-  { id: '5', nombre: 'Limpieza', icono: '🧹' },
-  { id: '6', nombre: 'Jardinería', icono: '🌿' },
-  { id: '7', nombre: 'Pintura', icono: '🎨' },
-  { id: '8', nombre: 'Mecánica', icono: '🚗' },
-  { id: '9', nombre: 'Tecnología', icono: '💻' },
+const provinciasCubanas = [
+  "La Habana",
+  "Matanzas",
+  "Villa Clara",
+  "Santiago de Cuba",
 ];
-
-const provinciasCubanas = ['La Habana', 'Matanzas', 'Villa Clara', 'Santiago de Cuba'];
 const municipios = {
-  'La Habana': ['Playa', 'Centro Habana', 'Habana Vieja'],
-  'Matanzas': ['Matanzas', 'Cárdenas', 'Varadero'],
-  'Villa Clara': ['Santa Clara', 'Remedios', 'Caibarién'],
-  'Santiago de Cuba': ['Santiago Centro', 'Contramaestre', 'San Luis'],
+  "La Habana": ["Playa", "Centro Habana", "Habana Vieja"],
+  Matanzas: ["Matanzas", "Cárdenas", "Varadero"],
+  "Villa Clara": ["Santa Clara", "Remedios", "Caibarién"],
+  "Santiago de Cuba": ["Santiago Centro", "Contramaestre", "San Luis"],
 };
 
 const PantallaNegocios = () => {
   const navigation = useNavigation();
-  const [busqueda, setBusqueda] = useState('');
+  const [busqueda, setBusqueda] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
-  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState<string | null>(null);
-  const [municipioSeleccionado, setMunicipioSeleccionado] = useState<string | null>(null);
+  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState<
+    string | null
+  >(null);
+  const [municipioSeleccionado, setMunicipioSeleccionado] = useState<
+    string | null
+  >(null);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [categorias, setCategorias] = useState<Service[]>([]);
 
   // Animación del Menú Hamburguesa
   const menuAnim = useRef(new Animated.Value(-300)).current;
@@ -47,23 +55,53 @@ const PantallaNegocios = () => {
   };
 
   // 🔍 Filtrar categorías según búsqueda
-  const categoriasFiltradas = categoriasSimuladas.filter(categoria =>
-    categoria.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  const categoriasFiltradas = categorias.filter((categoria:Service) =>
+    categoria.category.toLowerCase().includes(busqueda.toLowerCase())
   );
-
+  useEffect(() => {
+    const obtenerCategorias = async () => {
+      try {
+        const servicios = await ServiceService.obtenerTodos();
+        const categoriasFormateadas = servicios.map((servicio) => ({
+          id: servicio.id,
+          category: servicio?.category,
+          icono: "🔧",
+          tags: servicio.tags
+        }));
+        setCategorias(categoriasFormateadas);
+      } catch (error) {
+        console.error("Error obteniendo servicios:", error);
+      }
+    };
+    obtenerCategorias();
+  }, []);
   return (
     <View style={styles.container}>
       {/* 🔥 Menú Lateral con Animación */}
       {menuVisible && <View style={styles.overlay} />}
-      <Animated.View style={[styles.menuContainer, { transform: [{ translateX: menuAnim }] }]}>
+      <Animated.View
+        style={[
+          styles.menuContainer,
+          { transform: [{ translateX: menuAnim }] },
+        ]}
+      >
         <ScrollView>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaHistorialUsuario')}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("PantallaHistorialUsuario")}
+          >
             <Text style={styles.menuText}>🕒 Historial</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaSoporteFAQ')}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("PantallaSoporteFAQ")}
+          >
             <Text style={styles.menuText}>❓ Soporte</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MiPerfil')}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("MiPerfil")}
+          >
             <Text style={styles.menuText}>👤 Mi Perfil</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuCerrar} onPress={toggleMenu}>
@@ -78,7 +116,9 @@ const PantallaNegocios = () => {
           <Text style={styles.menuIcon}>☰</Text>
         </TouchableOpacity>
         <Text style={styles.bienvenida}>Hola, Usuario!</Text>
-        <Text style={styles.ubicacion}>📍 {provinciaSeleccionada || 'Selecciona ubicación'}</Text>
+        <Text style={styles.ubicacion}>
+          📍 {provinciaSeleccionada || "Selecciona ubicación"}
+        </Text>
       </View>
 
       {/* 🔍 Barra de búsqueda */}
@@ -93,11 +133,16 @@ const PantallaNegocios = () => {
       </View>
 
       {/* 🌍 Botón para seleccionar ubicación */}
-      <TouchableOpacity style={styles.botonFiltro} onPress={() => setModalVisible(true)}>
+      <TouchableOpacity
+        style={styles.botonFiltro}
+        onPress={() => setModalVisible(true)}
+      >
         <Text style={styles.textoBoton}>
           {provinciaSeleccionada
-            ? `${provinciaSeleccionada} - ${municipioSeleccionado || 'Selecciona municipio'}`
-            : 'Seleccionar Ubicación'}
+            ? `${provinciaSeleccionada} - ${
+                municipioSeleccionado || "Selecciona municipio"
+              }`
+            : "Seleccionar Ubicación"}
         </Text>
       </TouchableOpacity>
 
@@ -108,11 +153,15 @@ const PantallaNegocios = () => {
             <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
             <FlatList
               data={provinciasCubanas}
-              keyExtractor={item => item}
+              keyExtractor={(item) => item}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={[styles.opcion, provinciaSeleccionada === item && styles.opcionActiva]}
-                  onPress={() => setProvinciaSeleccionada(item)}>
+                  style={[
+                    styles.opcion,
+                    provinciaSeleccionada === item && styles.opcionActiva,
+                  ]}
+                  onPress={() => setProvinciaSeleccionada(item)}
+                >
                   <Text style={styles.textoOpcion}>{item}</Text>
                 </TouchableOpacity>
               )}
@@ -122,21 +171,28 @@ const PantallaNegocios = () => {
                 <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
                 <FlatList
                   data={municipios[provinciaSeleccionada] || []}
-                  keyExtractor={item => item}
+                  keyExtractor={(item) => item}
                   renderItem={({ item }) => (
                     <TouchableOpacity
-                      style={[styles.opcion, municipioSeleccionado === item && styles.opcionActiva]}
+                      style={[
+                        styles.opcion,
+                        municipioSeleccionado === item && styles.opcionActiva,
+                      ]}
                       onPress={() => {
                         setMunicipioSeleccionado(item);
                         setModalVisible(false);
-                      }}>
+                      }}
+                    >
                       <Text style={styles.textoOpcion}>{item}</Text>
                     </TouchableOpacity>
                   )}
                 />
               </>
             )}
-            <TouchableOpacity style={styles.botonCerrar} onPress={() => setModalVisible(false)}>
+            <TouchableOpacity
+              style={styles.botonCerrar}
+              onPress={() => setModalVisible(false)}
+            >
               <Text style={styles.textoBoton}>Cerrar</Text>
             </TouchableOpacity>
           </View>
@@ -146,13 +202,20 @@ const PantallaNegocios = () => {
       {/* 🔥 Categorías con iconos */}
       <FlatList
         data={categoriasFiltradas}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         numColumns={3}
         columnWrapperStyle={styles.filaCategorias}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.cardCategoria} onPress={() => navigation.navigate('PantallaResultadosBusqueda', { servicio: item.nombre })}>
+          <TouchableOpacity
+            style={styles.cardCategoria}
+            onPress={() =>
+              navigation.navigate("PantallaResultadosBusqueda", {
+                servicio: item.category,
+              })
+            }
+          >
             <Text style={styles.emoji}>{item.icono}</Text>
-            <Text style={styles.textoCategoria}>{item.nombre}</Text>
+            <Text style={styles.textoCategoria}>{item.category}</Text>
           </TouchableOpacity>
         )}
       />
@@ -164,8 +227,15 @@ const PantallaNegocios = () => {
 
       {/* 📌 Banner Promocional */}
       <TouchableOpacity style={styles.banner}>
-        <Image source={{ uri: 'https://servicios.tupincha.com/wp-content/uploads/2024/01/Tu-Pincha-letras-blancas-3.png' }} style={styles.imagenBanner} />
-        <Text style={styles.textoBanner}>Reserva tu servicio fácil y rápido</Text>
+        <Image
+          source={{
+            uri: "https://servicios.tupincha.com/wp-content/uploads/2024/01/Tu-Pincha-letras-blancas-3.png",
+          }}
+          style={styles.imagenBanner}
+        />
+        <Text style={styles.textoBanner}>
+          Reserva tu servicio fácil y rápido
+        </Text>
       </TouchableOpacity>
     </View>
   );

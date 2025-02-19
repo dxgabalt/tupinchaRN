@@ -25,12 +25,13 @@ const UserManagementPage = () => {
   }, []);
 
   // Guardar cambios en usuario editado
-  const guardarEdicion = (id, nuevoNombre, nuevoEstado, nuevaCategoria) => {
+  const guardarEdicion = (id, nuevoNombre, nuevoEstado, nuevaCategoria) => {  
     setUsuarios(prev =>
       prev.map(user =>
         user.id === id ? { ...user, nombre: nuevoNombre, estado: nuevoEstado, categoria: nuevaCategoria } : user
       )
     );
+    AuthService.actualizarPerfilPanel(id, nuevoNombre, nuevoEstado=='Activo'? 1 : 0);
     setEditandoUsuario(null);
   };
 
@@ -38,6 +39,7 @@ const UserManagementPage = () => {
   const eliminarUsuario = id => {
     if (window.confirm("¿Seguro que quieres eliminar este usuario?")) {
       setUsuarios(prev => prev.filter(user => user.id !== id));
+      AuthService.eliminarPerfil(id);
     }
   };
 

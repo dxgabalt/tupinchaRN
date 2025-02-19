@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "../styles/global.css";
+import { AuthService } from "../services/AuthService";
 
 const UserProfilePage = () => {
   const { id } = useParams();
@@ -51,6 +52,9 @@ const UserProfilePage = () => {
   const guardarEdicion = () => {
     alert("✅ Perfil actualizado con éxito.");
     setEditando(false);
+    const status =estado ==='Activo'? 1 : 0 
+    AuthService.actualizarPerfil(id, {name:nombre, phone:telefono, is_verified:status });
+
   };
 
   if (loading) {

@@ -32,6 +32,8 @@ const SupabaseService = {
         return true;
     },
     async actualizarRegistro(tabla, datos, columnaCondicion, valorCondicion) {
+        console.log('datos',datos);
+        
         const { error } = await supabase_client
             .from(tabla)
             .update(datos)
@@ -44,6 +46,7 @@ const SupabaseService = {
         return true;
     },
     async eliminarRegistro(tabla, columnaCondicion, valorCondicion) {
+
         const { error } = await supabase_client
             .from(tabla)
             .delete()
