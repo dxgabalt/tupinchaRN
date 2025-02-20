@@ -4,40 +4,81 @@ import SupabaseService from "./SupabaseService";
 class SolicitudService {
   static TABLE_NAME = "requests";
 
+  
+  static async obtenerSolicitudesPorUsuario(user_id) {
+    return await SupabaseService.obtenerDatos(
+      this.TABLE_NAME,
+      "id, provider_id, providers(id, phone, profile_id, profiles(name, rating, profile_pic_url, phone), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id",
+      { user_id }
+    );
+  }
+
+  static async obtenerSolicitudesComoProveedor(user_id) {
+    // Obtener el profile_id desde la tabla profiles usando el user_id
+    const { data: perfiles, error: errorPerfil } = await supabase_client
+      .from("profiles")
+      .select("id")
+      .eq("user_id", user_id)
+      .single();
+  
+    if (errorPerfil || !perfiles) {
+      console.error("Error obteniendo perfil:", errorPerfil);
+      return [];
+    }
+  
+    // Obtener el provider_id usando el profile_id
+    const { data: provider, error: errorProvider } = await supabase_client
+      .from("providers")
+      .select("id")
+      .eq("profile_id", perfiles.id)
+      .single();
+  
+    if (errorProvider || !provider) {
+      console.error("Error obteniendo proveedor:", errorProvider);
+      return [];
+    }
+  
+    return await this.obtenerSolicitudes({ provider_id: provider.id });
+  }
+  
   static async obtenerTodosLosSolicitudes() {
+    return await this.obtenerSolicitudes();
+  }
+  
+  static async obtenerSolicitudes(filtro = {}) {
+    // Obtener solicitudes con proveedores y servicios
     const { data: solicitudes, error: errorSolicitud } = await supabase_client
       .from(this.TABLE_NAME)
       .select(
-        "id, provider_id, providers(id, phone, profile_id, profiles(name, rating, profile_pic_url, phone), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id"
-      );
-
+        "id, provider_id, providers(id, phone, profile_id, profiles(id, name, rating, profile_pic_url, phone)), service_id, services(id, category, tags), request_description, service_date, images, status, user_id"
+      )
+      .match(filtro);
+  
     if (errorSolicitud) {
       console.error("Error obteniendo solicitudes:", errorSolicitud);
       return [];
     }
-
-    // Obtener los perfiles desde la tabla "profiles"
+  
+    // Obtener perfiles desde la tabla "profiles"
     const { data: perfiles, error: errorPerfiles } = await supabase_client
       .from("profiles")
-      .select("id, name, rating, profile_pic_url, phone,user_id");
+      .select("id, name, rating, profile_pic_url, phone, user_id");
+  
     if (errorPerfiles) {
       console.error("Error obteniendo perfiles:", errorPerfiles);
       return [];
     }
-
+  
     // Crear un mapa de perfiles basado en user_id
     const mapaPerfiles = new Map(perfiles.map((perfil) => [perfil.user_id, perfil]));
-
+  
     // Asociar cada solicitud con su perfil correspondiente
-    const solicitudesConUsuarios = solicitudes.map((solicitud) => ({
-      ...solicitud,   
-      usuarioPerfil: mapaPerfiles.get(solicitud.user_id) || null, // Asignar perfil si existe
+    return solicitudes.map((solicitud) => ({
+      ...solicitud,
+      usuarioPerfil: mapaPerfiles.get(solicitud.user_id) || null,
     }));
-
-    return solicitudesConUsuarios;
-}
-
-
+  }
+  
 
   static async obtenerSolicitudPorId(id) {
     const solicituds = await SupabaseService.obtenerDatos(
@@ -92,14 +133,11 @@ class SolicitudService {
     return await SupabaseService.eliminarRegistro(this.TABLE_NAME, "id", id);
   }
 
-  static async actualizarEstadoSolicitud(
-    id,
-    status
-  ) {
-    const {error} = await supabase_client
+  static async actualizarEstadoSolicitud(id, status) {
+    const { error } = await supabase_client
       .from(this.TABLE_NAME)
-      .update({status})
-      .eq('id', id);
+      .update({ status })
+      .eq("id", id);
 
     if (error) {
       throw new Error(`Error al actualizar el estado: ${error.message}`);

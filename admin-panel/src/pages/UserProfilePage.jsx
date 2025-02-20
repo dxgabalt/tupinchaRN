@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from "react";
+import  { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "../styles/global.css";
 import { AuthService } from "../services/AuthService";
+import SolicitudService from "../services/SolicitudService";
 
 const UserProfilePage = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 📌 Asegurar que `usuario` tiene datos desde `state` o en el futuro desde una API
-  const [usuario, setUsuario] = useState(location.state?.usuario || null);
+  // 📌 Datos del usuario
+  const [usuario] = useState(location.state?.usuario || null);
   const [loading, setLoading] = useState(true);
 
   // 📌 Estados de edición
@@ -19,6 +20,10 @@ const UserProfilePage = () => {
   const [telefono, setTelefono] = useState("");
   const [estado, setEstado] = useState("Activo");
   const [categoria, setCategoria] = useState("");
+
+  // 📌 Historial de servicios
+  const [historialSolicitados, setHistorialSolicitados] = useState([]);
+  const [historialPrestados, setHistorialPrestados] = useState([]);
 
   useEffect(() => {
     if (!usuario) {
@@ -33,28 +38,35 @@ const UserProfilePage = () => {
     setEstado(usuario.estado || "Activo");
     setCategoria(usuario.categoria || "");
     setLoading(false);
+
+    // 📌 Cargar historial de servicios
+    obtenerHistorialServicios();
   }, [usuario, navigate]);
 
-  // 📌 Simulación de historial de servicios
-  const historialSolicitados = [
-    { id: "101", servicio: "Reparación de tubería", fecha: "2024-01-20", estado: "Completado" },
-    { id: "102", servicio: "Instalación eléctrica", fecha: "2024-01-22", estado: "Pendiente" },
-  ];
+  const obtenerHistorialServicios = async () => {
+    try {
+      // Obtener solicitudes realizadas
+      const solicitados = await SolicitudService.obtenerSolicitudesPorUsuario(id);
+      setHistorialSolicitados(solicitados || []);
 
-  const historialPrestados = usuario?.tipo === "Proveedor"
-    ? [
-        { id: "201", servicio: "Fontanería en casa", cliente: "Carlos Mendoza", calificacion: 4.5 },
-        { id: "202", servicio: "Cambio de grifos", cliente: "Lucía Ramírez", calificacion: 5.0 },
-      ]
-    : [];
+      // Obtener solicitudes prestadas (si el usuario es proveedor)
+      if (usuario.tipo === "Proveedor") {
+        const prestados = await SolicitudService.obtenerSolicitudesComoProveedor(id);
+        console.log("Historial de servicios prestados:", prestados);
+        
+        setHistorialPrestados(prestados || []);
+      }
+    } catch (error) {
+      console.error("Error obteniendo historial de servicios:", error);
+    }
+  };
 
   // 📌 Guardar cambios
   const guardarEdicion = () => {
     alert("✅ Perfil actualizado con éxito.");
     setEditando(false);
-    const status =estado ==='Activo'? 1 : 0 
-    AuthService.actualizarPerfil(id, {name:nombre, phone:telefono, is_verified:status });
-
+    const status = estado === "Activo" ? 1 : 0;
+    AuthService.actualizarPerfil(id, { name: nombre, phone: telefono, is_verified: status });
   };
 
   if (loading) {
@@ -101,10 +113,14 @@ const UserProfilePage = () => {
                 </>
               )}
 
-              <button className="btn-guardar" onClick={guardarEdicion}>💾 Guardar Cambios</button>
+              <button className="btn-guardar" onClick={guardarEdicion}>
+                💾 Guardar Cambios
+              </button>
             </div>
           ) : (
-            <button className="btn-editar" onClick={() => setEditando(true)}>✏ Editar Perfil</button>
+            <button className="btn-editar" onClick={() => setEditando(true)}>
+              ✏ Editar Perfil
+            </button>
           )}
 
           {/* 📜 Historial de Servicios Solicitados */}
@@ -113,7 +129,9 @@ const UserProfilePage = () => {
             {historialSolicitados.length > 0 ? (
               <ul>
                 {historialSolicitados.map((item) => (
-                  <li key={item.id}>📌 {item.servicio} - {item.fecha} - {item.estado}</li>
+                  <li key={item.id}>
+                    📌 {item.request_description} - {item.service_date} - {item.status}
+                  </li>
                 ))}
               </ul>
             ) : (
@@ -128,7 +146,9 @@ const UserProfilePage = () => {
               {historialPrestados.length > 0 ? (
                 <ul>
                   {historialPrestados.map((item) => (
-                    <li key={item.id}>🛠 {item.servicio} - Cliente: {item.cliente} - ⭐ {item.calificacion} / 5</li>
+                    <li key={item.id}>
+                      🛠 {item.request_description} - Cliente: {item.usuarioPerfil.name} - Estado: {item.status}
+                    </li>
                   ))}
                 </ul>
               ) : (
@@ -138,7 +158,9 @@ const UserProfilePage = () => {
           )}
 
           {/* 🔙 Botón de regreso */}
-          <button className="btn-volver" onClick={() => navigate("/user-management")}>⬅ Volver a Usuarios</button>
+          <button className="btn-volver" onClick={() => navigate("/user-management")}>
+            ⬅ Volver a Usuarios
+          </button>
         </div>
       </main>
     </div>

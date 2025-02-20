@@ -29,7 +29,7 @@ export class AuthService {
         // Obtener perfiles desde la tabla perfil
         const { data: perfiles, error: errorPerfil } = await supabase_client
             .from('profiles')
-            .select('*');
+            .select('id,name,role_id,roles(id,name),phone,rating,is_verified,user_id');
         if (errorPerfil) {
             console.error('Error obteniendo perfiles:', errorPerfil);
             return [];
@@ -38,11 +38,10 @@ export class AuthService {
         // Mapear y combinar los datos
         return usuariosAuth.users.map((usuario, index) => {
             const perfil = perfiles.find(p => p.user_id === usuario.id);
-
             return {
                 id: usuario.id,
                 nombre: perfil?.name || usuario.email, // Usa el nombre o el email como fallback
-                tipo: perfil?.role_id === 1 ? 'Proveedor' : 'Cliente', // Suponiendo que role_id = 1 es Proveedor
+                tipo: perfil?.roles.name, // Suponiendo que role_id = 1 es Proveedor
                 categoria: perfil?.role_id === 1 ? 'Pendiente' : null, // Categoría si es proveedor
                 correo: usuario.email,
                 telefono: perfil?.phone || null,
