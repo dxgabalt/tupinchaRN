@@ -5,10 +5,16 @@ import {createClient, SupabaseClient} from '@supabase/supabase-js';
 const SUPABASE_URL = 'https://idngwsekicptfluqumys.supabase.co';
 const SUPABASE_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbmd3c2VraWNwdGZsdXF1bXlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1OTcyMDcsImV4cCI6MjA1NDE3MzIwN30.sBCVdh7CxLpbtJkhtKyGeQ-mWZXZrVxWWiINhtBxhso';
+  const  SUPABASE_ADMIN_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbmd3c2VraWNwdGZsdXF1bXlzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczODU5NzIwNywiZXhwIjoyMDU0MTczMjA3fQ.Q75g9bfHTCvtWT-z01IJZUHFhUHg3gclC0MRK0WE46g';
 
 // Inicialización del cliente
 const supabase: SupabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-
+//Inicializacion de admin
+const supabaseAdmin: SupabaseClient = createClient(
+  SUPABASE_URL,
+  SUPABASE_ADMIN_KEY,
+);
 const SupabaseService = {
   async obtenerDatos<T>(
     tabla: string,
@@ -39,6 +45,12 @@ const SupabaseService = {
       return false;
     }
     return true;
+  },
+  async obtenerUsuarioAuth(){
+    const user = supabase.auth.getUser();
+    console.log('user', user);
+    
+    return (await user).data.user 
   },
   async actualizarRegistro<T>(
     tabla: string,

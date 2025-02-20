@@ -10,13 +10,17 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import styles from '../styles/stylesSolicitudServicio';
+import SolicitudService from '../services/SolicitudService';
+import { AuthService } from '../services/AuthService';
+import SupabaseService from '../services/SupabaseService';
 
 const PantallaSolicitudServicio = () => {
   const route = useRoute();
   const navigation = useNavigation();
   
   // 🔹 Manejamos el caso en que `route.params` sea `undefined`
-  const idProveedor = route.params?.idProveedor ?? null;
+  const { idProveedor, service_id } = route.params; // Recibe los parámetros
+
 
   // 🔹 Si `idProveedor` no existe, mostramos un mensaje de error
   if (!idProveedor) {
@@ -68,8 +72,9 @@ const PantallaSolicitudServicio = () => {
       Alert.alert('Error', 'Por favor, completa todos los campos.');
       return;
     }
-
     try {
+      const user = await SupabaseService.obtenerUsuarioAuth();   
+      SolicitudService.crearSolicitudDeServicio(idProveedor,service_id, descripcion, fecha, user?.id)
       Alert.alert('Éxito', 'Solicitud enviada exitosamente.');
       navigation.goBack();
     } catch (error) {

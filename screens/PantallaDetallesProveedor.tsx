@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,11 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import styles from '../styles/stylesDetallesProveedor';
+import { ProviderServiceService } from '../services/ProviderServiceService';
+import { ProviderService } from '../models/ProviderService';
 
 // 📌 Datos simulados del proveedor
-const proveedorSimulado = {
+/*const proveedorSimulado = {
   id: '1',
   nombre: 'Fontanería Express',
   especialidad: 'Fontanería',
@@ -23,14 +25,14 @@ const proveedorSimulado = {
   correo: 'fontaneria@email.com',
   imagenPortada: 'https://tupincha.com/wp-content/uploads/2024/03/ORIGINAL75.png',
   imagenPerfil: 'https://tupincha.com/wp-content/uploads/2024/03/ORIGINAL75.png',
-};
+};*/
 
 const PantallaDetallesProveedor = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { idProveedor } = route.params || {};
 
-  const [proveedor, setProveedor] = useState(proveedorSimulado);
+  const [proveedor, setProveedor] = useState<ProviderService | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const menuAnim = new Animated.Value(menuVisible ? 0 : -300);
 
@@ -38,7 +40,7 @@ const PantallaDetallesProveedor = () => {
   const contactarProveedor = () => {
     Alert.alert(
       'Contacto',
-      `Puedes contactar a ${proveedor.nombre}:\n📞 ${proveedor.telefono}\n📧 ${proveedor.correo}`
+      `Puedes contactar a ${proveedor?.providers.profiles.name}:\n📞 ${proveedor?.providers.phone}\n📧 ${proveedor?.providers.profiles.name}`
     );
   };
 
@@ -51,7 +53,17 @@ const PantallaDetallesProveedor = () => {
       useNativeDriver: true,
     }).start();
   };
-
+ useEffect(() => {
+    const obtenerNegocios = async () => {
+      try {
+        const provider_service = await ProviderServiceService.obtenerPorId(idProveedor);
+        setProveedor(provider_service);
+      } catch (error) {
+        console.error("Error obteniendo servicios:", error);
+      }
+    };
+    obtenerNegocios();
+  }, []);
   return (
     <View style={styles.container}>
       {/* 🔥 Menú Lateral con Animación */}
@@ -92,21 +104,21 @@ const PantallaDetallesProveedor = () => {
 
       <ScrollView>
         {/* 📌 Imagen de Portada */}
-        <Image source={{ uri: proveedor.imagenPortada }} style={styles.imagenPortada} />
+        <Image source={{ uri: proveedor?.providers.profiles.profile_pic_url }} style={styles.imagenPortada} />
 
         {/* 📌 Información del Proveedor */}
         <View style={styles.perfilContainer}>
-          <Image source={{ uri: proveedor.imagenPerfil }} style={styles.imagenPerfil} />
-          <Text style={styles.nombre}>{proveedor.nombre}</Text>
-          <Text style={styles.especialidad}>{proveedor.especialidad}</Text>
-          <Text style={styles.ubicacion}>📍 {proveedor.ubicacion}</Text>
-          <Text style={styles.calificacion}>⭐ {proveedor.calificacion} / 5</Text>
+          <Image source={{ uri: proveedor?.providers.profiles.profile_pic_url }} style={styles.imagenPerfil} />
+          <Text style={styles.nombre}>{proveedor?.providers.profiles.name}</Text>
+          <Text style={styles.especialidad}>{proveedor?.providers.speciality}</Text>
+          <Text style={styles.ubicacion}>📍 </Text>
+          <Text style={styles.calificacion}>⭐ {proveedor?.providers.profiles.rating} / 5</Text>
         </View>
 
         {/* 📌 Descripción */}
         <View style={styles.detallesContainer}>
           <Text style={styles.tituloSeccion}>Sobre el Servicio</Text>
-          <Text style={styles.descripcion}>{proveedor.descripcion}</Text>
+          <Text style={styles.descripcion}>{proveedor?.providers.description}</Text>
         </View>
 
         {/* 📌 Botones de Acción */}
@@ -116,7 +128,12 @@ const PantallaDetallesProveedor = () => {
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.botonSolicitar}
-            onPress={() => navigation.navigate('PantallaSolicitudServicio', { idProveedor })}
+            //proveedor?.proveedor?.services.id
+           
+            onPress={() => navigation.navigate('PantallaSolicitudServicio', { 
+              idProveedor, 
+              service_id: proveedor?.services.id 
+            })}
           >
             <Text style={styles.textoBoton}>🛠️ Solicitar Servicio</Text>
           </TouchableOpacity>

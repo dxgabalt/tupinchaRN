@@ -42,9 +42,11 @@ export class SolicitudService {
     serviceId: number,
     descripcion: string,
     fechaServicio: string,
+    userId: string,
     imagenesUrl?: string,
   ): Promise<boolean> {
-    const {error} = await SolicitudService.supabase
+   
+   const {error} = await SolicitudService.supabase
       .from(SolicitudService.TABLE_NAME)
       .insert({
         provider_id: providerId,
@@ -52,6 +54,7 @@ export class SolicitudService {
         request_description: descripcion,
         service_date: fechaServicio,
         images: imagenesUrl || '',
+        user_id: userId,
         status: 'Pendiente',
       });
 

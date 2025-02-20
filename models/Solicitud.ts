@@ -1,6 +1,6 @@
 export interface Solicitud {
-  providerId: number;
-  serviceId: number;
+  provider_id: number;
+  service_id: number;
   request_description: string;
   service_date: string;
   images?: string;

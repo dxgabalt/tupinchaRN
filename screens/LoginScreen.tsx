@@ -47,8 +47,13 @@ const LoginScreen = () => {
       Alert.alert('Error', 'Por favor, ingresa tu correo y contraseña.');
       return;
     }
-
-    setLoading(true);
+   const response = AuthService.autenticarUsuario(correo, contrasena);
+   
+    if (!(await response).success) {
+      Alert.alert('Error', 'Credenciales incorrectas. Inténtalo de nuevo.');
+      return;
+    }
+    setLoading((await response).success);
     setTimeout(() => {
       setLoading(false);
       Alert.alert('Éxito', 'Inicio de sesión exitoso');

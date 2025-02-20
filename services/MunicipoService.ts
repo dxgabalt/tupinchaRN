@@ -1,12 +1,12 @@
 import {Municipio} from '../models/Municipio';
 import SupabaseService from './SupabaseService';
 
-export class CitiesService {
+export class MunicipioService {
   private static readonly TABLE_NAME = 'municipios';
 
   // Obtener todos los Cities
-  static async obtenerTodos(): Promise<Municipio[]> {
-    return await SupabaseService.obtenerDatos<Municipio>(this.TABLE_NAME);
+  static async obtenerTodos(param:{}): Promise<Municipio[]> {
+    return await SupabaseService.obtenerDatos<Municipio>(this.TABLE_NAME,"*",param);
   }
 
   // Obtener un MUNICIPIO por ID

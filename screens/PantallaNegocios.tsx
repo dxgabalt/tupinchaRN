@@ -14,33 +14,23 @@ import { useNavigation } from "@react-navigation/native";
 import styles from "../styles/stylesPantallaNegocios";
 import { ServiceService } from "../services/ServiceService";
 import { Service } from "../models/Service";
-import { CitiesService } from "../services/CitiesService";
-
-const provinciasCubanas = [
-  "La Habana",
-  "Matanzas",
-  "Villa Clara",
-  "Santiago de Cuba",
-];
-const municipios = {
-  "La Habana": ["Playa", "Centro Habana", "Habana Vieja"],
-  Matanzas: ["Matanzas", "Cárdenas", "Varadero"],
-  "Villa Clara": ["Santa Clara", "Remedios", "Caibarién"],
-  "Santiago de Cuba": ["Santiago Centro", "Contramaestre", "San Luis"],
-};
+import { MunicipioService } from "../services/MunicipoService";
+import { Municipio } from "../models/Municipio";
+import { ProvinciaService } from "../services/ProvinciaService";
+import { Provincia } from "../models/Provincia";
 
 const PantallaNegocios = () => {
   const navigation = useNavigation();
   const [busqueda, setBusqueda] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
-  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState<
-    string | null
-  >(null);
-  const [municipioSeleccionado, setMunicipioSeleccionado] = useState<
-    string | null
-  >(null);
+  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState<string | null>(null);
+  const [nombreprovinciaSeleccionada, setNombreProvinciaSeleccionada] = useState<string | null>(null);
+  const [municipioSeleccionado, setMunicipioSeleccionado] = useState<string | null>(null);
+  const [nombremunicipioSeleccionado, setNombreMunicipioSeleccionado] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [categorias, setCategorias] = useState<Service[]>([]);
+  const [provincias, setProvincias] = useState<Provincia[]>([]); // Estado para las provincias
+  const [municipios, setMunicipios] = useState<Municipio[]>([]); // Estado para los municipios
 
   // Animación del Menú Hamburguesa
   const menuAnim = useRef(new Animated.Value(-300)).current;
@@ -55,9 +45,39 @@ const PantallaNegocios = () => {
   };
 
   // 🔍 Filtrar categorías según búsqueda
-  const categoriasFiltradas = categorias.filter((categoria:Service) =>
+  const categoriasFiltradas = categorias.filter((categoria: Service) =>
     categoria.category.toLowerCase().includes(busqueda.toLowerCase())
   );
+
+  // Obtener las provincias
+  useEffect(() => {
+    const obtenerProvincias = async () => {
+      try {
+        const provincias = await ProvinciaService.obtenerTodos();
+        setProvincias(provincias);
+      } catch (error) {
+        console.error("Error obteniendo provincias:", error);
+      }
+    };
+    obtenerProvincias();
+  }, []);
+
+  // Obtener municipios cuando una provincia es seleccionada
+  useEffect(() => {
+    if (provinciaSeleccionada) {
+      const obtenerMunicipios = async () => {
+        try {
+          const municipios = await MunicipioService.obtenerTodos({provincia_id:provinciaSeleccionada});
+          setMunicipios(municipios);
+        } catch (error) {
+          console.error("Error obteniendo municipios:", error);
+        }
+      };
+      obtenerMunicipios();
+    }
+  }, [provinciaSeleccionada]);
+
+  // Obtener las categorías
   useEffect(() => {
     const obtenerCategorias = async () => {
       try {
@@ -66,7 +86,7 @@ const PantallaNegocios = () => {
           id: servicio.id,
           category: servicio?.category,
           icono: "🔧",
-          tags: servicio.tags
+          tags: servicio.tags,
         }));
         setCategorias(categoriasFormateadas);
       } catch (error) {
@@ -75,6 +95,7 @@ const PantallaNegocios = () => {
     };
     obtenerCategorias();
   }, []);
+
   return (
     <View style={styles.container}>
       {/* 🔥 Menú Lateral con Animación */}
@@ -117,7 +138,7 @@ const PantallaNegocios = () => {
         </TouchableOpacity>
         <Text style={styles.bienvenida}>Hola, Usuario!</Text>
         <Text style={styles.ubicacion}>
-          📍 {provinciaSeleccionada || "Selecciona ubicación"}
+          📍 {nombreprovinciaSeleccionada || "Selecciona ubicación"}
         </Text>
       </View>
 
@@ -139,8 +160,8 @@ const PantallaNegocios = () => {
       >
         <Text style={styles.textoBoton}>
           {provinciaSeleccionada
-            ? `${provinciaSeleccionada} - ${
-                municipioSeleccionado || "Selecciona municipio"
+            ? `${nombreprovinciaSeleccionada} - ${
+                nombremunicipioSeleccionado || "Selecciona municipio"
               }`
             : "Seleccionar Ubicación"}
         </Text>
@@ -148,58 +169,60 @@ const PantallaNegocios = () => {
 
       {/* 📌 Modal de selección de ubicación */}
       <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContenido}>
-            <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
-            <FlatList
-              data={provinciasCubanas}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.opcion,
-                    provinciaSeleccionada === item && styles.opcionActiva,
-                  ]}
-                  onPress={() => setProvinciaSeleccionada(item)}
-                >
-                  <Text style={styles.textoOpcion}>{item}</Text>
-                </TouchableOpacity>
-              )}
-            />
-            {provinciaSeleccionada && (
-              <>
-                <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
-                <FlatList
-                  data={municipios[provinciaSeleccionada] || []}
-                  keyExtractor={(item) => item}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.opcion,
-                        municipioSeleccionado === item && styles.opcionActiva,
-                      ]}
-                      onPress={() => {
-                        setMunicipioSeleccionado(item);
-                        setModalVisible(false);
-                      }}
-                    >
-                      <Text style={styles.textoOpcion}>{item}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </>
-            )}
-            <TouchableOpacity
-              style={styles.botonCerrar}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.textoBoton}>Cerrar</Text>
-            </TouchableOpacity>
-          </View>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContenido}>
+          <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
+          <ScrollView style={styles.scrollView}>
+            {provincias.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={[
+                  styles.opcion,
+                  provinciaSeleccionada === item.id && styles.opcionActiva,
+                ]}
+                onPress={() => {setProvinciaSeleccionada(item.id)
+                  setNombreProvinciaSeleccionada(item.nombre)
+                }}
+              >
+                <Text style={styles.textoOpcion}>{item.nombre}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+    
+          {provinciaSeleccionada && (
+            <>
+              <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
+              <FlatList
+                data={municipios}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={[
+                      styles.opcion,
+                      municipioSeleccionado === item.id && styles.opcionActiva,
+                    ]}
+                    onPress={() => {
+                      setMunicipioSeleccionado(item.id);
+                      setNombreMunicipioSeleccionado(item.name);
+                      setModalVisible(false);
+                    }}
+                  >
+                    <Text style={styles.textoOpcion}>{item.name}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </>
+          )}
+    
+          <TouchableOpacity
+            style={styles.botonCerrar}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.textoBoton}>Cerrar</Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
-
-      {/* 🔥 Categorías con iconos */}
+      </View>
+    </Modal>      {/* 🔥 Categorías con iconos */}
       <FlatList
         data={categoriasFiltradas}
         keyExtractor={(item) => item.id}

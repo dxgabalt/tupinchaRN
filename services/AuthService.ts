@@ -89,13 +89,12 @@ export class AuthService {
       email: correo,
       password: contrasena,
     });
+    console.log('Autenticación exitosa:', data);
 
     if (error) {
       console.error(`Error de autenticación: ${error.message}`, error);
       return {success: false, error};
     }
-
-    console.log('Autenticación exitosa:', data);
     return {success: true, data};
   }
   static async obtenerUsuarioActual() {

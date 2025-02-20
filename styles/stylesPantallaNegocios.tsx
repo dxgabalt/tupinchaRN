@@ -113,7 +113,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-
+  scrollView: {
+    maxHeight: 170, // Esto limita el tamaño máximo del ScrollView
+    overflow: 'hidden',
+  },
   /** 🔥 Botón de Filtro */
   botonFiltro: {
     marginTop: 10,
