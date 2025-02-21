@@ -10,6 +10,7 @@ import {
   ScrollView,
   Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker'; // 📌 Importar librería para seleccionar imágenes
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/stylesRegistro';
 
@@ -24,6 +25,26 @@ const RegistroScreen = () => {
   const [descripcion, setDescripcion] = useState('');
   const [imagenPerfil, setImagenPerfil] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // 📌 Permitir al usuario subir una imagen desde su galería
+  const seleccionarImagen = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería para subir la imagen.');
+      return;
+    }
+
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!resultado.cancelled) {
+      setImagenPerfil(resultado.uri);
+    }
+  };
 
   // 📌 Validar campos antes de registrar
   const validarCampos = () => {
@@ -59,7 +80,7 @@ const RegistroScreen = () => {
       // Simulación de registro exitoso
       setTimeout(() => {
         setLoading(false);
-        Alert.alert('Registro exitoso', 'Tu cuenta ha sido creada.');
+        Alert.alert('Registro exitoso', 'Tu cuenta ha sido creada y será validada en 24 horas.');
         navigation.navigate('Login'); // Redirigir a la pantalla de Login
       }, 2000);
     } catch (error) {
@@ -72,14 +93,21 @@ const RegistroScreen = () => {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.titulo}>📝 Registro de Cuenta</Text>
 
-      {/* 📸 Foto de perfil (No funcional en esta versión) */}
-      <TouchableOpacity style={styles.fotoPerfilContainer}>
-        {imagenPerfil ? (
-          <Image source={{ uri: imagenPerfil }} style={styles.fotoPerfil} />
-        ) : (
-          <Text style={styles.textoFotoPerfil}>📷 Subir Imagen (No disponible)</Text>
-        )}
-      </TouchableOpacity>
+      {/* 📸 Foto de perfil */}
+      {esProveedor && (
+        <>
+          <TouchableOpacity style={styles.fotoPerfilContainer} onPress={seleccionarImagen}>
+            {imagenPerfil ? (
+              <Image source={{ uri: imagenPerfil }} style={styles.fotoPerfil} />
+            ) : (
+              <Text style={styles.textoFotoPerfil}>📷 Subir Imagen</Text>
+            )}
+          </TouchableOpacity>
+          <Text style={styles.mensajeValidacion}>
+            ✅ Tu cuenta será validada en las próximas 24 horas.
+          </Text>
+        </>
+      )}
 
       {/* 📌 Campos de entrada */}
       <TextInput placeholder="Nombre Completo" style={styles.input} value={nombre} onChangeText={setNombre} />

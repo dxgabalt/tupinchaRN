@@ -85,7 +85,7 @@ const PantallaNegocios = () => {
         const categoriasFormateadas = servicios.map((servicio) => ({
           id: servicio.id,
           category: servicio?.category,
-          icono: "🔧",
+          icono: servicio.icono,
           tags: servicio.tags,
         }));
         setCategorias(categoriasFormateadas);
@@ -243,10 +243,6 @@ const PantallaNegocios = () => {
         )}
       />
 
-      {/* 📌 Botón "Ver más" */}
-      <TouchableOpacity style={styles.botonVerMas}>
-        <Text style={styles.textoBotonVerMas}>Ver más</Text>
-      </TouchableOpacity>
 
       {/* 📌 Banner Promocional */}
       <TouchableOpacity style={styles.banner}>

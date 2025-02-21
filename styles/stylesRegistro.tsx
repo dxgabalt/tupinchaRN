@@ -3,18 +3,43 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
+    padding: 20,
     backgroundColor: '#F9FAFB',
     alignItems: 'center',
-    paddingVertical: 30,
   },
+
   titulo: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#1E3A8A',
     textAlign: 'center',
+    marginBottom: 20,
+  },
+
+  /** 📸 Foto de perfil */
+  fotoPerfilContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#E5E7EB',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 10,
   },
+  fotoPerfil: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 60,
+  },
+  textoFotoPerfil: {
+    textAlign: 'center',
+    color: '#555',
+    fontSize: 14,
+  },
+
+  /** 📌 Campos de entrada */
   input: {
+    width: '100%',
     backgroundColor: '#FFFFFF',
     borderRadius: 10,
     paddingVertical: 12,
@@ -22,52 +47,51 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    width: '90%',
-    marginBottom: 15,
+    marginBottom: 10,
   },
-  contenedorImagen: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: '#E5E7EB',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 15,
-  },
-  imagenPerfil: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 60,
-  },
-  textoImagen: {
-    color: '#6B7280',
-    fontWeight: 'bold',
-  },
+
+  /** 📌 Switch para proveedores */
   switchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '90%',
+    justifyContent: 'space-between',
+    width: '100%',
     marginBottom: 10,
   },
+  labelSwitch: {
+    fontSize: 16,
+    color: '#374151',
+  },
+
+  /** 📌 Botón de registro */
   botonRegistrar: {
     backgroundColor: '#FF0314',
     paddingVertical: 14,
+    width: '100%',
     borderRadius: 12,
     alignItems: 'center',
-    width: '90%',
-    marginTop: 10,
+    marginTop: 15,
   },
   textoBoton: {
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  /** 🔗 Link para iniciar sesión */
   link: {
-    fontSize: 16,
     color: '#1E3A8A',
-    fontWeight: 'bold',
+    fontSize: 16,
     marginTop: 15,
     textDecorationLine: 'underline',
+  },
+
+  /** ✅ Mensaje de validación */
+  mensajeValidacion: {
+    fontSize: 14,
+    color: '#FF0314',
+    textAlign: 'center',
+    marginBottom: 10,
   },
 });
 

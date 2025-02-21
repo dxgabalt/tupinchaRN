@@ -20,13 +20,14 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 20,
   },
   bienvenida: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '700',
     color: '#FFFFFF',
   },
   ubicacion: {
     fontSize: 16,
     color: '#FFD700',
+    fontWeight: 'bold',
   },
 
   /** 🔥 Botón Menú Hamburguesa */
@@ -34,7 +35,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF0314',
     padding: 12,
     borderRadius: 10,
-    elevation: 4,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
   },
   menuIcon: {
     fontSize: 22,
@@ -47,11 +52,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',  // Oscurece el fondo
-    zIndex: 999,  // Asegura que esté sobre todo
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 999,  
   },
 
-  /** 🔥 Menú Lateral (AHORA FUNCIONAL) */
+  /** 🔥 Menú Lateral */
   menuContainer: {
     position: 'absolute',
     left: 0,
@@ -62,7 +67,7 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     borderBottomRightRadius: 20,
     paddingVertical: 30,
-    zIndex: 1000,  // 🔥 AHORA SE MUESTRA ENCIMA
+    zIndex: 1000,  
     elevation: 10,
     shadowColor: '#000',
     shadowOffset: { width: 3, height: 3 },
@@ -93,7 +98,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  /** 🔥 Barra de Búsqueda */
+  /** 🔍 Barra de Búsqueda */
   barraBusqueda: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -101,7 +106,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    elevation: 3,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   iconoBusqueda: {
     fontSize: 18,
@@ -113,10 +122,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  scrollView: {
-    maxHeight: 170, // Esto limita el tamaño máximo del ScrollView
-    overflow: 'hidden',
-  },
+
   /** 🔥 Botón de Filtro */
   botonFiltro: {
     marginTop: 10,
@@ -124,7 +130,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#FF0314',
     alignItems: 'center',
-    elevation: 3,
+    elevation: 4,
   },
   textoBoton: {
     color: '#FFFFFF',
@@ -194,6 +200,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   emoji: {
     fontSize: 24,
@@ -214,7 +224,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     alignSelf: 'center',
     width: '50%',
-    elevation: 3,
+    elevation: 4,
   },
   textoBotonVerMas: {
     color: '#FFFFFF',
@@ -228,6 +238,8 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     overflow: 'hidden',
     elevation: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   imagenBanner: {
     width: '100%',
@@ -236,12 +248,15 @@ const styles = StyleSheet.create({
   },
   textoBanner: {
     position: 'absolute',
-    bottom: 20,
-    top: 120,
+    bottom: 10,
     left: 10,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#FF0314',
+    color: '#FFFFFF',
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
   },
 });
 
