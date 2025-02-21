@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,39 +9,13 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/stylesSoporteFAQ';
-
-// 📌 Datos simulados de preguntas frecuentes
-const faqsSimuladas = [
-  {
-    id: '1',
-    pregunta: '¿Cómo puedo registrar un negocio?',
-    respuesta: 'Para registrar un negocio, ve a la sección de perfil y selecciona "Registrar mi negocio".',
-  },
-  {
-    id: '2',
-    pregunta: '¿Cuáles son los métodos de pago aceptados?',
-    respuesta: 'Aceptamos pagos con Transfermovil, EnZona, PayPal, Zelle, Cash App y efectivo.',
-  },
-  {
-    id: '3',
-    pregunta: '¿Cómo puedo contactar a un proveedor?',
-    respuesta: 'En la pantalla de detalles del proveedor, hay un botón para contactarlo directamente.',
-  },
-  {
-    id: '4',
-    pregunta: '¿Cómo modificar mi perfil?',
-    respuesta: 'Desde la sección de "Mi Perfil", puedes actualizar tus datos personales y de negocio.',
-  },
-  {
-    id: '5',
-    pregunta: '¿Cómo cancelo una solicitud de servicio?',
-    respuesta: 'En la pantalla de "Historial de Pedidos", selecciona la solicitud y presiona "Cancelar".',
-  },
-];
+import { Faq } from '../models/Faq';
+import Faqervice from '../services/FaqService';
 
 const PantallaSoporteFAQ = () => {
   const navigation = useNavigation();
   const [faqActiva, setFaqActiva] = useState<string | null>(null);
+  const [faqs, setFaqs] = useState<Faq[]>([]);
   const [animacionAltura] = useState(new Animated.Value(0));
 
   // 📌 Alternar visibilidad de respuestas con animación
@@ -69,6 +43,17 @@ const PantallaSoporteFAQ = () => {
     const mensaje = encodeURIComponent('Hola, necesito ayuda con la aplicación.');
     Linking.openURL(`https://wa.me/${numero}?text=${mensaje}`);
   };
+   useEffect(() => {
+      const obtenerFaqs = async () => {
+        try {
+          const faqs = await Faqervice.obtenerFaqs();
+          setFaqs(faqs);
+        } catch (error) {
+          console.error("Error obteniendo servicios:", error);
+        }
+      };
+      obtenerFaqs();
+    }, []);
 
   return (
     <View style={styles.container}>
@@ -76,16 +61,16 @@ const PantallaSoporteFAQ = () => {
 
       {/* 📝 Lista de Preguntas Frecuentes */}
       <FlatList
-        data={faqsSimuladas}
+        data={faqs}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.card}>
             <TouchableOpacity style={styles.preguntaContainer} onPress={() => toggleFaq(item.id)}>
-              <Text style={styles.pregunta}>➜ {item.pregunta}</Text>
+              <Text style={styles.pregunta}>➜ {item.question}</Text>
             </TouchableOpacity>
             {faqActiva === item.id && (
               <Animated.View style={[styles.respuestaContainer, { maxHeight: animacionAltura }]}>
-                <Text style={styles.respuesta}>💬 {item.respuesta}</Text>
+                <Text style={styles.respuesta}>💬 {item.answer}</Text>
               </Animated.View>
             )}
           </View>

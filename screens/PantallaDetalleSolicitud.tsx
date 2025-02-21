@@ -28,6 +28,7 @@ const solicitudSimulada = {
 const PantallaDetalleSolicitud = () => {
   const navigation = useNavigation();
   const route = useRoute();
+  const { solicitudId } = route.params || {};
 
   // 📌 Estado local para simular datos
   const [solicitud] = useState(solicitudSimulada);

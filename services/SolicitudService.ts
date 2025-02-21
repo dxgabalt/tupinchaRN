@@ -3,6 +3,8 @@ import SupabaseService from './SupabaseService';
 import {Solicitud} from '../models/Solicitud';
 import {HistorialItem} from '../models/HistorialItem';
 import {createClient, SupabaseClient} from '@supabase/supabase-js';
+import { supabase_client } from './supabaseClient';
+import { ProviderService } from '../models/ProviderService';
 
 export class SolicitudService {
   private static readonly TABLE_NAME = 'requests';
@@ -19,6 +21,30 @@ export class SolicitudService {
   static async obtenerTodosLosSolicituds(): Promise<Solicitud[]> {
     return await SupabaseService.obtenerDatos<Solicitud>(this.TABLE_NAME);
   }
+  static async obtenerHistorialSolicitud(userId: string): Promise<HistorialItem[]> {
+    const { data, error } = await supabase_client
+      .from(SolicitudService.TABLE_NAME)
+      .select(
+        `id, provider_id, providers(id, phone, profile_id, profiles(name, rating, profile_pic_url, phone), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id`
+      )
+      .eq("user_id", userId);
+  
+    if (error) {
+      throw new Error(`Error al obtener el historial: ${error.message}`);
+    }
+    return (
+      data?.map((item) => {
+        const proveedor = item.providers?.profiles?.name || "Desconocido";
+        const servicio = item.services?.category || "";
+        const fecha = item.service_date;
+        const estado = item.status;
+        const fotoProveedor = item.providers?.[0]?.profiles?.[0]?.profile_pic_url || "";
+  
+        return { id: item.id, proveedor, servicio, fecha, estado, fotoProveedor };
+      }) || []
+    );
+  }
+  
 
   static async obtenerSolicitudPorId(id: number): Promise<Solicitud | null> {
     const solicituds = await SupabaseService.obtenerDatos<Solicitud>(
@@ -79,34 +105,6 @@ export class SolicitudService {
 
   static async eliminarSolicitud(id: number): Promise<boolean> {
     return await SupabaseService.eliminarRegistro(this.TABLE_NAME, 'id', id);
-  }
-
-  static async obtenerHistorialUsuario(
-    userId: string,
-  ): Promise<HistorialItem[]> {
-    const {data, error} = await SolicitudService.supabase
-      .from(SolicitudService.TABLE_NAME)
-      .select(
-        `id, service_date, status, 
-        services (category), 
-        providers (name, profile_pic_url)`,
-      )
-      .eq('user_id', userId);
-
-    if (error) {
-      throw new Error(`Error al obtener el historial: ${error.message}`);
-    }
-
-    return (
-      data?.map(item => ({
-        id: item.id,
-        proveedor: item.providers?.name || 'Desconocido',
-        servicio: item.services?.category || '',
-        fecha: item.service_date,
-        estado: item.status,
-        fotoProveedor: item.providers?.profile_pic_url || '',
-      })) || []
-    );
   }
 }
 

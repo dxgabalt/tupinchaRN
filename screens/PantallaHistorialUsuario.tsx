@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,38 +9,14 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/stylesHistorialUsuario';
-
-// 📌 Datos simulados para mostrar historial de pedidos
-const pedidosSimulados = [
-  {
-    id: '1',
-    servicio: 'Fontanería',
-    proveedor: 'Carlos López',
-    estado: 'Completado',
-    fecha: '2024-02-10',
-    imagen: 'https://cdn-icons-png.flaticon.com/512/3063/3063826.png',
-  },
-  {
-    id: '2',
-    servicio: 'Electricidad',
-    proveedor: 'María Gómez',
-    estado: 'Pendiente',
-    fecha: '2024-02-12',
-    imagen: 'https://cdn-icons-png.flaticon.com/512/3075/3075977.png',
-  },
-  {
-    id: '3',
-    servicio: 'Reparación de Electrodomésticos',
-    proveedor: 'Juan Pérez',
-    estado: 'Completado',
-    fecha: '2024-02-08',
-    imagen: 'https://cdn-icons-png.flaticon.com/512/1053/1053244.png',
-  },
-];
+import SolicitudService from '../services/SolicitudService'; // Importa el Servicio
+import {HistorialItem} from '../models/HistorialItem';
+import { AuthService } from '../services/AuthService';
 
 const PantallaHistorialUsuario = () => {
   const navigation = useNavigation();
   const [filtro, setFiltro] = useState('Todos');
+  const [historial, setHistorial] = useState<HistorialItem[]>([]); // Estado para almacenar el historial
 
   // 📌 Animación para la selección de filtro
   const animacionFiltro = new Animated.Value(1);
@@ -55,8 +31,29 @@ const PantallaHistorialUsuario = () => {
   // 📌 Filtrar por estado
   const pedidosFiltrados =
     filtro === 'Todos'
-      ? pedidosSimulados
-      : pedidosSimulados.filter(pedido => pedido.estado === filtro);
+      ? historial
+      : historial.filter(pedido => pedido.estado === filtro);
+
+  // 📌 Obtener historial desde el servicio
+  const obtenerHistorial = async () => {
+    try {
+      const profile = await AuthService.obtenerPerfil();
+      const user_id = profile?.user_id;
+      if (!user_id) {
+        console.error('No se pudo obtener el ID del usuario');
+        return;
+      }  
+     const historialData = await SolicitudService.obtenerHistorialSolicitud(user_id); // Sustituir 'user-id' por el ID real del usuario
+    
+      setHistorial(historialData);
+    } catch (error:any) {
+      console.error("Error al obtener el historial:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    obtenerHistorial(); // Obtener historial cuando el componente se monta
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -92,7 +89,7 @@ const PantallaHistorialUsuario = () => {
               })
             }
           >
-            <Image source={{ uri: item.imagen }} style={styles.imagenServicio} />
+            <Image source={{ uri: item.fotoProveedor }} style={styles.imagenServicio} />
             <View style={styles.textosCard}>
               <Text style={styles.servicio}>{item.servicio}</Text>
               <Text style={styles.proveedor}>👤 {item.proveedor}</Text>

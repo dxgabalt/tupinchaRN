@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -11,30 +11,36 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/stylesMiPerfil';
+import { AuthService } from '../services/AuthService';
 
 // 📌 Datos simulados de usuario
-const usuarioSimulado = {
-  nombre: 'Juan Pérez',
-  correo: 'juanperez@email.com',
-  telefono: '+505 8888 7777',
-  fotoPerfil: 'https://via.placeholder.com/150',
-};
+
+const usuarioDefault = { id: '', name: '', email: '',phone:'',profile_pic_url:'',user_id:'' }; // Valores por defecto
 
 const MiPerfilScreen = () => {
   const navigation = useNavigation();
-  const [usuario, setUsuario] = useState(usuarioSimulado);
+  const [usuario, setUsuario] = useState(usuarioDefault);
   const [editando, setEditando] = useState(false);
-  const [nuevoNombre, setNuevoNombre] = useState(usuario.nombre);
-  const [nuevoTelefono, setNuevoTelefono] = useState(usuario.telefono);
+  const [nuevoNombre, setNuevoNombre] = useState("");
+  const [nuevoTelefono, setNuevoTelefono] = useState("");
   const animacionBoton = new Animated.Value(1);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const profile = await AuthService.obtenerPerfil();
+      setNuevoNombre(profile.name);
+      setNuevoTelefono(profile.phone);
+      setUsuario(profile); // Si no hay datos, usa el objeto por defecto
+    };
+    fetchProfile();
+  }, []);
 
   // 📌 Guardar cambios en el perfil
-  const guardarCambios = () => {
+  const guardarCambios =  async() => {
     if (!nuevoNombre.trim() || !nuevoTelefono.trim()) {
       Alert.alert('Error', 'El nombre y teléfono no pueden estar vacíos.');
       return;
     }
-
+    await AuthService.actualizarPerfil(usuario.user_id, nuevoNombre, nuevoTelefono);
     setUsuario((prev) => ({
       ...prev,
       nombre: nuevoNombre,
@@ -59,13 +65,21 @@ const MiPerfilScreen = () => {
       }),
     ]).start();
   };
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const profile = await AuthService.obtenerPerfil();
 
+      setUsuario(profile || usuarioDefault); // Si no hay datos, usa el objeto por defecto
+    };
+  
+    fetchProfile();
+  }, []);
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.titulo}>👤 Mi Perfil</Text>
 
       {/* 📸 Foto de perfil */}
-      <Image source={{ uri: usuario.fotoPerfil }} style={styles.fotoPerfil} />
+      <Image source={{ uri: usuario.profile_pic_url }} style={styles.fotoPerfil} />
       <TouchableOpacity
         style={styles.botonFoto}
         onPress={() => Alert.alert('Cargar nueva foto')}>
@@ -82,13 +96,13 @@ const MiPerfilScreen = () => {
             onChangeText={setNuevoNombre}
           />
         ) : (
-          <Text style={styles.texto}>{usuario.nombre}</Text>
+          <Text style={styles.texto}>{usuario.name}</Text>
         )}
       </View>
 
       <View style={styles.campoContainer}>
         <Text style={styles.label}>Correo:</Text>
-        <Text style={styles.texto}>{usuario.correo}</Text>
+        <Text style={styles.texto}>{usuario.email}</Text>
       </View>
 
       <View style={styles.campoContainer}>
@@ -101,7 +115,7 @@ const MiPerfilScreen = () => {
             onChangeText={setNuevoTelefono}
           />
         ) : (
-          <Text style={styles.texto}>{usuario.telefono}</Text>
+          <Text style={styles.texto}>{usuario.phone}</Text>
         )}
       </View>
 

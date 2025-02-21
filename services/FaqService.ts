@@ -19,7 +19,7 @@ export class Faqervice {
   static async obtenerFaqs(): Promise<any[]> {
     const {data, error} = await Faqervice.supabase
       .from('faqs')
-      .select('question, answer');
+      .select('id,question, answer');
 
     if (error) {
       throw new Error(`Error al obtener FAQs: ${error.message}`);
