@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "tuPinchaRN",
+    "name": "Tu Pincha",
     "slug": "tuPinchaRN",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -20,7 +20,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.concremovil"
+      "package": "com.tupincha.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"

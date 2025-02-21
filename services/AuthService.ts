@@ -80,6 +80,17 @@ export class AuthService {
       throw new Error(error.message);
     }
   }
+  static async recuperarContrasena  (email: string)  {
+    const { error } = await AuthService.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://admin.tupincha.com/reset-password',
+    });
+  
+    if (error) {
+      console.error('Error al enviar el correo de recuperación:', error.message);
+    } else {
+      console.log('Correo de recuperación enviado con éxito.');
+    }
+  }
   static async guardarPerfil(
     userId: string,
     nombre: string,

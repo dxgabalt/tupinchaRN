@@ -14,6 +14,7 @@ import styles from '../styles/stylesOlvidarContrasena';
 
 // 📌 Servicio de Supabase para recuperación de contraseña
 import SupabaseService from '../services/SupabaseService';
+import { AuthService } from '../services/AuthService';
 
 const OlvidarContrasenaScreen = () => {
   const navigation = useNavigation();
@@ -40,7 +41,7 @@ const OlvidarContrasenaScreen = () => {
 
     setLoading(true);
     try {
-      await SupabaseService.recuperarContrasena(correo.trim());
+      await AuthService.recuperarContrasena(correo.trim());
       Alert.alert('Éxito', 'Se ha enviado un enlace de recuperación a tu correo.');
       navigation.navigate('Login');
     } catch (error) {
