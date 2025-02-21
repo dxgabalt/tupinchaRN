@@ -18,6 +18,7 @@ import { MunicipioService } from "../services/MunicipoService";
 import { Municipio } from "../models/Municipio";
 import { ProvinciaService } from "../services/ProvinciaService";
 import { Provincia } from "../models/Provincia";
+import { AuthService } from "../services/AuthService";
 
 const PantallaNegocios = () => {
   const navigation = useNavigation();
@@ -31,8 +32,8 @@ const PantallaNegocios = () => {
   const [categorias, setCategorias] = useState<Service[]>([]);
   const [provincias, setProvincias] = useState<Provincia[]>([]); // Estado para las provincias
   const [municipios, setMunicipios] = useState<Municipio[]>([]); // Estado para los municipios
-
-  // Animación del Menú Hamburguesa
+  const usuarioDefault = { id: '', name: '', email: '', phone: '', profile_pic_url: '', user_id: '' };
+  const [usuario, setUsuario] = useState(usuarioDefault); // Estado para los municipios  // Animación del Menú Hamburguesa
   const menuAnim = useRef(new Animated.Value(-300)).current;
 
   const toggleMenu = () => {
@@ -61,11 +62,21 @@ const PantallaNegocios = () => {
     };
     obtenerProvincias();
   }, []);
-
+  useEffect(() => {
+    const obtenerProvincias = async () => {
+      try {
+        const provincias = await ProvinciaService.obtenerTodos();
+        setProvincias(provincias);
+      } catch (error) {
+        console.error("Error obteniendo provincias:", error);
+      }
+    };
+    obtenerProvincias();
+  }, []);
   // Obtener municipios cuando una provincia es seleccionada
   useEffect(() => {
     if (provinciaSeleccionada) {
-      const obtenerMunicipios = async () => {
+      const obtener_usuario = async () => {
         try {
           const municipios = await MunicipioService.obtenerTodos({provincia_id:provinciaSeleccionada});
           setMunicipios(municipios);
@@ -73,10 +84,22 @@ const PantallaNegocios = () => {
           console.error("Error obteniendo municipios:", error);
         }
       };
-      obtenerMunicipios();
+      obtener_usuario();
     }
   }, [provinciaSeleccionada]);
-
+  useEffect(() => {
+   
+    const obtener_usuario = async () => {
+      try {
+        const profile = await AuthService.obtenerPerfil();
+        setUsuario(profile || usuarioDefault);
+      } catch (error) {
+        console.error("Error obteniendo usuario:", error);
+      }
+    };
+    obtener_usuario();
+ 
+}, []);
   // Obtener las categorías
   useEffect(() => {
     const obtenerCategorias = async () => {
@@ -136,7 +159,7 @@ const PantallaNegocios = () => {
         <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
           <Text style={styles.menuIcon}>☰</Text>
         </TouchableOpacity>
-        <Text style={styles.bienvenida}>Hola, Usuario!</Text>
+        <Text style={styles.bienvenida}>Hola, {usuario.name}</Text>
         <Text style={styles.ubicacion}>
           📍 {nombreprovinciaSeleccionada || "Selecciona ubicación"}
         </Text>
