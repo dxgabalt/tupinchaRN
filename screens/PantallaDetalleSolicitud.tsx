@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,10 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import styles from '../styles/stylesDetalleSolicitud';
+import { ProviderServiceService } from '../services/ProviderServiceService';
+import { ProviderService } from '../models/ProviderService';
+import { Solicitud } from '../models/Solicitud';
+import SolicitudService from '../services/SolicitudService';
 
 // 📌 Datos simulados de una solicitud
 const solicitudSimulada = {
@@ -31,7 +35,7 @@ const PantallaDetalleSolicitud = () => {
   const { solicitudId } = route.params || {};
 
   // 📌 Estado local para simular datos
-  const [solicitud] = useState(solicitudSimulada);
+  const [solicitud, setSolicitud] =  useState<Solicitud | null>(null);
 
   // 📌 Animación para el botón de contacto
   const animacion = new Animated.Value(1);
@@ -48,10 +52,22 @@ const PantallaDetalleSolicitud = () => {
     animarBoton();
     Alert.alert(
       'Contacto',
-      `Llamando a ${solicitud.proveedor.nombre} al ${solicitud.proveedor.telefono}...`
+      `Llamando a ${solicitud?.profiles.name} al ${solicitud?.profiles.phone}...`
     );
   };
-
+ useEffect(() => {
+    const obtenerNegocios = async () => {
+      try {
+        const provider_service = await SolicitudService.obtenerSolicitudPorId(solicitudId);
+        console.log("Solicitud:", provider_service);
+        
+        setSolicitud(provider_service);
+      } catch (error) {
+        console.error("Error obteniendo servicios:", error);
+      }
+    };
+    obtenerNegocios();
+  }, []);
   return (
     <View style={styles.container}>
       <Text style={styles.titulo}>📄 Detalles de Solicitud</Text>
@@ -60,26 +76,26 @@ const PantallaDetalleSolicitud = () => {
       <Text
         style={[
           styles.estado,
-          solicitud.estado === 'Pendiente' ? styles.pendiente : styles.completado,
+          solicitud?.status === 'Pendiente' ? styles.pendiente : styles.completado,
         ]}
       >
-        {solicitud.estado}
+        {solicitud?.status}
       </Text>
 
       {/* 📌 Imagen del servicio */}
-      <Image source={{ uri: solicitud.imagenServicio }} style={styles.imagenServicio} />
+      <Image source={{ uri: '' }} style={styles.imagenServicio} />
 
       {/* 🛠️ Información del servicio */}
-      <Text style={styles.servicio}>{solicitud.servicio}</Text>
-      <Text style={styles.descripcion}>📝 {solicitud.descripcion}</Text>
-      <Text style={styles.fecha}>📅 {solicitud.fecha}</Text>
+      <Text style={styles.servicio}>{solicitud?.services.category}</Text>
+      <Text style={styles.descripcion}>📝 {solicitud?.request_description}</Text>
+      <Text style={styles.fecha}>📅 {solicitud?.service_date}</Text>
 
       {/* 👤 Información del proveedor */}
       <View style={styles.cardProveedor}>
-        <Image source={{ uri: solicitud.proveedor.imagen }} style={styles.imagenProveedor} />
+        <Image source={{ uri: solicitud?.providers?.profiles?.profile_pic_url }} style={styles.imagenProveedor} />
         <View>
-          <Text style={styles.nombreProveedor}>{solicitud.proveedor.nombre}</Text>
-          <Text style={styles.telefonoProveedor}>📞 {solicitud.proveedor.telefono}</Text>
+          <Text style={styles.nombreProveedor}>{solicitud?.providers?.profiles?.name}</Text>
+          <Text style={styles.telefonoProveedor}>📞 {solicitud?.providers?.profiles?.phone}</Text>
         </View>
       </View>
 
