@@ -13,6 +13,8 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import styles from '../styles/stylesResultadosBusqueda';
 import { Negocio } from '../models/Negocio';
 import { ProviderServiceService } from '../services/ProviderServiceService';
+import { AuthService } from '../services/AuthService';
+import { ProviderService } from '../models/ProviderService';
 
 const PantallaResultadosBusqueda = () => {
   const navigation = useNavigation();
@@ -21,10 +23,12 @@ const PantallaResultadosBusqueda = () => {
 
   const [busqueda, setBusqueda] = useState('');
   const [fadeAnim] = useState(new Animated.Value(0));
-  const [negocios, setNegocios] = useState<Negocio[]>([]);
+  const [negocios, setNegocios] = useState<ProviderService[]>([]);
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
   const [loading, setLoading] = useState(true); // Estado de carga
   const [menuVisible, setMenuVisible] = useState(false);
+   const usuarioDefault = { id: '', name: '', email: '', phone: '', profile_pic_url: '', user_id: '' };
+    const [usuario, setUsuario] = useState(usuarioDefault);
 
   // 🔥 Animación de entrada
   useEffect(() => {
@@ -46,11 +50,12 @@ const PantallaResultadosBusqueda = () => {
           tags: servicio.services.tags || [],
           categoria: servicio.services?.category || '',
           descripcion: servicio.providers?.description || 'No hay descripción disponible',
-          ubicacion: servicio.providers?.profiles?.location || 'Sin ubicación',
+          ubicacion: servicio.providers?.ubicacion || 'Sin ubicación',
           imagen: servicio.providers?.profiles?.profile_pic_url || 'https://via.placeholder.com/100',
-          calificacion: servicio.providers?.calificacion || 0,
+          calificacion: servicio.providers?.profiles.rating || 0,
         }));
-        setNegocios(negocios);
+        setNegocios(providers_services);
+        
       } catch (error) {
         console.error("Error obteniendo servicios:", error);
       } finally {
@@ -59,15 +64,27 @@ const PantallaResultadosBusqueda = () => {
     };
     obtenerNegocios();
   }, []);
-
+ useEffect(() => {
+   
+    const obtener_usuario = async () => {
+      try {
+        const profile = await AuthService.obtenerPerfil();
+        setUsuario(profile || usuarioDefault);
+      } catch (error) {
+        console.error("Error obteniendo usuario:", error);
+      }
+    };
+    obtener_usuario();
+ 
+}, []);
   // 🔥 Filtrar negocios según la búsqueda o el servicio seleccionado
   const negociosFiltrados = negocios.filter(negocio => {
-    const matchNombre = negocio.nombre.toLowerCase().includes(busqueda.toLowerCase());
-    const matchCategoria = negocio.categoria.toLowerCase().includes(busqueda.toLowerCase());
-    const matchCategoriaSeleccionada = negocio.categoria.toLowerCase().includes(categoriaSeleccionada.toLowerCase());
-    return matchNombre || matchCategoria || matchCategoriaSeleccionada;
+    const matchNombre= busqueda.length === 0? negocio?.providers.profiles.name.toLowerCase().includes(servicio.toLowerCase()) && negocio.services.category.toLowerCase().includes(servicio.toLowerCase()) : negocio?.providers.profiles.name.toLowerCase().includes(busqueda.toLowerCase())&&negocio.services.category.toLowerCase().includes(servicio.toLowerCase());
+    const matchCategoria = busqueda.length === 0 ?  negocio.services.category.toLowerCase().includes(servicio.toLowerCase()):negocio.services.category.toLowerCase().includes(busqueda.toLowerCase());
+    return matchCategoria || matchNombre;
   });
-
+  console.log(negociosFiltrados);
+  
   // 🔥 Animación del Menú Hamburguesa
   const menuAnim = useRef(new Animated.Value(-300)).current;
   const toggleMenu = () => {
@@ -119,9 +136,9 @@ const PantallaResultadosBusqueda = () => {
         <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
           <Text style={styles.menuIcon}>☰</Text>
         </TouchableOpacity>
-        <Text style={styles.bienvenida}>Hola, Usuario!</Text>
+        <Text style={styles.bienvenida}>Hola, {usuario?.name}</Text>
         <Text style={styles.ubicacion}>
-          📍 {servicio || "Selecciona ubicación"}
+          📍 {servicio || "Selecciona un servicio"}
         </Text>
       </View>
 
@@ -143,24 +160,33 @@ const PantallaResultadosBusqueda = () => {
           <Text style={styles.textoVacio}>No se encontraron resultados.</Text>
         ) : (
           <FlatList
-            data={negociosFiltrados}
-            keyExtractor={item => item.id.toString()}
-            contentContainerStyle={{ flexGrow: 1 }}
-            renderItem={({ item }) => (
+          data={negociosFiltrados}
+          keyExtractor={(item) => item?.id?.toString() || Math.random().toString()} // Evita errores si id es null
+          contentContainerStyle={{ flexGrow: 1 }}
+          renderItem={({ item }) => {
+            const provider = item?.providers;
+            const profile = provider?.profiles;
+            return (
               <TouchableOpacity
                 style={styles.card}
-                onPress={() => navigation.navigate('PantallaDetallesProveedor', { idProveedor: item.id })}
+                onPress={() => navigation.navigate('PantallaDetallesProveedor', { idProveedor: item?.id })}
               >
-                <Image source={{ uri: item.imagen }} style={styles.imagen} />
+                {profile?.profile_pic_url ? (
+                  <Image source={{ uri: profile.profile_pic_url }} style={styles.imagen} />
+                ) : (
+                  <View style={[styles.imagen, { backgroundColor: '#ccc' }]} /> // Imagen de respaldo
+                )}
+                
                 <View style={styles.infoContainer}>
-                  <Text style={styles.nombre}>{item.nombre}</Text>
-                  <Text style={styles.descripcion}>{item.descripcion}</Text>
-                  <Text style={styles.ubicacion}>📍 {item.ubicacion}</Text>
-                  <Text style={styles.calificacion}>⭐ {item.calificacion} / 5</Text>
+                  <Text style={styles.nombre}>{profile?.name || "Sin nombre"}</Text>
+                  <Text style={styles.descripcion}>{provider?.description || "-"}</Text>
+                  <Text style={styles.ubicacion}>📍{provider.ubicacion}</Text>
+                  <Text style={styles.calificacion}>⭐ {profile?.rating}/5</Text>
                 </View>
               </TouchableOpacity>
-            )}
-          />
+            );
+          }}
+        />
         )}
       </Animated.View>
     </View>

@@ -14,20 +14,6 @@ import { ProviderService } from '../models/ProviderService';
 import { Solicitud } from '../models/Solicitud';
 import SolicitudService from '../services/SolicitudService';
 
-// 📌 Datos simulados de una solicitud
-const solicitudSimulada = {
-  id: '1',
-  servicio: 'Fontanería',
-  proveedor: {
-    nombre: 'Carlos López',
-    telefono: '+505 8888-7777',
-    imagen: 'https://cdn-icons-png.flaticon.com/512/706/706830.png',
-  },
-  estado: 'Pendiente',
-  fecha: '2024-02-10',
-  descripcion: 'Reparación de tuberías en la cocina.',
-  imagenServicio: 'https://cdn-icons-png.flaticon.com/512/2784/2784453.png',
-};
 
 const PantallaDetalleSolicitud = () => {
   const navigation = useNavigation();
@@ -52,15 +38,13 @@ const PantallaDetalleSolicitud = () => {
     animarBoton();
     Alert.alert(
       'Contacto',
-      `Llamando a ${solicitud?.profiles.name} al ${solicitud?.profiles.phone}...`
+      `Llamando a ${solicitud?.providers.profiles.name} al ${solicitud?.providers.profiles.phone}...`
     );
   };
  useEffect(() => {
     const obtenerNegocios = async () => {
       try {
         const provider_service = await SolicitudService.obtenerSolicitudPorId(solicitudId);
-        console.log("Solicitud:", provider_service);
-        
         setSolicitud(provider_service);
       } catch (error) {
         console.error("Error obteniendo servicios:", error);

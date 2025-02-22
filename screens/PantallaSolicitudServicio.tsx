@@ -35,7 +35,7 @@ const PantallaSolicitudServicio = () => {
   // 📌 Estados de la solicitud
   const [descripcion, setDescripcion] = useState('');
   const [fecha, setFecha] = useState(new Date());
-  const [precioOfrecido, setPrecioOfrecido] = useState('');
+  const [precioOfrecido, setPrecioOfrecido] = useState(0);
   const [imagenes, setImagenes] = useState<string[]>([]);
   
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
@@ -75,20 +75,22 @@ const PantallaSolicitudServicio = () => {
 
   // 📌 Enviar solicitud
   const enviarSolicitud = async () => {
-    if (!descripcion.trim() || !precioOfrecido.trim()) {
+    if (!descripcion.trim() || !precioOfrecido) {
       Alert.alert('Error', 'Por favor, completa todos los campos.');
       return;
     }
 
     try {
       const user = await SupabaseService.obtenerUsuarioAuth();
+      console.log('user', user?.id);
+      const userId = user?.id || '';
       await SolicitudService.crearSolicitudDeServicio(
         idProveedor,
         service_id,
         descripcion,
         fecha.toISOString().split('T')[0],
         precioOfrecido,
-        user?.id
+        userId
       );
 
       Alert.alert('Éxito', 'Solicitud enviada exitosamente.');

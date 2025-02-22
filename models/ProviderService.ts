@@ -8,6 +8,7 @@ export interface ProviderService {
     profile_id: number;
     description: string;
     speciality: string;
+    ubicacion: string;
     profiles: {
       id?: number;
       name: string;

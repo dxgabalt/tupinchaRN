@@ -68,10 +68,10 @@ export class SolicitudService {
     serviceId: number,
     descripcion: string,
     fechaServicio: string,
+    precioOfrecido: number,
     userId: string,
     imagenesUrl?: string,
   ): Promise<boolean> {
-   
    const {error} = await SolicitudService.supabase
       .from(SolicitudService.TABLE_NAME)
       .insert({
@@ -81,6 +81,7 @@ export class SolicitudService {
         service_date: fechaServicio,
         images: imagenesUrl || '',
         user_id: userId,
+        price: precioOfrecido,
         status: 'Pendiente',
       });
 

@@ -7,13 +7,22 @@ export interface Solicitud {
     tags: JSON;
     icono?: string;
   }
-  profiles: {
+  providers:{
     id?: number;
-    name: string;
-    rating: number;
-    profile_pic_url: string;
     phone: string;
-  };
+    profile_id: number;
+    description: string;
+    speciality: string;
+    ubicacion: string;
+    profiles: {
+      id?: number;
+      name: string;
+      rating: number;
+      profile_pic_url: string;
+      phone: string;
+    };
+    availability: string;
+  }
   request_description: string;
   service_date: string;
   images?: string;

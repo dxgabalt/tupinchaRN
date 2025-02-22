@@ -57,6 +57,7 @@ const PantallaDetallesProveedor = () => {
     const obtenerNegocios = async () => {
       try {
         const provider_service = await ProviderServiceService.obtenerPorId(idProveedor);
+        console.log("Proveedor:", provider_service);
         setProveedor(provider_service);
       } catch (error) {
         console.error("Error obteniendo servicios:", error);
@@ -111,7 +112,7 @@ const PantallaDetallesProveedor = () => {
           <Image source={{ uri: proveedor?.providers.profiles.profile_pic_url }} style={styles.imagenPerfil} />
           <Text style={styles.nombre}>{proveedor?.providers.profiles.name}</Text>
           <Text style={styles.especialidad}>{proveedor?.providers.speciality}</Text>
-          <Text style={styles.ubicacion}>📍 </Text>
+          <Text style={styles.ubicacion}>📍{proveedor?.providers.ubicacion} </Text>
           <Text style={styles.calificacion}>⭐ {proveedor?.providers.profiles.rating} / 5</Text>
         </View>
 
