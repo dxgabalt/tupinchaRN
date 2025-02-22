@@ -48,15 +48,20 @@ const LoginScreen = () => {
       return;
     }
    const response = AuthService.autenticarUsuario(correo, contrasena);
+   console.log((await response).role);
    
     if (!(await response).success) {
       Alert.alert('Error', 'Credenciales incorrectas. Inténtalo de nuevo.');
       return;
     }
     setLoading((await response).success);
-    setTimeout(() => {
+    setTimeout(async () => {
       setLoading(false);
       Alert.alert('Éxito', 'Inicio de sesión exitoso');
+      if((await response).role === 3){
+        navigation.navigate('GestionSolicitudes');
+        return;
+      }
       navigation.reset({
         index: 0,
         routes: [{ name: 'PantallaNegocios' }],

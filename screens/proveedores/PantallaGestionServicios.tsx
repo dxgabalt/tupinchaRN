@@ -13,6 +13,7 @@ import * as ImagePicker from 'expo-image-picker';
 import styles from '../../styles/stylesGestionServicios';
 import SupabaseService from '../../services/SupabaseService';
 import { ServiceService } from "../../services/ServiceService";
+import { AuthService } from '../../services/AuthService';
 
 const PantallaGestionServicios = () => {
   const navigation = useNavigation();
@@ -26,7 +27,7 @@ const PantallaGestionServicios = () => {
     const cargarPerfil = async () => {
       try {
         const user = await SupabaseService.obtenerUsuarioAuth();
-        const perfilData = await ServiceService.obtenerPerfilProveedor(user?.id);
+        const perfilData = await AuthService.obtenerPerfil();
         setPerfil(perfilData);
         setPortafolio(perfilData.portafolio || []);
       } catch (error) {

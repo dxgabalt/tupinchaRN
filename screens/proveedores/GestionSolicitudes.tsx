@@ -12,17 +12,21 @@ import { useNavigation } from '@react-navigation/native';
 import styles from '../../styles/stylesGestionSolicitudes';
 import SolicitudService from '../../services/SolicitudService';
 import SupabaseService from '../../services/SupabaseService';
+import { Solicitud } from '../../models/Solicitud';
 
 const PantallaGestionSolicitudes = () => {
   const navigation = useNavigation();
-  const [solicitudes, setSolicitudes] = useState([]);
+  const [solicitudes, setSolicitudes] = useState<Solicitud []>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const obtenerSolicitudes = async () => {
       try {
         const user = await SupabaseService.obtenerUsuarioAuth();
-        const data = await SolicitudService.obtenerSolicitudesProveedor(user?.id);
+        const user_id = user?.id  || '';
+        const data = await SolicitudService.obtenerSolicitudesComoProveedor(user_id);
+        console.log(data);
+        
         setSolicitudes(data);
       } catch (error) {
         Alert.alert('Error', 'No se pudieron cargar las solicitudes.');
@@ -33,7 +37,7 @@ const PantallaGestionSolicitudes = () => {
     obtenerSolicitudes();
   }, []);
 
-  const manejarSolicitud = async (idSolicitud, estado) => {
+  const manejarSolicitud = async (idSolicitud:number, estado:string) => {
     try {
       await SolicitudService.actualizarEstadoSolicitud(idSolicitud, estado);
       Alert.alert('Éxito', `Solicitud ${estado}`);
@@ -57,9 +61,9 @@ const PantallaGestionSolicitudes = () => {
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
             <View style={styles.card}>
-              <Text style={styles.descripcion}>{item.descripcion}</Text>
-              <Text style={styles.fecha}>📅 {item.fecha}</Text>
-              <Text style={styles.precio}>💰 {item.precio_ofrecido} USD</Text>
+              <Text style={styles.descripcion}>{item?.request_description}</Text>
+              <Text style={styles.fecha}>📅 {item.service_date}</Text>
+              <Text style={styles.precio}>💰 {item.price} USD</Text>
 
               <View style={styles.botonesContainer}>
                 <TouchableOpacity

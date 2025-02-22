@@ -1,12 +1,15 @@
+import { Service } from "./Service";
+
 export interface Solicitud {
+  id?: number;
   provider_id: number;
   service_id: number;
-  services:{
+  services: {
     id?: number;
     category: string;
-    tags: JSON;
+    tags: any; // Se recomienda usar `any` en lugar de `JSON`, o definir un tipo adecuado si sabes su estructura.
     icono?: string;
-  }
+  } | Service[]
   providers:{
     id?: number;
     phone: string;
@@ -22,10 +25,12 @@ export interface Solicitud {
       phone: string;
     };
     availability: string;
-  }
+  }| Perfil[]
   request_description: string;
   service_date: string;
   images?: string;
   status: string;
   user_id: string;
+  price:number;
+  usuarioPerfil?: Perfil | null;
 }

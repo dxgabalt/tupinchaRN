@@ -125,12 +125,16 @@ export class AuthService {
       password: contrasena,
     });
     console.log("Autenticación exitosa:", data);
+    const { data: profiles } = await AuthService.supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", data.user?.id).single();
 
     if (error) {
       console.error(`Error de autenticación: ${error.message}`, error);
-      return { success: false, error };
+      return { success: false, error ,role:0};
     }
-    return { success: true, data };
+    return { success: true, data,role:profiles?.role_id };
   }
   static async obtenerUsuarioActual() {
     const { data, error } = await AuthService.supabase.auth.getUser();

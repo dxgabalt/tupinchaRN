@@ -92,6 +92,88 @@ export class SolicitudService {
     return true;
   }
 
+  static async obtenerSolicitudesComoProveedor(user_id: string): Promise<Solicitud[]> {
+    try {
+      // Obtener el profile_id desde la tabla profiles usando el user_id
+      const { data: perfil, error: errorPerfil } = await supabase_client
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user_id)
+        .single();
+
+      if (errorPerfil || !perfil) {
+        console.error("Error obteniendo perfil:", errorPerfil);
+        return [];
+      }
+
+      // Obtener el provider_id usando el profile_id
+      const { data: provider, error: errorProvider } = await supabase_client
+        .from("providers")
+        .select("id")
+        .eq("profile_id", perfil.id)
+        .single();
+
+      if (errorProvider || !provider) {
+        console.error("Error obteniendo proveedor:", errorProvider);
+        return [];
+      }
+
+      return await this.obtenerSolicitudes({ provider_id: provider.id });
+    } catch (error) {
+      console.error("Error en obtenerSolicitudesComoProveedor:", error);
+      return [];
+    }
+  }
+  static async obtenerSolicitudes(filtro: Record<string, any> = {}): Promise<Solicitud[]> {
+    try {
+      // Obtener solicitudes con proveedores y servicios
+      const { data: solicitudes, error: errorSolicitud } = await supabase_client
+        .from(this.TABLE_NAME)
+        .select(
+          `id, provider_id, providers(id, phone, profile_id, profiles(id, name, rating, profile_pic_url, phone)), 
+           service_id, services(id, category, tags), request_description, service_date, images,price, status, user_id`
+        )
+        .match(filtro);
+
+      if (errorSolicitud || !solicitudes) {
+        console.error("Error obteniendo solicitudes:", errorSolicitud);
+        return [];
+      }
+
+      // Obtener perfiles desde la tabla "profiles"
+      const { data: perfiles, error: errorPerfiles } = await supabase_client
+        .from("profiles")
+        .select("id, name, rating, profile_pic_url, phone, user_id");
+
+      if (errorPerfiles || !perfiles) {
+        console.error("Error obteniendo perfiles:", errorPerfiles);
+        return [];
+      }
+
+      // Crear un mapa de perfiles basado en user_id
+      const mapaPerfiles = new Map<number, Perfil>(
+        perfiles.map((perfil) => [perfil.user_id, perfil])
+      );
+      // Asociar cada solicitud con su perfil correspondiente
+      return solicitudes.map((solicitud) => ({
+        ...solicitud,
+        usuarioPerfil: mapaPerfiles.get(solicitud.user_id) || null,
+      }));
+    } catch (error) {
+      console.error("Error en obtenerSolicitudes:", error);
+      return [];
+    }
+  }
+  static async actualizarEstadoSolicitud(id: number, status: string): Promise<void> {
+    const { error } = await supabase_client
+      .from(this.TABLE_NAME)
+      .update({ status })
+      .eq("id", id);
+  
+    if (error) {
+      throw new Error(`Error al actualizar el estado: ${error.message}`);
+    }
+  }
   static async actualizarSolicitud(
     id: number,
     datosActualizados: Partial<Solicitud>,

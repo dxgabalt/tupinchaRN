@@ -17,6 +17,7 @@ import PantallaHistorialUsuario from './screens/PantallaHistorialUsuario';
 import PantallaSoporteFAQ from './screens/PantallaSoporteFAQ';
 import MiPerfilScreen from './screens/MiPerfilScreen';
 import PantallaDetalleSolicitud from './screens/PantallaDetalleSolicitud';
+import PantallaGestionSolicitudes from './screens/proveedores/GestionSolicitudes';
 
 const Stack = createStackNavigator();
 
@@ -54,6 +55,10 @@ const AppNavigator = () => {
       <Stack.Screen
         name="PantallaPagoExitoso"
         component={PantallaPagoExitoso}
+      />     
+       <Stack.Screen
+        name="GestionSolicitudes"
+        component={PantallaGestionSolicitudes}
       />
       <Stack.Screen
         name="PantallaHistorialUsuario"
