@@ -16,6 +16,7 @@ import styles from '../styles/stylesSolicitudServicio';
 import SolicitudService from '../services/SolicitudService';
 import SupabaseService from '../services/SupabaseService';
 import { supabase_client } from '../services/supabaseClient';
+import { ImageService } from '../services/ImageService';
 
 const PantallaSolicitudServicio = () => {
   const route = useRoute();
@@ -38,6 +39,7 @@ const PantallaSolicitudServicio = () => {
   const [fecha, setFecha] = useState(new Date());
   const [precioOfrecido, setPrecioOfrecido] = useState(0);
   const [imagenes, setImagenes] = useState<string[]>([]);
+  const [url_imagen, setUrlImagenes] = useState<string>("");
   
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
@@ -62,44 +64,15 @@ const PantallaSolicitudServicio = () => {
       if (!result.cancelled && result.assets) {
         const imageUri = result.assets[0].uri;
         setImagenes([...imagenes, imageUri]);
-        await subirImagen(imageUri);
+        const url_imagen = await ImageService.subirImagen('solicitud',imageUri) || ""
+        setUrlImagenes(url_imagen);
       }
     } catch (error) {
       Alert.alert('Error', 'No se pudo seleccionar la imagen.');
     }
   };
-// 🔹 Subir imagen a Supabase
-const subirImagen = async (uri) => {
-  try {
-    const nombreArchivo = `solicitud/${Date.now()}.jpg`;
-    
-    // Convertir la imagen a blob
-    const respuesta = await fetch(uri);
-    const blob = await respuesta.blob();
 
-    // Subir a Supabase Storage
-    const { data, error } = await supabase_client.storage.from('solicitudes').upload(nombreArchivo, blob, {
-      contentType: 'image/jpeg',
-    });
 
-    if (error) {
-      throw error;
-    }
-
-    // 🔹 Obtener URL pública
-    const urlPublica = await obtenerUrlPublica(nombreArchivo);
-    console.log('URL de la imagen:', urlPublica);
-
-    Alert.alert('Éxito', 'Imagen subida correctamente.');
-  } catch (error) {
-    Alert.alert('Error', 'No se pudo subir la imagen.');
-  }
-};
-
-// 🔹 Obtener URL pública
-const obtenerUrlPublica = async (ruta) => {
-  return supabase_client.storage.from('solicitudes').getPublicUrl(ruta).data.publicUrl;
-};
   // 📌 Función para eliminar una imagen seleccionada
   const eliminarImagen = (index) => {
     const nuevasImagenes = [...imagenes];
@@ -124,7 +97,8 @@ const obtenerUrlPublica = async (ruta) => {
         descripcion,
         fecha.toISOString().split('T')[0],
         precioOfrecido,
-        userId
+        userId,
+        url_imagen
       );
 
       Alert.alert('Éxito', 'Solicitud enviada exitosamente.');
