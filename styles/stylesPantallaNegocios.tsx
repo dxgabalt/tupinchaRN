@@ -1,191 +1,130 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   /** 🔥 Contenedor Principal */
   container: {
     flex: 1,
-    padding: 16,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: "#F9FAFB",
+    paddingHorizontal: 12,
   },
 
   /** 🔥 Encabezado */
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    backgroundColor: '#003366',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    backgroundColor: "#1E3A8A",
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
   },
-  bienvenida: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  ubicacion: {
-    fontSize: 16,
-    color: '#FFD700',
-    fontWeight: 'bold',
-  },
-
-  /** 🔥 Botón Menú Hamburguesa */
   menuButton: {
-    backgroundColor: '#FF0314',
-    padding: 12,
-    borderRadius: 10,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
+    padding: 10,
   },
   menuIcon: {
     fontSize: 22,
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    color: "#FFF",
+    fontWeight: "bold",
   },
-
-  /** 🔥 Fondo Oscuro cuando el Menú está Abierto */
-  overlay: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 999,  
-  },
-
-  /** 🔥 Menú Lateral */
-  menuContainer: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    width: 280,
-    height: '100%',
-    backgroundColor: '#FFFFFF',
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
-    paddingVertical: 30,
-    zIndex: 1000,  
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-  },
-  menuItem: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  menuText: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#374151',
-  },
-  menuCerrar: {
-    marginTop: 20,
-    backgroundColor: '#FF0314',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  menuCerrarTexto: {
-    color: '#FFFFFF',
+  bienvenida: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
+    color: "#FFF",
+    flexShrink: 1, // 🔥 Evita que el texto se corte en pantallas pequeñas
+    textAlign: "center",
+  },
+  ubicacion: {
+    fontSize: 12,
+    color: "#D1D5DB",
+    textAlign: "right",
   },
 
   /** 🔍 Barra de Búsqueda */
   barraBusqueda: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 10,
+    paddingVertical: 8,
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    marginVertical: 12,
+    elevation: 2,
   },
   iconoBusqueda: {
     fontSize: 18,
     marginRight: 8,
-    color: '#555',
   },
   inputBusqueda: {
     flex: 1,
-    fontSize: 16,
-    color: '#333',
+    fontSize: 15,
+    color: "#333",
   },
 
-  /** 🔥 Botón de Filtro */
+  /** 🌍 Botón de Filtro de Ubicación */
   botonFiltro: {
-    marginTop: 10,
-    paddingVertical: 14,
-    borderRadius: 12,
-    backgroundColor: '#FF0314',
-    alignItems: 'center',
-    elevation: 4,
+    backgroundColor: "#FF0314",
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+    marginBottom: 12,
   },
   textoBoton: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 
-  /** 🔥 Modal de Ubicación */
+  /** 🔥 Modal de Selección de Ubicación */
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modalContenido: {
-    width: '85%',
-    backgroundColor: '#FFFFFF',
-    padding: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    elevation: 5,
+    backgroundColor: "#FFFFFF",
+    width: "90%",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+    maxHeight: "80%",
   },
   modalTitulo: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 14,
-    color: '#1E3A8A',
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#1E3A8A",
+  },
+  scrollView: {
+    width: "100%",
+    maxHeight: 200, // 🔥 Máximo alto para evitar overflow en pantallas pequeñas
   },
   opcion: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginVertical: 6,
-    backgroundColor: '#E5E7EB',
-    width: '100%',
-    alignItems: 'center',
-    borderRadius: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+    width: "100%",
+    alignItems: "center",
   },
   opcionActiva: {
-    backgroundColor: '#FF0314',
+    backgroundColor: "#1E3A8A",
   },
   textoOpcion: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#374151',
+    fontWeight: "bold",
+    color: "#374151",
   },
   botonCerrar: {
-    marginTop: 12,
-    paddingVertical: 14,
-    backgroundColor: '#FF0314',
-    borderRadius: 12,
-    width: '100%',
-    alignItems: 'center',
+    marginTop: 10,
+    backgroundColor: "#FF0314",
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+    width: "80%",
   },
 
-  /** 🔥 Categorías */
+  /** 🔥 Lista de Categorías */
   filaCategorias: {
     justifyContent: 'space-between',
     marginTop: 10,
@@ -206,57 +145,90 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   emoji: {
-    fontSize: 24,
-    marginBottom: 6,
+    fontSize: 22,
+    marginBottom: 5,
   },
   textoCategoria: {
-    fontSize: 14,
-    fontWeight: '600',
     color: '#333',
+    fontSize: 13,
+    fontWeight: "bold",
+    flexShrink: 1, // 🔥 Evita que se corten palabras en pantallas pequeñas
+    textAlign: "center",
+    maxWidth: "90%", // 🔥 Limita el ancho del texto para evitar cortes
+    ellipsizeMode: "tail",
   },
 
-  /** 🔥 Botón "Ver más" */
-  botonVerMas: {
-    marginTop: 10,
+  /** 🔥 Menú Lateral */
+  overlay: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    zIndex: 999,
+  },
+  menuContainer: {
+    position: "absolute",
+    left: 0,
+    top: 0,
+    width: 280,
+    height: "100%",
+    backgroundColor: "#FFFFFF",
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    paddingVertical: 30,
+    zIndex: 1000,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+  },
+  menuItem: {
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  menuText: {
+    fontSize: 18,
+    fontWeight: "500",
+    color: "#374151",
+  },
+  menuCerrar: {
+    marginTop: 20,
+    backgroundColor: "#FF0314",
     paddingVertical: 12,
-    backgroundColor: '#003366',
-    borderRadius: 10,
-    alignItems: 'center',
-    alignSelf: 'center',
-    width: '50%',
-    elevation: 4,
+    borderRadius: 8,
+    alignItems: "center",
+    marginHorizontal: 20,
   },
-  textoBotonVerMas: {
-    color: '#FFFFFF',
+  menuCerrarTexto: {
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
-
+   
   /** 🔥 Banner Promocional */
   banner: {
-    marginTop: 30,
-    borderRadius: 15,
-    overflow: 'hidden',
-    elevation: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#FF0314",
+    borderRadius: 10,
+    paddingVertical: 15,
+    alignItems: "center",
+    marginTop: 10,
+    elevation: 3,
+    flexDirection: "row",
+    justifyContent: "center",
   },
   imagenBanner: {
-    width: '100%',
-    height: 100,
-    resizeMode: 'cover',
+    width: 100,
+    height: 40,
+    resizeMode: "contain",
+    marginRight: 10,
   },
   textoBanner: {
-    position: 'absolute',
-    bottom: 10,
-    left: 10,
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

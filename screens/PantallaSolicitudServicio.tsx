@@ -15,13 +15,15 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import styles from '../styles/stylesSolicitudServicio';
 import SolicitudService from '../services/SolicitudService';
 import SupabaseService from '../services/SupabaseService';
-import { supabase_client } from '../services/supabaseClient';
 import { ImageService } from '../services/ImageService';
+import { ProviderService } from '../models/ProviderService';
 
 const PantallaSolicitudServicio = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { idProveedor, service_id } = route.params || {};
+  const { idProveedor, service_id, proveedor } = route.params ?? {};
+  const dataProveedor = proveedor as ProviderService;
+
 
   if (!idProveedor) {
     return (
@@ -37,16 +39,16 @@ const PantallaSolicitudServicio = () => {
   // 📌 Estados de la solicitud
   const [descripcion, setDescripcion] = useState('');
   const [fecha, setFecha] = useState(new Date());
-  const [precioOfrecido, setPrecioOfrecido] = useState(0);
+  const [precioOfrecido, setPrecioOfrecido] = useState('');
   const [imagenes, setImagenes] = useState<string[]>([]);
-  const [url_imagen, setUrlImagenes] = useState<string>("");
-  
+  const [url_imagen, setUrlImagenes] = useState<string>('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const  [providerServiceId,setProviderServiceId] = useState(0);
 
   const menuAnim = useRef(new Animated.Value(-300)).current;
   const [menuVisible, setMenuVisible] = useState(false);
 
-  // 📌 Función para seleccionar imágenes
+  // 📌 Selección de imágenes
   const seleccionarImagen = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -64,51 +66,23 @@ const PantallaSolicitudServicio = () => {
       if (!result.cancelled && result.assets) {
         const imageUri = result.assets[0].uri;
         setImagenes([...imagenes, imageUri]);
-        const url_imagen = await ImageService.subirImagen('solicitud',imageUri) || ""
-        setUrlImagenes(url_imagen);
+        const urlImagen = await ImageService.subirImagen('solicitud', imageUri) || '';
+        setUrlImagenes(urlImagen);
       }
     } catch (error) {
       Alert.alert('Error', 'No se pudo seleccionar la imagen.');
     }
   };
 
-
-  // 📌 Función para eliminar una imagen seleccionada
+  // 📌 Eliminación de imágenes
   const eliminarImagen = (index) => {
     const nuevasImagenes = [...imagenes];
     nuevasImagenes.splice(index, 1);
     setImagenes(nuevasImagenes);
   };
 
-  // 📌 Enviar solicitud
-  const enviarSolicitud = async () => {
-    if (!descripcion.trim() || !precioOfrecido) {
-      Alert.alert('Error', 'Por favor, completa todos los campos.');
-      return;
-    }
 
-    try {
-      const user = await SupabaseService.obtenerUsuarioAuth();
-      console.log('user', user?.id);
-      const userId = user?.id || '';
-      await SolicitudService.crearSolicitudDeServicio(
-        idProveedor,
-        service_id,
-        descripcion,
-        fecha.toISOString().split('T')[0],
-        precioOfrecido,
-        userId,
-        url_imagen
-      );
-
-      Alert.alert('Éxito', 'Solicitud enviada exitosamente.');
-      navigation.goBack();
-    } catch (error) {
-      Alert.alert('Error', 'No se pudo enviar la solicitud.');
-    }
-  };
-
-  // 📌 Mostrar/Ocultar menú lateral
+  // 📌 Alternar menú lateral
   const toggleMenu = () => {
     setMenuVisible(!menuVisible);
     Animated.timing(menuAnim, {
@@ -118,26 +92,33 @@ const PantallaSolicitudServicio = () => {
     }).start();
   };
 
+
   return (
     <View style={styles.container}>
       {/* 🔥 Menú Lateral */}
-      {menuVisible && <View style={styles.overlay} />}
-      <Animated.View style={[styles.menuContainer, { transform: [{ translateX: menuAnim }] }]}>
-        <ScrollView>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaHistorialUsuario')}>
-            <Text style={styles.menuText}>🕒 Historial</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaSoporteFAQ')}>
-            <Text style={styles.menuText}>❓ Soporte</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MiPerfil')}>
-            <Text style={styles.menuText}>👤 Mi Perfil</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuCerrar} onPress={toggleMenu}>
-            <Text style={styles.menuCerrarTexto}>Cerrar</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </Animated.View>
+            {menuVisible && <View style={styles.overlay} />}
+            <Animated.View style={[styles.menuContainer, { transform: [{ translateX: menuAnim }] }]}>
+              <ScrollView>
+                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaInicio')}>
+                  <Text style={styles.menuText}>🏠 Inicio</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaNegocios')}>
+                  <Text style={styles.menuText}>🔍 Buscar Proveedores</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaHistorialUsuario')}>
+                  <Text style={styles.menuText}>🕒 Historial</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaSoporteFAQ')}>
+                  <Text style={styles.menuText}>❓ Soporte</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MiPerfil')}>
+                  <Text style={styles.menuText}>👤 Mi Perfil</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.menuCerrar} onPress={toggleMenu}>
+                  <Text style={styles.menuCerrarTexto}>Cerrar</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </Animated.View>
 
       {/* 🔥 Encabezado */}
       <View style={styles.header}>
@@ -198,9 +179,28 @@ const PantallaSolicitudServicio = () => {
           ))}
         </ScrollView>
 
-        <TouchableOpacity style={styles.botonEnviar} onPress={enviarSolicitud}>
-          <Text style={styles.textoBoton}>✅ Enviar Solicitud</Text>
-        </TouchableOpacity>
+        <TouchableOpacity 
+        style={styles.botonEnviar} 
+        onPress={() =>
+        {
+         // enviarSolicitud()
+        navigation.navigate('PantallaConfirmacionPago', { 
+            service_id, 
+            servicio: dataProveedor.services.category, 
+            id_proveedor: idProveedor, 
+            proveedor: dataProveedor.providers.profiles.name, 
+            descripcion, 
+            url_imagen: url_imagen,
+            fecha: fecha, 
+            fechaFormateada: fecha.toDateString(), 
+            precio: precioOfrecido 
+          })
+        }
+       }
+      >
+        <Text style={styles.textoBoton}>✅ Enviar Solicitud</Text>
+      </TouchableOpacity>
+      
       </ScrollView>
     </View>
   );

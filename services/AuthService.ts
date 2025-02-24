@@ -6,6 +6,7 @@ export class AuthService {
   private static SUPABASE_ADMIN_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbmd3c2VraWNwdGZsdXF1bXlzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczODU5NzIwNywiZXhwIjoyMDU0MTczMjA3fQ.Q75g9bfHTCvtWT-z01IJZUHFhUHg3gclC0MRK0WE46g";
 
+    
   private static supabase: SupabaseClient = createClient(
     AuthService.SUPABASE_URL,
     AuthService.SUPABASE_KEY
@@ -91,6 +92,22 @@ export class AuthService {
       console.log('Correo de recuperación enviado con éxito.');
     }
   }
+
+  static async logout() {
+    try {
+      const { error } = await AuthService.supabase.auth.signOut();
+      if (error) {
+        console.error("Error al cerrar sesión:", error.message);
+        return false;
+      }
+      return true;
+    } catch (error) {
+      console.error("Error inesperado al cerrar sesión:", error);
+      return false;
+    }
+  }
+  
+
   static async guardarPerfil(
     userId: string,
     nombre: string,

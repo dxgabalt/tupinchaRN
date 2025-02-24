@@ -1,4 +1,4 @@
-import { Alert } from "react-native/Libraries/Alert/Alert";
+import { Alert } from "react-native";
 import { supabase_client } from "./supabaseClient";
 
 export class ImageService {

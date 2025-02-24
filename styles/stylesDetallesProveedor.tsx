@@ -4,7 +4,7 @@ const styles = StyleSheet.create({
   /** 🔥 Contenedor Principal */
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F8F9FA',
   },
 
   /** 🔥 Menú Hamburguesa */
@@ -12,30 +12,51 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     left: 0,
-    width: 250,
+    width: 280,
     height: '100%',
     backgroundColor: '#FF0314',
-    padding: 20,
+    paddingVertical: 30,
+    paddingHorizontal: 20,
     zIndex: 10,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
   },
   menuItem: {
     paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
   menuText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#FFFFFF',
   },
   menuCerrar: {
     marginTop: 20,
-    paddingVertical: 12,
     backgroundColor: '#003366',
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   menuCerrarTexto: {
     color: '#FFFFFF',
     fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  /** 🔥 Fondo Oscuro cuando el Menú está Abierto */
+  overlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 999,
   },
 
   /** 🔥 Encabezado */
@@ -44,32 +65,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#003366',
+    justifyContent: 'space-between',
+    elevation: 5,
   },
   menuButton: {
-    marginRight: 10,
+    backgroundColor: '#FF0314',
+    padding: 12,
+    borderRadius: 10,
+    elevation: 5,
   },
   menuIcon: {
-    fontSize: 24,
+    fontSize: 22,
     color: '#FFFFFF',
+    fontWeight: 'bold',
   },
   tituloHeader: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
+    flex: 1,
+    textAlign: 'center',
   },
 
+  /** 🔥 Imagen de Portada */
   imagenPortada: {
     width: '100%',
-    height: 220,
-    borderBottomLeftRadius: 15,
-    borderBottomRightRadius: 15,
+    height: 240,
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
   },
 
   /** 🔥 Perfil del Proveedor */
   perfilContainer: {
     alignItems: 'center',
-    marginTop: -50,
-    backgroundColor: '#FFF',
+    marginTop: -60,
+    backgroundColor: '#FFFFFF',
     borderRadius: 15,
     paddingVertical: 20,
     marginHorizontal: 20,
@@ -77,14 +107,15 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.2,
     shadowRadius: 5,
+    elevation: 3,
   },
   imagenPerfil: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 110,
+    height: 110,
+    borderRadius: 55,
     borderWidth: 4,
-    borderColor: '#FFF',
-    marginBottom: 10,
+    borderColor: '#FFFFFF',
+    marginBottom: 12,
   },
   nombre: {
     fontSize: 24,
@@ -98,30 +129,31 @@ const styles = StyleSheet.create({
     color: '#FF0314',
     backgroundColor: '#FFF2F2',
     paddingHorizontal: 12,
-    paddingVertical: 4,
+    paddingVertical: 5,
     borderRadius: 15,
-    marginTop: 5,
+    marginTop: 6,
   },
   ubicacion: {
     fontSize: 16,
     fontWeight: '500',
     color: '#555',
-    marginTop: 5,
+    marginTop: 6,
   },
   calificacion: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#FFD700',
-    marginTop: 8,
+    marginTop: 10,
   },
 
   /** 🔥 Sección Sobre el Servicio */
   detallesContainer: {
-    backgroundColor: '#F9FAFB',
+    backgroundColor: '#FFFFFF',
     padding: 20,
     marginHorizontal: 20,
     borderRadius: 15,
     marginTop: 15,
+    elevation: 2,
   },
   tituloSeccion: {
     fontSize: 20,
@@ -139,6 +171,36 @@ const styles = StyleSheet.create({
     textAlign: 'justify',
   },
 
+  /** 🔥 Sección de Horario */
+  horarioContainer: {
+    backgroundColor: '#F8F9FA',
+    padding: 18,
+    marginHorizontal: 20,
+    borderRadius: 15,
+    marginTop: 15,
+    elevation: 2,
+  },
+  horarioTexto: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#555',
+  },
+
+  /** 🔥 Sección Portafolio */
+  portafolioContainer: {
+    marginHorizontal: 20,
+    marginTop: 15,
+  },
+  imagenPortafolio: {
+    width: 120,
+    height: 100,
+    borderRadius: 10,
+    marginRight: 10,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+
   /** 🔥 Botones de Acción */
   botonesContainer: {
     flexDirection: 'row',
@@ -153,10 +215,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     marginRight: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    elevation: 3,
   },
   botonSolicitar: {
     flex: 1,
@@ -165,10 +224,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     marginLeft: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    elevation: 3,
   },
   textoBoton: {
     fontSize: 16,

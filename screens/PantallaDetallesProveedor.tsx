@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,25 +7,12 @@ import {
   ScrollView,
   Alert,
   Animated,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import styles from '../styles/stylesDetallesProveedor';
 import { ProviderServiceService } from '../services/ProviderServiceService';
 import { ProviderService } from '../models/ProviderService';
-
-// 📌 Datos simulados del proveedor
-/*const proveedorSimulado = {
-  id: '1',
-  nombre: 'Fontanería Express',
-  especialidad: 'Fontanería',
-  descripcion: 'Reparaciones de tuberías, grifos y sistemas de drenaje.',
-  ubicacion: 'La Habana, Playa',
-  calificacion: 4.8,
-  telefono: '+53 5555 5555',
-  correo: 'fontaneria@email.com',
-  imagenPortada: 'https://tupincha.com/wp-content/uploads/2024/03/ORIGINAL75.png',
-  imagenPerfil: 'https://tupincha.com/wp-content/uploads/2024/03/ORIGINAL75.png',
-};*/
 
 const PantallaDetallesProveedor = () => {
   const navigation = useNavigation();
@@ -33,18 +20,11 @@ const PantallaDetallesProveedor = () => {
   const { idProveedor } = route.params || {};
 
   const [proveedor, setProveedor] = useState<ProviderService | null>(null);
+  const [loading, setLoading] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
-  const menuAnim = new Animated.Value(menuVisible ? 0 : -300);
+  const menuAnim = useRef(new Animated.Value(-300)).current;
 
-  // 📌 Función para contactar al proveedor
-  const contactarProveedor = () => {
-    Alert.alert(
-      'Contacto',
-      `Puedes contactar a ${proveedor?.providers.profiles.name}:\n📞 ${proveedor?.providers.phone}\n📧 ${proveedor?.providers.profiles.name}`
-    );
-  };
-
-  // 📌 Función para alternar el menú hamburguesa
+  // 📌 Animación del Menú Hamburguesa
   const toggleMenu = () => {
     setMenuVisible(!menuVisible);
     Animated.timing(menuAnim, {
@@ -53,18 +33,31 @@ const PantallaDetallesProveedor = () => {
       useNativeDriver: true,
     }).start();
   };
- useEffect(() => {
-    const obtenerNegocios = async () => {
+
+  // 📌 Función para contactar al proveedor
+  const contactarProveedor = () => {
+    Alert.alert(
+      'Contacto',
+      `Puedes contactar a ${proveedor?.providers.profiles.name}:\n📞 ${proveedor?.providers.phone}\n📧 ${proveedor?.providers.profiles.email}`
+    );
+  };
+
+  // 📌 Obtener datos del proveedor
+  useEffect(() => {
+    const obtenerProveedor = async () => {
       try {
-        const provider_service = await ProviderServiceService.obtenerPorId(idProveedor);
-        console.log("Proveedor:", provider_service);
-        setProveedor(provider_service);
+        const providerService = await ProviderServiceService.obtenerPorId(idProveedor);
+        setProveedor(providerService);
       } catch (error) {
-        console.error("Error obteniendo servicios:", error);
+        console.error('Error obteniendo datos del proveedor:', error);
+        Alert.alert('Error', 'No se pudo cargar la información del proveedor.');
+      } finally {
+        setLoading(false);
       }
     };
-    obtenerNegocios();
+    obtenerProveedor();
   }, []);
+
   return (
     <View style={styles.container}>
       {/* 🔥 Menú Lateral con Animación */}
@@ -75,10 +68,7 @@ const PantallaDetallesProveedor = () => {
             <Text style={styles.menuText}>🏠 Inicio</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaNegocios')}>
-            <Text style={styles.menuText}>🔍 Buscar Negocios</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaResultadosBusqueda')}>
-            <Text style={styles.menuText}>📌 Resultados</Text>
+            <Text style={styles.menuText}>🔍 Buscar Proveedores</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaHistorialUsuario')}>
             <Text style={styles.menuText}>🕒 Historial</Text>
@@ -95,7 +85,7 @@ const PantallaDetallesProveedor = () => {
         </ScrollView>
       </Animated.View>
 
-      {/* 🔥 Encabezado con Menú Hamburguesa */}
+      {/* 🔥 Encabezado */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
           <Text style={styles.menuIcon}>☰</Text>
@@ -103,43 +93,64 @@ const PantallaDetallesProveedor = () => {
         <Text style={styles.tituloHeader}>Detalles del Proveedor</Text>
       </View>
 
-      <ScrollView>
-        {/* 📌 Imagen de Portada */}
-        <Image source={{ uri: proveedor?.providers.profiles.profile_pic_url }} style={styles.imagenPortada} />
+      {loading ? (
+        <ActivityIndicator size="large" color="#FF0314" style={{ marginTop: 50 }} />
+      ) : (
+        <ScrollView>
+          {/* 📌 Imagen de Portada */}
+          <Image source={{ uri: proveedor?.providers.profiles.profile_pic_url }} style={styles.imagenPortada} />
 
-        {/* 📌 Información del Proveedor */}
-        <View style={styles.perfilContainer}>
-          <Image source={{ uri: proveedor?.providers.profiles.profile_pic_url }} style={styles.imagenPerfil} />
-          <Text style={styles.nombre}>{proveedor?.providers.profiles.name}</Text>
-          <Text style={styles.especialidad}>{proveedor?.providers.speciality}</Text>
-          <Text style={styles.ubicacion}>📍{proveedor?.providers.ubicacion} </Text>
-          <Text style={styles.calificacion}>⭐ {proveedor?.providers.profiles.rating} / 5</Text>
-        </View>
+          {/* 📌 Información del Proveedor */}
+          <View style={styles.perfilContainer}>
+            <Image source={{ uri: proveedor?.providers.profiles.profile_pic_url }} style={styles.imagenPerfil} />
+            <Text style={styles.nombre}>{proveedor?.providers.profiles.name}</Text>
+            <Text style={styles.especialidad}>{proveedor?.providers.speciality}</Text>
+            <Text style={styles.ubicacion}>📍 {proveedor?.providers.ubicacion}</Text>
+            <Text style={styles.calificacion}>⭐ {proveedor?.providers.profiles.rating} / 5</Text>
+          </View>
 
-        {/* 📌 Descripción */}
-        <View style={styles.detallesContainer}>
-          <Text style={styles.tituloSeccion}>Sobre el Servicio</Text>
-          <Text style={styles.descripcion}>{proveedor?.providers.description}</Text>
-        </View>
+          {/* 📌 Descripción */}
+          <View style={styles.detallesContainer}>
+            <Text style={styles.tituloSeccion}>Sobre el Servicio</Text>
+            <Text style={styles.descripcion}>{proveedor?.providers.description}</Text>
+          </View>
 
-        {/* 📌 Botones de Acción */}
-        <View style={styles.botonesContainer}>
-          <TouchableOpacity style={styles.botonContacto} onPress={contactarProveedor}>
-            <Text style={styles.textoBoton}>📞 Contactar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.botonSolicitar}
-            //proveedor?.proveedor?.services.id
-           
-            onPress={() => navigation.navigate('PantallaSolicitudServicio', { 
-              idProveedor, 
-              service_id: proveedor?.services.id 
-            })}
-          >
-            <Text style={styles.textoBoton}>🛠️ Solicitar Servicio</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+          {/* 📌 Horario de Disponibilidad */}
+          <View style={styles.horarioContainer}>
+            <Text style={styles.tituloSeccion}>📅 Horario de Atención</Text>
+            <Text style={styles.horarioTexto}>{proveedor?.providers.availability || 'No especificado'}</Text>
+          </View>
+
+          {/* 📌 Portafolio de Trabajos */}
+          <View style={styles.portafolioContainer}>
+            <Text style={styles.tituloSeccion}>📸 Portafolio</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {proveedor?.providers.portafolio?.map((imagen, index) => (
+                <Image key={index} source={{ uri: imagen }} style={styles.imagenPortafolio} />
+              ))}
+            </ScrollView>
+          </View>
+
+          {/* 📌 Botones de Acción */}
+          <View style={styles.botonesContainer}>
+            <TouchableOpacity style={styles.botonContacto} onPress={contactarProveedor}>
+              <Text style={styles.textoBoton}>📞 Contactar</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.botonSolicitar}
+              onPress={() =>
+                navigation.navigate('PantallaSolicitudServicio', {
+                  proveedor,
+                  idProveedor:proveedor?.provider_id,
+                  service_id: proveedor?.services.id,
+                })
+              }
+            >
+              <Text style={styles.textoBoton}>🛠️ Solicitar Servicio</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 };

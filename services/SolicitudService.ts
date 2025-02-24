@@ -71,8 +71,10 @@ export class SolicitudService {
     precioOfrecido: number,
     userId: string,
     imagenesUrl?: string,
-  ): Promise<boolean> {
-   const {error} = await SolicitudService.supabase
+  ): Promise<number> {
+    console.log('entro a guardar');
+    
+   const {data,error} = await SolicitudService.supabase
       .from(SolicitudService.TABLE_NAME)
       .insert({
         provider_id: providerId,
@@ -83,13 +85,12 @@ export class SolicitudService {
         user_id: userId,
         price: precioOfrecido,
         status: 'Pendiente',
-      });
-
+      }).select();;
     if (error) {
       console.error('Error al guardar la solicitud:', error.message);
-      return false;
+      return 0;
     }
-    return true;
+    return data !== null?data[0].id:0;
   }
 
   static async obtenerSolicitudesComoProveedor(user_id: string): Promise<Solicitud[]> {

@@ -7,21 +7,64 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8F9FA',
   },
 
+  menuContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 280,
+    height: '100%',
+    backgroundColor: '#FF0314',
+    paddingVertical: 30,
+    paddingHorizontal: 20,
+    zIndex: 10,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  menuItem: {
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  menuText: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#FFFFFF',
+  },
+  menuCerrar: {
+    marginTop: 20,
+    backgroundColor: '#003366',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  menuCerrarTexto: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  /** 🔥 Fondo Oscuro cuando el Menú está Abierto */
+  overlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 999,
+  },
+
   /** 🔥 Encabezado */
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#003366',
     justifyContent: 'space-between',
-    backgroundColor: '#1E3A8A',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    elevation: 5,
-  },
-  titulo: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    textAlign: 'center',
   },
   menuButton: {
     backgroundColor: '#FF0314',
@@ -34,156 +77,106 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: 'bold',
   },
-
-  /** 🔥 Fondo Oscuro cuando el Menú está Abierto */
-  overlay: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    zIndex: 999,  
-  },
-
-  /** 🔥 Menú Lateral */
-  menuContainer: {
-    position: 'absolute',
-    left: 0,
-    top: 0,
-    width: 280,
-    height: '100%',
-    backgroundColor: '#FFFFFF',
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
-    paddingVertical: 30,
-    zIndex: 1000,  
-    elevation: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 3, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-  },
-  menuItem: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  menuText: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#374151',
-  },
-  menuCerrar: {
-    marginTop: 20,
-    backgroundColor: '#FF0314',
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  menuCerrarTexto: {
-    color: '#FFFFFF',
-    fontSize: 16,
+  titulo: {
+    fontSize: 22,
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
 
-  /** 🔥 Contenedor del formulario */
+  /** 🔥 Formulario */
   formContainer: {
     padding: 20,
+    backgroundColor: '#FFFFFF',
+    margin: 20,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
-
-  /** 🔥 Etiquetas */
   label: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1E3A8A',
-    marginBottom: 5,
+    color: '#333',
+    marginBottom: 6,
   },
-
-  /** 🔥 Campos de Entrada */
   input: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
+    backgroundColor: '#F3F4F6',
+    padding: 12,
+    borderRadius: 8,
     fontSize: 16,
+    marginBottom: 15,
     borderWidth: 1,
     borderColor: '#D1D5DB',
-    marginBottom: 12,
-    elevation: 2,
   },
 
-  /** 🔥 Botón de Selección de Fecha/Hora */
+  /** 🔥 Selección de Fecha */
   botonSubir: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: '#FF0314',
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 12,
-    elevation: 3,
+    marginBottom: 10,
   },
   textoBoton: {
-    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  textoFecha: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    marginTop: 5,
   },
 
-  /** 🔥 Botón para Enviar la Solicitud */
-  botonEnviar: {
-    backgroundColor: '#FF0314',
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 20,
-    elevation: 3,
-  },
-
-  /** 🔥 Contenedor de Imágenes */
+  /** 🔥 Imágenes */
   imagenesContainer: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginVertical: 10,
   },
   imagenWrapper: {
     position: 'relative',
     marginRight: 10,
   },
   imagen: {
-    width: 90,
-    height: 90,
-    borderRadius: 8,
+    width: 100,
+    height: 100,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
   },
   botonEliminarImagen: {
     position: 'absolute',
-    top: -5,
-    right: -5,
-    backgroundColor: 'red',
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    alignItems: 'center',
-    justifyContent: 'center',
+    top: -8,
+    right: -8,
+    backgroundColor: '#FF0314',
+    borderRadius: 12,
+    padding: 4,
   },
   textoEliminar: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
   },
-  
-  /** 🔥 Texto de Error */
-  errorText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#FF0000',
-    marginTop: 20,
-  },
 
-  /** 🔥 Botón para Regresar */
+  /** 🔥 Botones */
+  botonEnviar: {
+    backgroundColor: '#003366',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+    elevation: 4,
+  },
   botonRegresar: {
     backgroundColor: '#D1D5DB',
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 10,
     alignItems: 'center',
     marginTop: 10,
   },
+
 });
 
 export default styles;

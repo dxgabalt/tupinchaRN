@@ -3,83 +3,81 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   /** 🔥 Contenedor Principal */
   container: {
-    flex: 1, // 🔹 Se asegura de que ocupe toda la pantalla
+    flex: 1,
+    backgroundColor: '#F8F9FA',
     paddingHorizontal: 12,
-    backgroundColor: '#FFFFFF',
-    paddingBottom: 10, // 🔹 Evita espacios vacíos al final
   },
 
-  /** 🔥 Título */
-  titulo: {
-    fontSize: 22,
+  /** 🔥 Encabezado */
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    backgroundColor: '#1E3A8A',
+    borderBottomLeftRadius: 15,
+    borderBottomRightRadius: 15,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  menuButton: {
+    padding: 10,
+    borderRadius: 8,
+  },
+  menuIcon: {
+    fontSize: 24,
+    color: '#FFFFFF',
     fontWeight: 'bold',
-    color: '#003366',
-    marginBottom: 10,
-    textAlign: 'center',
+  },
+  bienvenida: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  ubicacion: {
+    fontSize: 14,
+    color: '#FFFFFF',
   },
 
   /** 🔍 Barra de Búsqueda */
   barraBusqueda: {
-    backgroundColor: '#F0F0F0',
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 14,
-    marginBottom: 12,
-    elevation: 2,
-  },
-  input: {
-    fontSize: 15,
-    color: '#333',
-  },
-
-  /** 🔥 Contenedor de Categorías */
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-
-  chip: {
+    marginVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E63946',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 18,
-    margin: 5,
-    minWidth: 90,
-    height: 34,
-    justifyContent: 'center',
-    elevation: 1,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-
-  chipSeleccionado: {
-    backgroundColor: '#FF8C00',
-    borderWidth: 1,
-    borderColor: '#FFA500',
-  },
-
-  chipText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: 'bold',
-    marginLeft: 3,
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
   },
 
   /** 🔥 Lista de Negocios */
   listaNegocios: {
-    flex: 1, // 🔹 Se asegura que la lista ocupe todo el espacio
-    alignSelf: 'stretch',
+    flex: 1,
+    flexGrow: 1,
+    paddingBottom: 20,
   },
 
   /** 🔥 Tarjetas de Negocios */
   card: {
     flexDirection: 'row',
     backgroundColor: '#FFFFFF',
-    borderRadius: 10,
+    borderRadius: 12,
     padding: 12,
-    marginBottom: 8,
+    marginBottom: 10,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -87,38 +85,33 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
-
   imagen: {
-    width: 80, // 🔹 Tamaño aumentado para mejorar visibilidad
-    height: 80,
-    borderRadius: 8,
+    width: 70,
+    height: 70,
+    borderRadius: 10,
     marginRight: 10,
+    backgroundColor: '#EEEEEE',
   },
-
   infoContainer: {
     flex: 1,
   },
-
   nombre: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#222',
     marginBottom: 3,
   },
-
   descripcion: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#555',
     marginBottom: 3,
   },
-
   ubicacion: {
-    fontSize: 16,
-    color: '#FFFF',
+    fontSize: 13,
+    color: '#888',
   },
-
   calificacion: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: 'bold',
     color: '#FFD700',
     marginTop: 3,
@@ -127,36 +120,11 @@ const styles = StyleSheet.create({
   /** 🔥 Texto cuando no hay resultados */
   textoVacio: {
     textAlign: 'center',
-    fontSize: 15,
+    fontSize: 16,
     color: '#777',
-    marginTop: 15,
+    marginTop: 20,
   },
 
-    /** 🔥 Encabezado */
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: 15,
-      backgroundColor: '#FF0314',
-    },
-    menuButton: {
-      padding: 12,
-      borderRadius: 10,
-    },
-    menuIcon: {
-      fontSize: 22,
-      color: '#FFFFFF',
-      fontWeight: 'bold',
-    },
-
-    bienvenida: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      color: '#FFFFFF',
-    },
-
-  
   /** 🔥 Menú Lateral */
   overlay: {
     position: 'absolute',
@@ -172,9 +140,15 @@ const styles = StyleSheet.create({
     width: 280,
     height: '100%',
     backgroundColor: '#FFFFFF',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
     paddingVertical: 30,
     zIndex: 1000,
     elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
   menuItem: {
     paddingVertical: 14,
