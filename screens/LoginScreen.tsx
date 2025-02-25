@@ -6,8 +6,8 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
-  FlatList,
-  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
@@ -18,18 +18,9 @@ import styles from '../styles/stylesLogin';
 type RootStackParamList = {
   Login: undefined;
   PantallaNegocios: undefined;
+  GestionSolicitudes: undefined;
   RegistroScreen: undefined;
   OlvidarContrasena: undefined;
-  PantallaResultadosBusqueda: undefined;
-  PantallaDetallesProveedor: undefined;
-  PantallaSolicitudServicio: undefined;
-  PantallaMetodosPago: undefined;
-  PantallaConfirmacionPago: undefined;
-  PantallaPagoExitoso: undefined;
-  PantallaDetalleSolicitud: undefined;
-  PantallaHistorialUsuario: undefined;
-  PantallaSoporteFAQ: undefined;
-  MiPerfil: undefined;
 };
 
 // 📌 Definir el tipo de navegación
@@ -41,53 +32,46 @@ const LoginScreen = () => {
   const [contrasena, setContrasena] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // 📌 Función simulada para iniciar sesión
+  // 📌 Función para iniciar sesión
   const handleLogin = async () => {
     if (!correo.trim() || !contrasena.trim()) {
-      Alert.alert('Error', 'Por favor, ingresa tu correo y contraseña.');
+      Alert.alert('⚠️ Error', 'Por favor, ingresa tu correo y contraseña.');
       return;
     }
-   const response = AuthService.autenticarUsuario(correo, contrasena);
-   console.log((await response).role);
-   
-    if (!(await response).success) {
-      Alert.alert('Error', 'Credenciales incorrectas. Inténtalo de nuevo.');
-      return;
-    }
-    setLoading((await response).success);
-    setTimeout(async () => {
-      setLoading(false);
-      Alert.alert('Éxito', 'Inicio de sesión exitoso');
-      if((await response).role === 3){
-        navigation.navigate('GestionSolicitudes');
+
+    setLoading(true);
+    try {
+      const response = await AuthService.autenticarUsuario(correo, contrasena);
+      console.log('Rol del usuario:', response.role);
+
+      if (!response.success) {
+        Alert.alert('⚠️ Error', 'Credenciales incorrectas. Inténtalo de nuevo.');
         return;
       }
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'PantallaNegocios' }],
-      });
-    }, 2000);
+
+      Alert.alert('✅ Éxito', 'Inicio de sesión exitoso');
+      setCorreo('');
+      setContrasena('');
+
+      // Redirección según el rol del usuario
+      if (response.role === 3) {
+        navigation.replace('GestionSolicitudes');
+      } else {
+        navigation.replace('PantallaNegocios');
+      }
+    } catch (error) {
+      console.error('Error de autenticación:', error);
+      Alert.alert('⚠️ Error', 'Ocurrió un error inesperado. Inténtalo más tarde.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // 📌 Lista de pantallas para navegar directamente
-  const screens = [
-    { id: '1', name: 'PantallaNegocios' },
-    { id: '2', name: 'RegistroScreen' },
-    { id: '3', name: 'OlvidarContrasena' },
-    { id: '4', name: 'PantallaResultadosBusqueda' },
-    { id: '5', name: 'PantallaDetallesProveedor' },
-    { id: '6', name: 'PantallaSolicitudServicio' },
-    { id: '7', name: 'PantallaMetodosPago' },
-    { id: '8', name: 'PantallaConfirmacionPago' },
-    { id: '9', name: 'PantallaPagoExitoso' },
-    { id: '10', name: 'PantallaDetalleSolicitud' },
-    { id: '11', name: 'PantallaHistorialUsuario' },
-    { id: '12', name: 'PantallaSoporteFAQ' },
-    { id: '13', name: 'MiPerfil' },
-  ];
-
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <Text style={styles.titulo}>🔑 Iniciar Sesión</Text>
 
       <TextInput
@@ -96,6 +80,7 @@ const LoginScreen = () => {
         value={correo}
         keyboardType="email-address"
         onChangeText={setCorreo}
+        autoCapitalize="none"
       />
 
       <TextInput
@@ -123,21 +108,11 @@ const LoginScreen = () => {
         <Text style={styles.link}>¿Olvidaste tu contraseña?</Text>
       </TouchableOpacity>
 
-      {/* 🔥 Lista de pantallas para navegar directamente */}
-      <Text style={styles.listaTitulo}>🌍 Ir a otras pantallas:</Text>
-      <FlatList
-        data={screens}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.listaItem}
-            onPress={() => navigation.navigate(item.name as keyof RootStackParamList)}
-          >
-            <Text style={styles.listaTexto}>➡ {item.name}</Text>
-          </TouchableOpacity>
-        )}
-      />
-    </ScrollView>
+      {/* 🔗 Enlace para registrarse */}
+      <TouchableOpacity onPress={() => navigation.navigate('RegistroScreen')}>
+        <Text style={styles.link}>¿No tienes cuenta? Regístrate aquí</Text>
+      </TouchableOpacity>
+    </KeyboardAvoidingView>
   );
 };
 

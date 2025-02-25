@@ -3,4 +3,5 @@ export interface Service {
   category: string;
   tags: JSON;
   icono?: string;
+  imagen?: string;
 }

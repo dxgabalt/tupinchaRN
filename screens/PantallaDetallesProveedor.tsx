@@ -47,6 +47,8 @@ const PantallaDetallesProveedor = () => {
     const obtenerProveedor = async () => {
       try {
         const providerService = await ProviderServiceService.obtenerPorId(idProveedor);
+        console.log('Proveedor:', providerService);
+        
         setProveedor(providerService);
       } catch (error) {
         console.error('Error obteniendo datos del proveedor:', error);
@@ -125,8 +127,8 @@ const PantallaDetallesProveedor = () => {
           <View style={styles.portafolioContainer}>
             <Text style={styles.tituloSeccion}>📸 Portafolio</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              {proveedor?.providers.portafolio?.map((imagen, index) => (
-                <Image key={index} source={{ uri: imagen }} style={styles.imagenPortafolio} />
+              {proveedor?.providers.portafolio_provider?.map((portafolio, index) => (
+                <Image key={index} source={{ uri: portafolio.imagen }} style={styles.imagenPortafolio} />
               ))}
             </ScrollView>
           </View>

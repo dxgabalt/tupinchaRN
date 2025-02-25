@@ -1,4 +1,5 @@
 import {ProviderService} from '../models/ProviderService';
+import { supabase_client } from './supabaseClient';
 import SupabaseService from './SupabaseService';
 
 export class ProviderServiceService {
@@ -13,7 +14,7 @@ export class ProviderServiceService {
   static async obtenerPorId(id: number): Promise<ProviderService | null> {
     const providerservice = await SupabaseService.obtenerDatos<ProviderService>(
       this.TABLE_NAME,
-      'id,provider_id,service_id,providers(id,phone,profile_id,ubicacion,profiles(name,rating,profile_pic_url,phone),description,speciality,availability),services(id,category,tags))',
+      'id,provider_id,service_id,providers(id,phone,portafolio_provider(id,especialidad,imagen),profile_id,ubicacion,profiles(name,rating,profile_pic_url,phone),description,speciality,availability),services(id,category,tags))',
       {
         id,
       },
@@ -41,7 +42,16 @@ export class ProviderServiceService {
       id,
     );
   }
-
+static async actualizarProveedor(perfil:any){
+    const { data, error } = await supabase_client
+      .from('providers')
+      .update({
+        phone: perfil.phone,
+        speciality: perfil.speciality,
+        availability: perfil.availability,
+      })
+      .eq("id", perfil.id)
+}
   // Eliminar un PROVIDERSERVICE por ID
   static async eliminar(id: number): Promise<boolean> {
     return await SupabaseService.eliminarRegistro(this.TABLE_NAME, 'id', id);

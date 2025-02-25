@@ -1,4 +1,5 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { ImageService } from "./ImageService";
 export class AuthService {
   private static SUPABASE_URL = "https://idngwsekicptfluqumys.supabase.co";
   private static SUPABASE_KEY =
@@ -6,7 +7,6 @@ export class AuthService {
   private static SUPABASE_ADMIN_KEY =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbmd3c2VraWNwdGZsdXF1bXlzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczODU5NzIwNywiZXhwIjoyMDU0MTczMjA3fQ.Q75g9bfHTCvtWT-z01IJZUHFhUHg3gclC0MRK0WE46g";
 
-    
   private static supabase: SupabaseClient = createClient(
     AuthService.SUPABASE_URL,
     AuthService.SUPABASE_KEY
@@ -60,36 +60,45 @@ export class AuthService {
     userId: string,
     nombre: string,
     telefono: string,
-    esProveedor = false
+    esProveedor = false,
+    profile_pic_url: string = " "
   ): Promise<void> {
-    const { data: user, error: authError } = await AuthService.supabase.auth.getUser();
+    const { data: user, error: authError } =
+      await AuthService.supabase.auth.getUser();
     if (authError || !user) {
       throw new Error("Usuario no autenticado");
     }
-  
+
     const { error } = await AuthService.supabase
       .from("profiles")
       .update({
         name: nombre,
         phone: telefono,
-        role_id: esProveedor ? 2 : 1,
+        role_id: esProveedor ? 3 : 2,
+        profile_pic_url: profile_pic_url,
       })
       .eq("user_id", userId);
-  
+
     if (error) {
       console.error(`Error al actualizar el perfil: ${error.message}`);
       throw new Error(error.message);
     }
   }
-  static async recuperarContrasena  (email: string)  {
-    const { error } = await AuthService.supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://admin.tupincha.com/reset-password',
-    });
-  
+  static async recuperarContrasena(email: string) {
+    const { error } = await AuthService.supabase.auth.resetPasswordForEmail(
+      email,
+      {
+        redirectTo: "https://admin.tupincha.com/reset-password",
+      }
+    );
+
     if (error) {
-      console.error('Error al enviar el correo de recuperación:', error.message);
+      console.error(
+        "Error al enviar el correo de recuperación:",
+        error.message
+      );
     } else {
-      console.log('Correo de recuperación enviado con éxito.');
+      console.log("Correo de recuperación enviado con éxito.");
     }
   }
 
@@ -106,29 +115,29 @@ export class AuthService {
       return false;
     }
   }
-  
 
   static async guardarPerfil(
     userId: string,
     nombre: string,
     telefono: string,
-    esProveedor = false
+    esProveedor = false,
+    profile_pic_url: string = " "
   ): Promise<void> {
     const user = AuthService.supabase.auth.getUser();
     if (!user) {
       throw new Error("Usuario no autenticado");
     }
-    const { error } = await AuthService.supabase.from("profiles").insert([
+    const { error } = await AuthService.supabase.from("profiles").insert(
       {
         user_id: userId,
         name: nombre,
         phone: telefono,
-        role_id: esProveedor ? 2 : 1,
+        role_id: esProveedor ? 3 : 2,
         rating: 0,
-        profile_pic_url: "",
+        profile_pic_url: profile_pic_url,
         is_verified: false,
       },
-    ]);
+    ).select();
 
     if (error) {
       console.error(`Error al guardar el perfil: ${error.message}`);
@@ -143,15 +152,16 @@ export class AuthService {
     });
     console.log("Autenticación exitosa:", data);
     const { data: profiles } = await AuthService.supabase
-    .from("profiles")
-    .select("*")
-    .eq("user_id", data.user?.id).single();
+      .from("profiles")
+      .select("*")
+      .eq("user_id", data.user?.id)
+      .single();
 
     if (error) {
       console.error(`Error de autenticación: ${error.message}`, error);
-      return { success: false, error ,role:0};
+      return { success: false, error, role: 0 };
     }
-    return { success: true, data,role:profiles?.role_id };
+    return { success: true, data, role: profiles?.role_id };
   }
   static async obtenerUsuarioActual() {
     const { data, error } = await AuthService.supabase.auth.getUser();
@@ -165,20 +175,57 @@ export class AuthService {
   }
   static async obtenerPerfil() {
     const { data, error } = await AuthService.supabase.auth.getUser();
-
+  
     if (error || !data.user) {
-      console.error("No hay sesión activa.");
+      console.error("No hay sesión activa.", error);
       return null;
     }
-    const { data: profiles } = await AuthService.supabase
+  
+    // Obtener el perfil del usuario
+    const { data: profile, error: profileError } = await AuthService.supabase
       .from("profiles")
       .select("*")
-      .eq("user_id", data.user.id).single();
-      return {
-        ...profiles, // Datos obtenidos de la tabla "profiles"
-        email: data.user.email, // Agregar el email del usuario autenticado
-      };
+      .eq("user_id", data.user.id)
+      .single();
+  
+    if (profileError || !profile) {
+      console.error("Error al obtener el perfil:", profileError);
+      return null;
+    }
+    let providers = null;
+    let portafolioProvider = null;
+    // Si el rol es 3, obtener datos adicionales
+    if (profile.role_id === 3) {
+      const { data: providerData, error: providerError } = await AuthService.supabase
+        .from("providers")
+        .select("*")
+        .eq("profile_id", profile.id)
+        .single();
+      if (providerError) {
+        console.error("Error al obtener el proveedor:", providerError);
+      } else {
+        providers = providerData;
+      }
+      const { data: portafolioData, error: portafolioError } = await AuthService.supabase
+        .from("portafolio_provider")
+        .select("*")
+        .eq("provider_id", providers ? providers.id : -1); // Evitar error si providers es null
+  
+      if (portafolioError) {
+        console.error("Error al obtener el portafolio:", portafolioError);
+      } else {
+        portafolioProvider = portafolioData;
+      }
+    }
+  
+    return {
+      ...profile, // Datos obtenidos de "profiles"
+      provider: providers,
+      portafolio: portafolioProvider,
+      email: data.user.email, // Email del usuario autenticado
+    };
   }
+  
 
   static async actualizarNombre(
     idUsuario: string,
@@ -193,16 +240,10 @@ export class AuthService {
       throw new Error(`Error al actualizar el nombre: ${error.message}`);
     }
   }
-  static async subirFotoPerfil(idUsuario: string, foto: File): Promise<string> {
+  static async subirFotoPerfil(idUsuario: string, foto: any): Promise<string> {
     const path = `${idUsuario}.jpg`;
-    const { error } = await AuthService.supabase.storage
-      .from("imagenes-perfil")
-      .upload(path, foto, { upsert: true });
-
-    if (error) {
-      throw new Error(`Error al subir la foto de perfil: ${error.message}`);
-    }
-
-    return `${AuthService.SUPABASE_URL}/storage/v1/object/public/imagenes-perfil/${path}`;
+    const url_perfil =
+      (await ImageService.subirImagen("imagenes-perfil", foto)) ?? "";
+    return url_perfil;
   }
 }

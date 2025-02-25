@@ -5,6 +5,7 @@ import {HistorialItem} from '../models/HistorialItem';
 import {createClient, SupabaseClient} from '@supabase/supabase-js';
 import { supabase_client } from './supabaseClient';
 import { ProviderService } from '../models/ProviderService';
+import { Alert } from 'react-native';
 
 export class SolicitudService {
   private static readonly TABLE_NAME = 'requests';
@@ -72,8 +73,7 @@ export class SolicitudService {
     userId: string,
     imagenesUrl?: string,
   ): Promise<number> {
-    console.log('entro a guardar');
-    
+
    const {data,error} = await SolicitudService.supabase
       .from(SolicitudService.TABLE_NAME)
       .insert({
@@ -87,7 +87,7 @@ export class SolicitudService {
         status: 'Pendiente',
       }).select();;
     if (error) {
-      console.error('Error al guardar la solicitud:', error.message);
+      Alert.alert('Error', error.message);
       return 0;
     }
     return data !== null?data[0].id:0;

@@ -19,6 +19,7 @@ import MiPerfilScreen from './screens/MiPerfilScreen';
 import PantallaDetalleSolicitud from './screens/PantallaDetalleSolicitud';
 import PantallaGestionSolicitudes from './screens/proveedores/GestionSolicitudes';
 import PantallaGestionServicios from './screens/proveedores/PantallaGestionServicios';
+import OnboardingScreen from './screens/OnboardingScreen';
 
 const Stack = createStackNavigator();
 
@@ -26,6 +27,7 @@ const Stack = createStackNavigator();
 const AppNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
+    <Stack.Screen name="Onboarding" component={OnboardingScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="PantallaNegocios" component={PantallaNegocios} />
       <Stack.Screen name="RegistroScreen" component={RegistroScreen} />

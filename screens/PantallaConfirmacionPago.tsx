@@ -10,6 +10,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import styles from '../styles/stylesConfirmacionPago';
 import SolicitudService from '../services/SolicitudService';
 import SupabaseService from '../services/SupabaseService';
+import { AuthService } from '../services/AuthService';
 
 const PantallaConfirmacionPago = () => {
   const navigation = useNavigation();
@@ -37,16 +38,16 @@ const PantallaConfirmacionPago = () => {
   // 📌 Enviar solicitud con validación
   const enviarSolicitud = async () => {
     if (!descripcion.trim() || !precio.trim()) {
-      console.log('Error', 'Por favor, completa todos los campos.');
-      
       Alert.alert('Error', 'Por favor, completa todos los campos.');
       return;
     }
 
     try {
-      const user = await SupabaseService.obtenerUsuarioAuth();
-      const userId = user?.id || '';
-    const id_provider_services = await SolicitudService.crearSolicitudDeServicio(
+    const profile = await AuthService.obtenerPerfil();
+    const userId =profile.user_id || '';
+    console.log('userId',profile);
+    
+    const id=  await SolicitudService.crearSolicitudDeServicio(
       id_proveedor,
         service_id,
         descripcion,
@@ -55,10 +56,11 @@ const PantallaConfirmacionPago = () => {
         userId,
         url_imagen
       );
-      console.log('id_provider_services',id_provider_services);
-      Alert.alert('Éxito', 'Solicitud enviada exitosamente.');
+      if (id == 0) {
+        Alert.alert('Error', 'No se pudo crear la solicitud.');
+        throw new Error('No se pudo crear la solicitud.');
+      }
     } catch (error:any) {
-      console.log('Error',error.message);
       Alert.alert('Error', 'No se pudo enviar la solicitud.');
     }
   };

@@ -1,64 +1,62 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
+  /** 🔥 Contenedor Principal */
   container: {
-    flexGrow: 1,
-    backgroundColor: '#ffffff',
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F9FAFB',
     padding: 20,
   },
+
+  /** 🔥 Título */
   titulo: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#ff0314',
+    color: '#003366',
     marginBottom: 20,
   },
+
+  /** 🔥 Campos de Entrada */
   input: {
-    width: '90%',
+    width: '100%',
     height: 50,
-    backgroundColor: '#f5f5f5',
+    borderColor: '#CCCCCC',
+    borderWidth: 1,
     borderRadius: 10,
     paddingHorizontal: 15,
+    backgroundColor: '#FFF',
     fontSize: 16,
     marginBottom: 15,
-    borderColor: '#ddd',
-    borderWidth: 1,
   },
+
+  /** 🔥 Botón de Iniciar Sesión */
   boton: {
-    backgroundColor: '#ff0314',
-    width: '90%',
-    paddingVertical: 15,
+    width: '100%',
+    backgroundColor: '#FF0314',
+    paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
-    marginTop: 10,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
   },
   textoBoton: {
-    color: '#ffffff',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
   },
+
+  /** 🔗 Link de "Olvidaste tu contraseña" y "Registrarse" */
   link: {
-    color: '#007bff',
     fontSize: 16,
-    marginTop: 10,
-    textDecorationLine: 'underline',
-  },
-  listaTitulo: {
-    fontSize: 20,
+    color: '#FF0314',
     fontWeight: 'bold',
-    marginTop: 30,
-    color: '#333',
-  },
-  listaItem: {
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    width: '100%',
-    alignItems: 'center',
-  },
-  listaTexto: {
-    fontSize: 16,
-    color: '#333',
+    textDecorationLine: 'underline',
+    marginTop: 5,
   },
 });
 

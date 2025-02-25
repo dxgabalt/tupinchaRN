@@ -15,7 +15,7 @@ import styles from '../styles/stylesMiPerfil';
 import { AuthService } from '../services/AuthService';
 
 // 📌 Datos simulados de usuario
-const usuarioDefault = { id: '', name: '', email: '', phone: '', profile_pic_url: '', user_id: '' };
+const usuarioDefault = { id: '', name: '', email: '', phone: '', profile_pic_url: '', user_id: '' ,rol_id:0};
 
 const MiPerfilScreen = () => {
   const navigation = useNavigation();
@@ -80,7 +80,7 @@ const MiPerfilScreen = () => {
       }
 
       // 📌 Actualizar datos en el backend
-      await AuthService.actualizarPerfil(usuario.user_id, nuevoNombre, nuevoTelefono, fotoURL);
+      await AuthService.actualizarPerfil(usuario.user_id, nuevoNombre, nuevoTelefono, usuario.rol_id==3,fotoURL);
 
       // 📌 Actualizar el estado del usuario
       setUsuario((prev) => ({

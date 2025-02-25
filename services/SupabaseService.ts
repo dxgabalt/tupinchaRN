@@ -46,12 +46,7 @@ const SupabaseService = {
     }
     return true;
   },
-  async obtenerUsuarioAuth(){
-    const user = supabase.auth.getUser();
-    console.log('user', user);
-    
-    return (await user).data.user 
-  },
+
   async actualizarRegistro<T>(
     tabla: string,
     datos: Partial<T>,

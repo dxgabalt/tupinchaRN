@@ -5,147 +5,195 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
-    paddingHorizontal: 20,
+    paddingTop: 20,
   },
 
-  /** 🔥 Menú Hamburguesa */
+  /** 🔥 Menú de Navegación */
   menuContainer: {
     position: 'absolute',
     top: 0,
     left: 0,
-    width: 260,
+    width: 280,
     height: '100%',
     backgroundColor: '#FF0314',
-    padding: 20,
-    zIndex: 10,
+    paddingTop: 50,
+    paddingHorizontal: 20,
+    zIndex: 100,
+    shadowColor: '#000',
+    shadowOffset: { width: 5, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
   },
   menuItem: {
     paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#fff3',
   },
   menuText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: '#fff',
   },
   menuCerrar: {
-    marginTop: 20,
+    marginTop: 30,
+    backgroundColor: '#D32F2F',
     paddingVertical: 12,
-    backgroundColor: '#003366',
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
   },
   menuCerrarTexto: {
-    color: '#FFFFFF',
     fontSize: 16,
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  overlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 99,
   },
 
   /** 🔥 Encabezado */
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#003366',
-    justifyContent: 'space-between',
+    padding: 15,
+    backgroundColor: '#FF0314',
+    elevation: 5,
   },
   menuButton: {
-    marginRight: 10,
+    padding: 10,
   },
   menuIcon: {
-    fontSize: 24,
+    fontSize: 26,
     color: '#FFFFFF',
   },
   titulo: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#FFFFFF',
+    marginLeft: 10,
   },
 
-  /** 🔥 Contenedor del formulario */
+  /** 🔥 Formulario */
   formContainer: {
-    backgroundColor: '#FFFFFF',
     padding: 20,
-    borderRadius: 15,
-    marginTop: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
   },
-
-  /** 🔥 Campos de texto */
   label: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
-    color: '#1E1E1E',
-    marginBottom: 8,
+    color: '#333',
+    marginTop: 10,
   },
   input: {
-    backgroundColor: '#F2F2F2',
-    paddingVertical: 12,
-    paddingHorizontal: 15,
+    backgroundColor: '#FFFFFF',
+    borderColor: '#CCCCCC',
+    borderWidth: 1,
     borderRadius: 10,
+    padding: 12,
     fontSize: 16,
-    marginBottom: 15,
+    marginTop: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+  },
+  valor: {
+    fontSize: 16,
+    color: '#555',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
   },
 
   /** 🔥 Botones */
-  botonAgregar: {
-    backgroundColor: '#003366',
+  botonGuardar: {
+    backgroundColor: '#4CAF50',
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 15,
+    marginTop: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+  },
+  botonEditar: {
+    backgroundColor: '#FFA500',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
   },
   botonSubir: {
-    backgroundColor: '#FF0314',
+    backgroundColor: '#003366',
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 15,
+    marginVertical: 10,
+  },
+  botonAgregar: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  botonVolver: {
+    backgroundColor: '#BBBBBB',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 10,
   },
   textoBoton: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-
-  /** 🔥 Portafolio */
-  portafolioContainer: {
-    flexDirection: 'row',
-    marginTop: 10,
-    paddingHorizontal: 10,
-  },
-  imagenPortafolio: {
-    width: 100,
-    height: 100,
-    borderRadius: 10,
-    marginRight: 10,
-  },
-
-  /** 🔥 Mensaje de vacío */
-  textoVacio: {
-    fontSize: 16,
-    color: '#777',
-    textAlign: 'center',
-    marginTop: 10,
-  },
-
-  /** 🔥 Botón de volver */
-  botonVolver: {
-    backgroundColor: '#CCCCCC',
-    padding: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 20,
-  },
   textoBotonVolver: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333333',
+  },
+
+  /** 🔥 Portafolio */
+  portafolioContainer: {
+    marginTop: 15,
+    flexDirection: 'row',
+  },
+  imagenPortafolio: {
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+    marginRight: 10,
+    borderColor: '#FF0314',
+    borderWidth: 2,
+  },
+  textoVacio: {
+    fontSize: 16,
+    color: '#777777',
+    textAlign: 'center',
+    marginVertical: 10,
+  },
+
+  /** 🔥 Animaciones */
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    fontSize: 18,
+    color: '#333',
+    marginTop: 10,
   },
 });
 

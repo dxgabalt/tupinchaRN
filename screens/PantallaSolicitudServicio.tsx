@@ -66,7 +66,7 @@ const PantallaSolicitudServicio = () => {
       if (!result.cancelled && result.assets) {
         const imageUri = result.assets[0].uri;
         setImagenes([...imagenes, imageUri]);
-        const urlImagen = await ImageService.subirImagen('solicitud', imageUri) || '';
+        const urlImagen = await ImageService.subirImagen('solicitudes', imageUri) || '';
         setUrlImagenes(urlImagen);
       }
     } catch (error) {

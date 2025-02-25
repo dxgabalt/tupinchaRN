@@ -13,6 +13,7 @@ import {
 import * as ImagePicker from 'expo-image-picker'; // 📌 Importar librería para seleccionar imágenes
 import { useNavigation } from '@react-navigation/native';
 import styles from '../styles/stylesRegistro';
+import { AuthService } from '../services/AuthService';
 
 const RegistroScreen = () => {
   const navigation = useNavigation();
@@ -34,16 +35,16 @@ const RegistroScreen = () => {
       return;
     }
 
-    const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+     const resultado = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 1,
+          });
 
-    if (!resultado.cancelled) {
-      setImagenPerfil(resultado.uri);
-    }
+          if (!resultado.cancelled && resultado.assets) {
+            const imageUri = resultado.assets[0].uri;
+            setImagenPerfil(imageUri);
+          }
   };
 
   // 📌 Validar campos antes de registrar
@@ -62,7 +63,6 @@ const RegistroScreen = () => {
       Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres.');
       return false;
     }
-
     if (esProveedor && !imagenPerfil) {
       Alert.alert('Error', 'Los proveedores deben subir una imagen de perfil.');
       return false;
@@ -74,9 +74,15 @@ const RegistroScreen = () => {
   // 📌 Función simulada para registrar usuario
   const registrarUsuario = async () => {
     if (!validarCampos()) return;
-
     setLoading(true);
     try {
+     const id_usuario = await AuthService.crearUsuarioAuth(correo, contrasena); 
+     if(esProveedor){
+       const url_foto = await AuthService.subirFotoPerfil(id_usuario,imagenPerfil);
+       AuthService.guardarPerfil(id_usuario, nombre, telefono, esProveedor,url_foto);
+      }else{
+        AuthService.guardarPerfil(id_usuario, nombre, telefono, esProveedor);
+      }
       // Simulación de registro exitoso
       setTimeout(() => {
         setLoading(false);

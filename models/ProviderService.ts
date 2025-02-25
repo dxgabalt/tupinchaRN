@@ -1,7 +1,10 @@
+import { Portafolio } from "./Portafolio";
+
 export interface ProviderService {
   id?: number;
   provider_id: number;
   service_id: number;
+  description?: string;
   providers:{
     id?: number;
     phone: string;
@@ -9,6 +12,7 @@ export interface ProviderService {
     description: string;
     speciality: string;
     ubicacion: string;
+    portafolio_provider: Portafolio[]
     profiles: {
       id?: number;
       name: string;
