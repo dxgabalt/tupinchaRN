@@ -47,8 +47,6 @@ const PantallaDetallesProveedor = () => {
     const obtenerProveedor = async () => {
       try {
         const providerService = await ProviderServiceService.obtenerPorId(idProveedor);
-        console.log('Proveedor:', providerService);
-        
         setProveedor(providerService);
       } catch (error) {
         console.error('Error obteniendo datos del proveedor:', error);
@@ -115,12 +113,6 @@ const PantallaDetallesProveedor = () => {
           <View style={styles.detallesContainer}>
             <Text style={styles.tituloSeccion}>Sobre el Servicio</Text>
             <Text style={styles.descripcion}>{proveedor?.providers.description}</Text>
-          </View>
-
-          {/* 📌 Horario de Disponibilidad */}
-          <View style={styles.horarioContainer}>
-            <Text style={styles.tituloSeccion}>📅 Horario de Atención</Text>
-            <Text style={styles.horarioTexto}>{proveedor?.providers.availability || 'No especificado'}</Text>
           </View>
 
           {/* 📌 Portafolio de Trabajos */}

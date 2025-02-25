@@ -20,6 +20,16 @@ export class ProviderServiceService {
       },
     );
     return providerservice.length > 0 ? providerservice[0] : null;
+  } 
+  static async obtenerPorServicio(service_id: number): Promise<ProviderService[] > {
+    const providerservice = await SupabaseService.obtenerDatos<ProviderService>(
+      this.TABLE_NAME,
+      'id,provider_id,service_id,providers(id,phone,portafolio_provider(id,especialidad,imagen),profile_id,ubicacion,profiles(name,rating,profile_pic_url,phone),description,speciality,availability),services(id,category,tags))',
+      {
+        service_id,
+      },
+    );
+    return providerservice.length > 0 ? providerservice : [];
   }
 
   // Crear un nuevo PROVIDERSERVICE

@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   Alert,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import styles from '../styles/stylesConfirmacionPago';
@@ -34,6 +35,9 @@ const PantallaConfirmacionPago = () => {
       `Se ha confirmado la solicitud de servicio con el método de pago: ${metodoPago}.`,
       [{ text: 'OK', onPress: () => navigation.navigate('PantallaPagoExitoso') }]
     );
+     if (Platform.OS === "web") {
+      navigation.navigate('PantallaPagoExitoso') 
+     }
   };
   // 📌 Enviar solicitud con validación
   const enviarSolicitud = async () => {

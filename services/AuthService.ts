@@ -1,5 +1,7 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { ImageService } from "./ImageService";
+import { PortafolioService } from "./Portafolio";
+import { supabase_client } from "./supabaseClient";
 export class AuthService {
   private static SUPABASE_URL = "https://idngwsekicptfluqumys.supabase.co";
   private static SUPABASE_KEY =
@@ -121,14 +123,20 @@ export class AuthService {
     nombre: string,
     telefono: string,
     esProveedor = false,
+    speciality: string = " ",
+    description: string = " ",
     profile_pic_url: string = " "
   ): Promise<void> {
-    const user = AuthService.supabase.auth.getUser();
-    if (!user) {
+    // Obtener usuario autenticado
+    const { data: userData, error: authError } = await AuthService.supabase.auth.getUser();
+    if (authError || !userData?.user) {
       throw new Error("Usuario no autenticado");
     }
-    const { error } = await AuthService.supabase.from("profiles").insert(
-      {
+  
+    // Insertar perfil en "profiles"
+    const { data: profile, error: profileError } = await AuthService.supabase
+      .from("profiles")
+      .insert({
         user_id: userId,
         name: nombre,
         phone: telefono,
@@ -136,15 +144,41 @@ export class AuthService {
         rating: 0,
         profile_pic_url: profile_pic_url,
         is_verified: false,
-      },
-    ).select();
-
-    if (error) {
-      console.error(`Error al guardar el perfil: ${error.message}`);
-      throw new Error(error.message);
+      })
+      .select();
+  
+    if (profileError) {
+      console.error(`Error al guardar el perfil: ${profileError.message}`);
+      throw new Error(profileError.message);
+    }
+  
+    if (profile && esProveedor) {
+      const profile_id = profile[0]?.id;
+      
+      // Insertar en "providers"
+      const { data: provider, error: providerError } = await AuthService.supabase
+      .from("providers")
+      .insert({
+        profile_id: profile_id, // Relacionar con el perfil
+        phone: telefono,
+        speciality: speciality || "",
+        availability: description || "",
+        description: description || ""
+      })
+      .select();
+  
+      if (providerError) {
+        console.error(`Error al guardar el proveedor: ${providerError.message}`);
+        throw new Error(providerError.message);
+      }
+  
+      if (provider) {
+        const provider_id = provider[0]?.id;
+        await PortafolioService.agregarServicio(provider_id, speciality, description, "");
+      }
     }
   }
-
+  
   static async autenticarUsuario(correo: string, contrasena: string) {
     const { data, error } = await AuthService.supabase.auth.signInWithPassword({
       email: correo,

@@ -79,7 +79,7 @@ const RegistroScreen = () => {
      const id_usuario = await AuthService.crearUsuarioAuth(correo, contrasena); 
      if(esProveedor){
        const url_foto = await AuthService.subirFotoPerfil(id_usuario,imagenPerfil);
-       AuthService.guardarPerfil(id_usuario, nombre, telefono, esProveedor,url_foto);
+       AuthService.guardarPerfil(id_usuario, nombre, telefono, esProveedor,especialidad,descripcion,url_foto);
       }else{
         AuthService.guardarPerfil(id_usuario, nombre, telefono, esProveedor);
       }
