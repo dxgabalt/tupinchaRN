@@ -10,6 +10,7 @@ import {
   ScrollView,
   Animated,
   Alert,
+  Linking,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles/stylesPantallaNegocios";
@@ -101,7 +102,9 @@ const PantallaNegocios = () => {
     };
     obtenerCategorias();
   }, []);
-
+  const handlePress = () => {
+    Linking.openURL("https://servicios.tupincha.com/shop/"); // Cambia la URL según lo necesites
+  };
   return (
     <View style={styles.container}>
  {/* 🔥 Menú Lateral con Animación */}
@@ -232,6 +235,16 @@ const PantallaNegocios = () => {
           </TouchableOpacity>
         )}
       />
+    {/* 📌 Banner Promocional */}
+    <TouchableOpacity style={styles.banner} onPress={handlePress}>
+      <Image
+        source={{
+          uri: "https://servicios.tupincha.com/wp-content/uploads/2024/01/Tu-Pincha-letras-blancas-3.png",
+        }}
+        style={styles.imagenBanner}
+      />
+    <Text style={styles.textoBanner}>Reserva tu servicio fácil y rápido</Text>
+    </TouchableOpacity>
     </View>
   );
 };

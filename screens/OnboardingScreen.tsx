@@ -2,19 +2,20 @@ import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
-  FlatList,
   Image,
   Dimensions,
   TouchableOpacity,
   Animated,
+  ScrollView,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
-import styles from '../styles/stylesOnboarding'; // ✅ Corregido el import de estilos
+import styles from '../styles/stylesOnboarding'; // ✅ Import corregido
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-// 📌 Lista de imágenes del onboarding (ruta corregida)
+// 📌 Lista de imágenes del onboarding (rutas corregidas)
 const slides = [
   { id: '1', image: require('../assets/onboarning/onboarding1.jpeg') },
   { id: '2', image: require('../assets/onboarning/onboarding2.jpeg') },
@@ -33,9 +34,9 @@ const OnboardingScreen = () => {
   const navigation = useNavigation<NavigationProps>();
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
-  const flatListRef = useRef<FlatList<any> | null>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
 
-  // 📌 Corrección del handleScroll sin `useNativeDriver`
+  // 📌 Manejo del scroll para actualizar el índice
   const handleScroll = (event: any) => {
     const index = Math.round(event.nativeEvent.contentOffset.x / width);
     setCurrentIndex(index);
@@ -44,20 +45,39 @@ const OnboardingScreen = () => {
   return (
     <View style={styles.container}>
       {/* 🔥 Carrusel de Imágenes */}
-      <FlatList
-        ref={flatListRef}
-        data={slides}
-        keyExtractor={(item) => item.id}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={(event) => handleScroll(event)}
-        renderItem={({ item }) => (
-          <View style={styles.slide}>
-            <Image source={item.image} style={styles.image} />
-          </View>
-        )}
-      />
+      {Platform.OS === 'web' ? (
+        <ScrollView
+          ref={scrollRef}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+        >
+          {slides.map((item) => (
+            <View key={item.id} style={styles.slide}>
+              <Image source={item.image} style={styles.image} />
+            </View>
+          ))}
+        </ScrollView>
+      ) : (
+        <Animated.FlatList
+          data={slides}
+          keyExtractor={(item) => item.id}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+            { useNativeDriver: false, listener: handleScroll }
+          )}
+          renderItem={({ item }) => (
+            <View style={styles.slide}>
+              <Image source={item.image} style={styles.image} />
+            </View>
+          )}
+        />
+      )}
 
       {/* 🔘 Indicadores de Progreso */}
       <View style={styles.indicators}>

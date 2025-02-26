@@ -14,7 +14,7 @@ export class ProviderServiceService {
   static async obtenerPorId(id: number): Promise<ProviderService | null> {
     const providerservice = await SupabaseService.obtenerDatos<ProviderService>(
       this.TABLE_NAME,
-      'id,provider_id,service_id,providers(id,phone,portafolio_provider(id,especialidad,imagen),profile_id,ubicacion,profiles(name,rating,profile_pic_url,phone),description,speciality,availability),services(id,category,tags))',
+      'id,provider_id,service_id,providers(id,phone,is_premium,portafolio_provider(id,especialidad,imagen),profile_id,ubicacion,profiles(name,rating,profile_pic_url,phone),description,speciality,availability),services(id,category,tags))',
       {
         id,
       },

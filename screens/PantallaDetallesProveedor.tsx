@@ -127,9 +127,12 @@ const PantallaDetallesProveedor = () => {
 
           {/* 📌 Botones de Acción */}
           <View style={styles.botonesContainer}>
+          {proveedor?.providers.is_premium && (
             <TouchableOpacity style={styles.botonContacto} onPress={contactarProveedor}>
               <Text style={styles.textoBoton}>📞 Contactar</Text>
             </TouchableOpacity>
+          )}
+           
             <TouchableOpacity
               style={styles.botonSolicitar}
               onPress={() =>

@@ -132,7 +132,7 @@ export class AuthService {
     if (authError || !userData?.user) {
       throw new Error("Usuario no autenticado");
     }
-  
+
     // Insertar perfil en "profiles"
     const { data: profile, error: profileError } = await AuthService.supabase
       .from("profiles")

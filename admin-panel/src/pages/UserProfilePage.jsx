@@ -26,9 +26,11 @@ const UserProfilePage = () => {
   const [historialPrestados, setHistorialPrestados] = useState([]);
 
   useEffect(() => {
+    console.log(usuario);
+    
     if (!usuario) {
       alert("⚠ Usuario no encontrado. Redirigiendo...");
-      navigate("/user-management");
+      navigate("/users");
       return;
     }
 
@@ -158,7 +160,7 @@ const UserProfilePage = () => {
           )}
 
           {/* 🔙 Botón de regreso */}
-          <button className="btn-volver" onClick={() => navigate("/user-management")}>
+          <button className="btn-volver" onClick={() => navigate("/users")}>
             ⬅ Volver a Usuarios
           </button>
         </div>

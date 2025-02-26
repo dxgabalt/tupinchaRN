@@ -12,6 +12,7 @@ export interface ProviderService {
     description: string;
     speciality: string;
     ubicacion: string;
+    is_premium: boolean;
     portafolio_provider: Portafolio[]
     profiles: {
       id?: number;
