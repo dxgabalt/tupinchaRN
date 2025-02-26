@@ -230,6 +230,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
   },
+  botonVolver: {
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: "#ddd",
+    borderRadius: 5,
+    alignItems: "center",
+  },
 });
 
 export default styles;

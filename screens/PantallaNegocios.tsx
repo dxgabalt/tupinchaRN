@@ -32,6 +32,7 @@ const PantallaNegocios = () => {
   const [provincias, setProvincias] = useState([]);
   const [municipios, setMunicipios] = useState([]);
   const [usuario, setUsuario] = useState({ id: "", name: "", email: "", phone: "", profile_pic_url: "", user_id: "" });
+  const [mostrarMunicipios, setMostrarMunicipios] = useState(false); // Nuevo estado
 
   // Animación del Menú Hamburguesa
   const menuAnim = useRef(new Animated.Value(-300)).current;
@@ -86,24 +87,28 @@ const PantallaNegocios = () => {
   }, [provinciaSeleccionada]);
 
   // Obtener las categorías
+  const obtenerCategorias = async () => {
+    try {
+      const servicios = await ServiceService.obtenerTodos();
+      setCategorias(servicios.map(servicio => ({
+        id: servicio.id,
+        category: servicio.category,
+        icono: servicio.icono,
+        tags: servicio.tags,
+      })));
+    } catch (error) {
+      console.error("Error obteniendo servicios:", error);
+    }
+  };
   useEffect(() => {
-    const obtenerCategorias = async () => {
-      try {
-        const servicios = await ServiceService.obtenerTodos();
-        setCategorias(servicios.map(servicio => ({
-          id: servicio.id,
-          category: servicio.category,
-          icono: servicio.icono,
-          tags: servicio.tags,
-        })));
-      } catch (error) {
-        console.error("Error obteniendo servicios:", error);
-      }
-    };
     obtenerCategorias();
   }, []);
   const handlePress = () => {
     Linking.openURL("https://servicios.tupincha.com/shop/"); // Cambia la URL según lo necesites
+  };
+  const buscar = (texto:string) => {
+    texto.length === 0 ? obtenerCategorias():setCategorias(categorias.filter(c => c.category.toLowerCase().includes(texto.toLowerCase())));
+    setBusqueda(texto);
   };
   return (
     <View style={styles.container}>
@@ -166,7 +171,7 @@ const PantallaNegocios = () => {
           style={styles.inputBusqueda}
           placeholder="Buscar servicio..."
           value={busqueda}
-          onChangeText={setBusqueda}
+          onChangeText={buscar}
         />
       </View>
 
@@ -181,41 +186,52 @@ const PantallaNegocios = () => {
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={styles.modalContenido}>
-            <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
-            <ScrollView style={styles.scrollView}>
-              {provincias.map((item) => (
-                <TouchableOpacity key={item.id} style={[styles.opcion, provinciaSeleccionada === item.id && styles.opcionActiva]}
-                  onPress={() => {
-                    setProvinciaSeleccionada(item.id);
-                    setNombreProvinciaSeleccionada(item.nombre);
-                    setMunicipioSeleccionado(null);
-                    setMunicipios([]);
-                  }}>
-                  <Text style={styles.textoOpcion}>{item.nombre}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            {provinciaSeleccionada && (
+            {!mostrarMunicipios ? (
               <>
+                <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
+                <ScrollView style={styles.scrollView}>
+                  {provincias.map((item) => (
+                    <TouchableOpacity 
+                      key={item.id} 
+                      style={[styles.opcion, provinciaSeleccionada === item.id && styles.opcionActiva]}
+                      onPress={() => {
+                        setProvinciaSeleccionada(item.id);
+                        setNombreProvinciaSeleccionada(item.nombre);
+                        setMunicipioSeleccionado(null);
+                        setMunicipios([]); 
+                        setMostrarMunicipios(true); // Cambia a mostrar municipios
+                      }}
+                    >
+                      <Text style={styles.textoOpcion}>{item.nombre}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity onPress={() => setMostrarMunicipios(false)} style={styles.botonVolver}>
+                  <Text style={styles.textoBoton}>← Volver</Text>
+                </TouchableOpacity>
                 <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
                 <FlatList
                   data={municipios}
                   keyExtractor={(item) => item.id.toString()}
                   renderItem={({ item }) => (
-                    <TouchableOpacity style={[styles.opcion, municipioSeleccionado === item.id && styles.opcionActiva]}
+                    <TouchableOpacity 
+                      style={[styles.opcion, municipioSeleccionado === item.id && styles.opcionActiva]}
                       onPress={() => {
                         setMunicipioSeleccionado(item.id);
                         setNombreMunicipioSeleccionado(item.name);
                         setModalVisible(false);
-                      }}>
+                      }}
+                    >
                       <Text style={styles.textoOpcion}>{item.name}</Text>
                     </TouchableOpacity>
                   )}
                 />
               </>
             )}
-
+      
             <TouchableOpacity style={styles.botonCerrar} onPress={() => setModalVisible(false)}>
               <Text style={styles.textoBoton}>Cerrar</Text>
             </TouchableOpacity>

@@ -46,20 +46,9 @@ const OnboardingScreen = () => {
     <View style={styles.container}>
       {/* 🔥 Carrusel de Imágenes */}
       {Platform.OS === 'web' ? (
-        <ScrollView
-          ref={scrollRef}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onScroll={handleScroll}
-          scrollEventThrottle={16}
-        >
-          {slides.map((item) => (
-            <View key={item.id} style={styles.slide}>
-              <Image source={item.image} style={styles.image} />
-            </View>
-          ))}
-        </ScrollView>
+        <View style={styles.slide}>
+          <Image source={slides[0].image} style={styles.image} />
+        </View>
       ) : (
         <Animated.FlatList
           data={slides}
@@ -80,6 +69,7 @@ const OnboardingScreen = () => {
       )}
 
       {/* 🔘 Indicadores de Progreso */}
+      {Platform.OS !== 'web' && (
       <View style={styles.indicators}>
         {slides.map((_, index) => (
           <View
@@ -90,7 +80,7 @@ const OnboardingScreen = () => {
             ]}
           />
         ))}
-      </View>
+      </View>)}
 
       {/* 🔥 Botones */}
       <TouchableOpacity
