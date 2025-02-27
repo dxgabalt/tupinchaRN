@@ -114,7 +114,7 @@ const PantallaDetalleSolicitud = () => {
           </Text>
 
           {/* 📌 Imagen del Servicio */}
-          <Image source={{ uri: solicitud?.image_url || 'https://via.placeholder.com/200' }} style={styles.imagenServicio} />
+          <Image source={{ uri: solicitud?.images || 'https://via.placeholder.com/200' }} style={styles.imagenServicio} />
 
           {/* 🛠️ Información del Servicio */}
           <Text style={styles.servicio}>{solicitud?.services?.category}</Text>

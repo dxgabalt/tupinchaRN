@@ -38,6 +38,14 @@ export class ProviderServiceService {
       this.TABLE_NAME,
       datos,
     );
+  } 
+  static async agregarServicioProveedor(provider_id:number,service_id:number) {
+    const { data: provider, error: providerError } = await supabase_client
+    .from(this.TABLE_NAME)
+    .insert({
+      provider_id, 
+      service_id
+    })
   }
 
   // Actualizar un PROVIDERSERVICE por ID

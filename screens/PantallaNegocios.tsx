@@ -253,13 +253,7 @@ const PantallaNegocios = () => {
       />
     {/* 📌 Banner Promocional */}
     <TouchableOpacity style={styles.banner} onPress={handlePress}>
-      <Image
-        source={{
-          uri: "https://servicios.tupincha.com/wp-content/uploads/2024/01/Tu-Pincha-letras-blancas-3.png",
-        }}
-        style={styles.imagenBanner}
-      />
-    <Text style={styles.textoBanner}>Reserva tu servicio fácil y rápido</Text>
+    <Text style={styles.textoBanner}> 🛒 Realiza tus compras aqui</Text>
     </TouchableOpacity>
     </View>
   );

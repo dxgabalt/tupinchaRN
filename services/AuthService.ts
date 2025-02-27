@@ -2,6 +2,7 @@ import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { ImageService } from "./ImageService";
 import { PortafolioService } from "./Portafolio";
 import { supabase_client } from "./supabaseClient";
+import { ProviderServiceService } from "./ProviderServiceService";
 export class AuthService {
   private static SUPABASE_URL = "https://idngwsekicptfluqumys.supabase.co";
   private static SUPABASE_KEY =
@@ -122,6 +123,8 @@ export class AuthService {
     userId: string,
     nombre: string,
     telefono: string,
+    municipio_id:number,
+    servicio_id:number = 0,
     esProveedor = false,
     speciality: string = " ",
     description: string = " ",
@@ -142,6 +145,7 @@ export class AuthService {
         phone: telefono,
         role_id: esProveedor ? 3 : 2,
         rating: 0,
+        municipio_id,
         profile_pic_url: profile_pic_url,
         is_verified: false,
       })
@@ -175,6 +179,7 @@ export class AuthService {
       if (provider) {
         const provider_id = provider[0]?.id;
         await PortafolioService.agregarServicio(provider_id, speciality, description, "");
+        await ProviderServiceService.agregarServicioProveedor(provider_id,servicio_id)
       }
     }
   }

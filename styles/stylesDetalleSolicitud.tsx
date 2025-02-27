@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
   /** 🔥 Imagen del Servicio */
   imagenServicio: {
     width: '100%',
-    height: 220,
+    height: '100%',
     borderRadius: 15,
     marginBottom: 20,
     shadowColor: '#000',

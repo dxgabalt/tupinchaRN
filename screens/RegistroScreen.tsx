@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   ScrollView,
   Image,
+  Modal,
+  FlatList,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker'; // 📌 Importar librería para seleccionar imágenes
 import { useNavigation } from '@react-navigation/native';
@@ -28,7 +30,7 @@ const RegistroScreen = () => {
   const [telefono, setTelefono] = useState('');
   const [esProveedor, setEsProveedor] = useState(false);
   const [especialidad, setEspecialidad] = useState('');
-  const [servicio, setServicio] = useState('');
+  const [servicio, setServicio] = useState(0);
   const [descripcion, setDescripcion] = useState('');
   const [imagenPerfil, setImagenPerfil] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -37,9 +39,10 @@ const RegistroScreen = () => {
   const [municipios, setMunicipios] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(null);
-  const [municipioSeleccionado, setMunicipioSeleccionado] = useState(null);
+  const [municipioSeleccionado, setMunicipioSeleccionado] = useState(0);
   const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] = useState(null);
   const [mostrarMunicipios, setMostrarMunicipios] = useState(false); // Nuevo estado
+  const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] = useState(null);
 
   // 📌 Permitir al usuario subir una imagen desde su galería
   const seleccionarImagen = async () => {
@@ -109,9 +112,9 @@ const RegistroScreen = () => {
      const id_usuario = await AuthService.crearUsuarioAuth(correo, contrasena); 
      if(esProveedor){
        const url_foto = await AuthService.subirFotoPerfil(id_usuario,imagenPerfil);
-       AuthService.guardarPerfil(id_usuario, nombre, telefono, esProveedor,especialidad,descripcion,url_foto);
+       AuthService.guardarPerfil(id_usuario, nombre, telefono,municipioSeleccionado,servicio,esProveedor,especialidad,descripcion,url_foto);
       }else{
-        AuthService.guardarPerfil(id_usuario, nombre, telefono, esProveedor);
+        AuthService.guardarPerfil(id_usuario, nombre, telefono,municipioSeleccionado,0,esProveedor);
       }
       // Simulación de registro exitoso
       setTimeout(() => {
@@ -182,6 +185,12 @@ const RegistroScreen = () => {
       <TextInput placeholder="Contraseña" style={styles.input} value={contrasena} secureTextEntry onChangeText={setContrasena} />
       <TextInput placeholder="Teléfono" style={styles.input} value={telefono} keyboardType="phone-pad" onChangeText={setTelefono} />
       {/* 📌 Modal de selección de ubicación */}
+         {/* 🌍 Botón para seleccionar ubicación */}
+      <TouchableOpacity style={styles.botonFiltro} onPress={() => setModalVisible(true)}>
+         <Text style={styles.textoBoton}>
+           {provinciaSeleccionada ? `${nombreProvinciaSeleccionada} - ${nombreMunicipioSeleccionado || "Selecciona municipio"}` : "Seleccionar Ubicación"}
+         </Text>
+       </TouchableOpacity>
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={styles.modalContenido}>
@@ -251,7 +260,7 @@ const RegistroScreen = () => {
           <TextInput placeholder="Descripción del servicio" style={styles.input} value={descripcion} onChangeText={setDescripcion} multiline />
           <View style={styles.switchContainer}>
           <Text style={styles.labelSwitch}>Categoria</Text>
-             <Picker style={styles.input} selectedValue={especialidad} onValueChange={(itemValue) => setServicio(itemValue?.id)}>
+             <Picker style={styles.input} selectedValue={servicio} onValueChange={(itemValue) => setServicio(itemValue?.id)}>
                {servicios.map((servicio) => (
                  <Picker.Item key={servicio.id} label={servicio.category} value={servicio.category} />
                ))}

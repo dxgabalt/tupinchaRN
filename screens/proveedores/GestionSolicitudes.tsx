@@ -28,8 +28,8 @@ const PantallaGestionSolicitudes = () => {
   useEffect(() => {
     const obtenerSolicitudes = async () => {
       try {
-        const user = await SupabaseService.obtenerUsuarioAuth();
-        const user_id = user?.id || '';
+        const user = await AuthService.obtenerPerfil();
+        const user_id = user.user_id || '';
         const data = await SolicitudService.obtenerSolicitudesComoProveedor(user_id);
         setSolicitudes(data);
       } catch (error) {

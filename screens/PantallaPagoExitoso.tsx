@@ -8,7 +8,7 @@ const PantallaPagoExitoso = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.emoji}>🎉</Text>
-      <Text style={styles.titulo}>¡Pago Exitoso!</Text>
+      <Text style={styles.titulo}>¡Solicitud Exitosa!</Text>
       <Text style={styles.descripcion}>
         Tu pago ha sido procesado correctamente. Puedes revisar los detalles en
         tu historial de pagos.
