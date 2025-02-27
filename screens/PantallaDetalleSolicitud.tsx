@@ -8,11 +8,13 @@ import {
   Alert,
   Animated,
   ActivityIndicator,
+  FlatList,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import styles from '../styles/stylesDetalleSolicitud';
 import { Solicitud } from '../models/Solicitud';
 import SolicitudService from '../services/SolicitudService';
+import { Cotizacion } from '../models/Cotizacion';
 
 // 📌 Pantalla Detalle de la Solicitud
 const PantallaDetalleSolicitud = () => {
@@ -21,6 +23,7 @@ const PantallaDetalleSolicitud = () => {
   const { solicitudId } = route.params || {};
 
   const [solicitud, setSolicitud] = useState<Solicitud | null>(null);
+  const [cotizaciones, setCotizaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
   const menuAnim = useRef(new Animated.Value(-300)).current;
@@ -50,8 +53,19 @@ const PantallaDetalleSolicitud = () => {
       }
     };
     obtenerSolicitud();
-  }, []);
+  }, []); 
 
+useEffect(() => {
+    const obtenerCotizaciones = async () => {
+      try {
+        const cotizaciones_data = await SolicitudService.obtenerCotizaciones(solicitudId)
+        setCotizaciones(cotizaciones_data);
+      } catch (error) {
+        console.error("Error obteniendo cotizaciones:", error);
+      }
+    };
+    obtenerCotizaciones();
+  }, []);
   // 📌 Función para contactar al proveedor
   const contactarProveedor = () => {
     animarBoton();
@@ -114,16 +128,26 @@ const PantallaDetalleSolicitud = () => {
           </Text>
 
           {/* 📌 Imagen del Servicio */}
-          <Image source={{ uri: solicitud?.images || 'https://via.placeholder.com/200' }} style={styles.imagenServicio} />
+          <Image source={{ uri: solicitud?.images || '' }} style={styles.imagenServicio} />
 
           {/* 🛠️ Información del Servicio */}
           <Text style={styles.servicio}>{solicitud?.services?.category}</Text>
           <Text style={styles.descripcion}>📝 {solicitud?.request_description}</Text>
           <Text style={styles.fecha}>📅 {solicitud?.service_date}</Text>
-
-          {/* 👤 Información del Proveedor */}
+        <FlatList
+          data={cotizaciones}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.item}>
+                <Text style={styles.text}>{item.costo_mano_obra}</Text>
+                <Text style={styles.text}>{item.costo_materiales}</Text>
+                <Text style={styles.text}>{item.descripcion}</Text>
+              </View>
+          )}
+      />
+        {/* 👤 Información del Proveedor */}
           <View style={styles.cardProveedor}>
-            <Image source={{ uri: solicitud?.providers?.profiles?.profile_pic_url || 'https://via.placeholder.com/100' }} style={styles.imagenProveedor} />
+            <Image source={{ uri: solicitud?.providers?.profiles?.profile_pic_url || '' }} style={styles.imagenProveedor} />
             <View>
               <Text style={styles.nombreProveedor}>{solicitud?.providers?.profiles?.name}</Text>
               <Text style={styles.telefonoProveedor}>📞 {solicitud?.providers?.profiles?.phone}</Text>

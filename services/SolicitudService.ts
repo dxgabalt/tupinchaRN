@@ -6,6 +6,7 @@ import {createClient, SupabaseClient} from '@supabase/supabase-js';
 import { supabase_client } from './supabaseClient';
 import { ProviderService } from '../models/ProviderService';
 import { Alert } from 'react-native';
+import { Cotizacion } from '../models/Cotizacion';
 
 export class SolicitudService {
   private static readonly TABLE_NAME = 'requests';
@@ -26,7 +27,7 @@ export class SolicitudService {
     const { data, error } = await supabase_client
       .from(SolicitudService.TABLE_NAME)
       .select(
-        `id, provider_id, providers(id, phone, profile_id, profiles(name, rating, profile_pic_url, phone), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id`
+        `id, provider_id, request_description,providers(id, phone, profile_id, profiles(name, rating, profile_pic_url, phone), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id`
       )
       .eq("user_id", userId);
   
@@ -40,8 +41,8 @@ export class SolicitudService {
         const fecha = item.service_date;
         const estado = item.status;
         const fotoProveedor = item.providers?.[0]?.profiles?.[0]?.profile_pic_url || "";
-  
-        return { id: item.id, proveedor, servicio, fecha, estado, fotoProveedor };
+        const request_description= item.request_description
+        return { id: item.id, proveedor, servicio, fecha, estado, fotoProveedor,request_description };
       }) || []
     );
   }
@@ -54,6 +55,10 @@ export class SolicitudService {
       {id},
     );
     return solicituds[0] || null;
+  }  
+  
+  static async obtenerCotizaciones(id: number): Promise<Cotizacion[]> {
+    return await SupabaseService.obtenerDatos<Cotizacion>("cotizaciones","*",{request_id:id});
   }
 
   static async obtenerSolicitudsPorCategoria(

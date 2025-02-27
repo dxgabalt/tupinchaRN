@@ -120,6 +120,7 @@ const PantallaHistorialUsuario = () => {
               <Image source={{ uri: item.fotoProveedor }} style={styles.imagenServicio} />
               <View style={styles.textosCard}>
                 <Text style={styles.servicio}>{item.servicio}</Text>
+                <Text style={styles.servicio}>{item.request_description}</Text>
                 <Text style={styles.proveedor}>👤 {item.proveedor}</Text>
                 <Text style={styles.estado}>
                   🏷️ Estado: <Text style={styles.estadoTexto}>{item.estado}</Text>

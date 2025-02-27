@@ -74,6 +74,15 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
+  item: {
+    padding: 15,
+    marginVertical: 5,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+  },
+  text: {
+    fontSize: 16,
+  },
 
   /** 🔥 Tarjeta del Proveedor */
   cardProveedor: {

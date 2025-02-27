@@ -17,6 +17,7 @@ import styles from '../../styles/stylesGestionSolicitudes';
 import SolicitudService from '../../services/SolicitudService';
 import { Solicitud } from '../../models/Solicitud';
 import { AuthService } from '../../services/AuthService';
+import CotizacionService from '../../services/CotizacionService';
 
 const PantallaGestionSolicitudes = () => {
   const navigation = useNavigation();
@@ -27,6 +28,8 @@ const PantallaGestionSolicitudes = () => {
   const [descripcion, setDescripcion] = useState("");
   const [costoManoObra, setCostoManoObra] = useState("");
   const [costoMateriales, setCostoMateriales] = useState("");
+  const [request, setRequest] = useState(0);
+  const [provider, setProvider] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
 
   /** 🔥 Cargar Solicitudes del Proveedor */
@@ -35,6 +38,8 @@ const PantallaGestionSolicitudes = () => {
       try {
         const user = await AuthService.obtenerPerfil();
         const user_id = user.user_id || '';
+        const provider_id = user.provider.id || '';
+        setProvider(provider_id)
         const data = await SolicitudService.obtenerSolicitudesComoProveedor(user_id);
         setSolicitudes(data);
       } catch (error) {
@@ -83,10 +88,11 @@ const PantallaGestionSolicitudes = () => {
   };
   /** 📌 Guardar Cotizacion */
   const handleGuardar = () => {
-    console.log({ descripcion, costoManoObra, costoMateriales });
+    CotizacionService.agregarCotizacion(provider,request,costoManoObra,costoMateriales,descripcion)
     setModalVisible(false);
   };
   const mostarModalCotizacion=(request_id:number) => {
+    setRequest(request_id)
     setModalVisible(true);
   }
   return (
