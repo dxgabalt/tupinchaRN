@@ -5,15 +5,16 @@ import {
   FlatList,
   TouchableOpacity,
   Alert,
+  Modal,
   Animated,
   ScrollView,
   ActivityIndicator,
   Image,
+  TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import styles from '../../styles/stylesGestionSolicitudes';
 import SolicitudService from '../../services/SolicitudService';
-import SupabaseService from '../../services/SupabaseService';
 import { Solicitud } from '../../models/Solicitud';
 import { AuthService } from '../../services/AuthService';
 
@@ -23,6 +24,10 @@ const PantallaGestionSolicitudes = () => {
   const [loading, setLoading] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
   const menuAnim = useRef(new Animated.Value(-300)).current;
+  const [descripcion, setDescripcion] = useState("");
+  const [costoManoObra, setCostoManoObra] = useState("");
+  const [costoMateriales, setCostoMateriales] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
 
   /** 🔥 Cargar Solicitudes del Proveedor */
   useEffect(() => {
@@ -76,7 +81,14 @@ const PantallaGestionSolicitudes = () => {
       Alert.alert('Error', 'No se pudo cerrar sesión.');
     }
   };
-
+  /** 📌 Guardar Cotizacion */
+  const handleGuardar = () => {
+    console.log({ descripcion, costoManoObra, costoMateriales });
+    setModalVisible(false);
+  };
+  const mostarModalCotizacion=(request_id:number) => {
+    setModalVisible(true);
+  }
   return (
     <View style={styles.container}>
       {/* 🔥 Menú de Navegación */}
@@ -150,6 +162,12 @@ const PantallaGestionSolicitudes = () => {
 
                 {item.status !== 'aceptada' && (
                   <View style={styles.botonesContainer}>
+                  <TouchableOpacity
+                      style={styles.botonCotizar}
+                      onPress={() => mostarModalCotizacion(item.id)}
+                    >
+                      <Text style={styles.textoBoton}>🛒📝  Enviar Cotizacion</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.botonAceptar}
                       onPress={() => manejarSolicitud(item.id, 'aceptada')}
@@ -169,6 +187,40 @@ const PantallaGestionSolicitudes = () => {
           )}
         />
       )}
+      <Modal visible={modalVisible} animationType="slide" transparent>
+      <View style={styles.modalContainer}>
+      <View style={styles.modalContenido}>
+        <Text style={styles.modalTitulo}>Ingresar Información</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Descripción"
+          value={descripcion}
+          onChangeText={setDescripcion}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Costo de Mano de Obra"
+          keyboardType="numeric"
+          value={costoManoObra}
+          onChangeText={setCostoManoObra}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Costo de Materiales"
+          keyboardType="numeric"
+          value={costoMateriales}
+          onChangeText={setCostoMateriales}
+        />
+
+        <TouchableOpacity style={styles.boton} onPress={handleGuardar}>
+          <Text style={styles.textoBoton}>Guardar</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.botonCerrar} onPress={() => setModalVisible(false)}>
+          <Text style={styles.textoBoton}>Cerrar</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+      </Modal>
     </View>
   );
 };
