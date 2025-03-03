@@ -1,4 +1,5 @@
 import {ProviderService} from '../models/ProviderService';
+import { AuthService } from './AuthService';
 import { supabase_client } from './supabaseClient';
 import SupabaseService from './SupabaseService';
 
@@ -21,16 +22,34 @@ export class ProviderServiceService {
     );
     return providerservice.length > 0 ? providerservice[0] : null;
   } 
-  static async obtenerPorServicio(service_id: number): Promise<ProviderService[] > {
+  static async obtenerPorServicio(service_id: number, municipio_id: number = 0): Promise<ProviderService[]> {
+    // Obtener perfil
+    const perfil = await AuthService.obtenerPerfil();
+    const municipio = municipio_id === 0 ? perfil?.municipio_id : municipio_id;
+    console.log(municipio);
+
+    // Obtener los servicios del proveedor
     const providerservice = await SupabaseService.obtenerDatos<ProviderService>(
-      this.TABLE_NAME,
-      'id,provider_id,service_id,providers(id,phone,portafolio_provider(id,especialidad,imagen),profile_id,ubicacion,profiles(name,rating,profile_pic_url,phone),description,speciality,availability),services(id,category,tags))',
-      {
-        service_id,
-      },
+        this.TABLE_NAME,
+        'id,provider_id,service_id,providers(id,phone,portafolio_provider(id,especialidad,imagen),profile_id,ubicacion,profiles(name,rating,profile_pic_url,phone,municipio_id),description,speciality,availability),services(id,category,tags)',
+        {
+            service_id,
+        }
     );
+
+    // Filtrar los resultados por municipio_id si es necesario
+    if (municipio !== 0) {
+        return providerservice.filter(provider => 
+            provider.providers?.profiles?.municipio_id === municipio
+        );
+    }
+
+    // Si no se necesita filtro, devolver todos los resultados
     return providerservice.length > 0 ? providerservice : [];
-  }
+}
+
+
+
 
   // Crear un nuevo PROVIDERSERVICE
   static async crear(datos: Partial<ProviderService>): Promise<boolean> {

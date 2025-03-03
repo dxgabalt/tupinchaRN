@@ -1,3 +1,4 @@
+import { Cotizacion } from "./Cotizacion";
 import { Service } from "./Service";
 
 export interface Solicitud {
@@ -26,6 +27,7 @@ export interface Solicitud {
     };
     availability: string;
   }| Perfil[]
+  cotizaciones: Cotizacion[];
   request_description: string;
   service_date: string;
   images?: string;

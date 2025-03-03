@@ -250,6 +250,58 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
   },
+  cardCotizacion: {
+    backgroundColor: 'white',
+    padding: 15,
+    marginVertical: 10,
+    marginHorizontal: 15,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: {
+        width: 0,
+        height: 3,
+    },
+    elevation: 3, // Solo para Android
+},
+cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+},
+icon: {
+    fontSize: 20,
+    marginRight: 10,
+},
+notasContainer: {
+  marginTop: 10,
+  padding: 5,
+  backgroundColor: "#f9f9f9",
+  borderRadius: 5,
+},
+tituloNotas: {
+  fontSize: 16,
+  fontWeight: "bold",
+  marginBottom: 5,
+},
+notaItem: {
+  paddingVertical: 2,
+},
+botonGuardar: {
+  backgroundColor: "#28a745",
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderRadius: 5,
+  marginTop: 10,
+},
+botonCerrarModal: {
+  backgroundColor: "#FF0314",
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderRadius: 5,
+  marginTop: 10,
+},
 });
 
 export default styles;

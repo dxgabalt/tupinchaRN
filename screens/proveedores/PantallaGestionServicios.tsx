@@ -218,6 +218,14 @@ const PantallaGestionServicios = () => {
             <TouchableOpacity style={styles.botonSubir} onPress={seleccionarImagen}>
               <Text style={styles.textoBoton}>📷 Subir Imagen</Text>
             </TouchableOpacity>
+            {/* 🔥 Previsualización de Imagen */}
+            {foto ? (
+              <Image
+                source={{ uri: foto }}
+                style={{ width: 200, height: 200, borderRadius: 10 }}
+                resizeMode="cover"
+              />
+            ) : null}
           </>
         )}
       </ScrollView>

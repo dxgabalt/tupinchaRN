@@ -50,7 +50,7 @@ class SolicitudService {
     const { data: solicitudes, error: errorSolicitud } = await supabase_client
       .from(this.TABLE_NAME)
       .select(
-        "id, provider_id, providers(id, phone, profile_id, profiles(id, name, rating, profile_pic_url, phone)), service_id, services(id, category, tags), request_description, service_date, images, status, user_id"
+        "id, provider_id,cotizaciones(id,costo_mano_obra,costo_materiales,descripcion), providers(id, phone, profile_id, profiles(id, name, rating, profile_pic_url, phone)), service_id, services(id, category, tags), request_description, service_date, images, status, user_id"
       )
       .match(filtro);
   

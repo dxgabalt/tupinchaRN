@@ -23,42 +23,81 @@ export class AuthService {
     correo: string,
     contrasena: string
   ): Promise<string> {
-    const { data, error } = await AuthService.supabase.auth.signUp({
-      email: correo,
-      password: contrasena,
-    });
-
-    if (error) {
-      console.error(`Error al registrar usuario: ${error.message}`);
-      throw new Error(error.message);
-    }
-
-    // Autoconfirmar el usuario
-    if (data.user) {
-      const { error: updateError } =
-        await AuthService.supabaseAdmin.auth.admin.updateUserById(
-          data.user.id,
-          {
-            email_confirm: true,
+    const maxRetries = 3; // Número máximo de reintentos
+    const initialDelay = 1000; // Retardo inicial en milisegundos (1 segundo)
+  
+    let retries = 0;
+  
+    while (retries < maxRetries) {
+      try {
+        // Registrar al usuario
+        const { data, error } = await AuthService.supabase.auth.signUp({
+          email: correo,
+          password: contrasena,
+        });
+  
+        if (error) {
+          console.error(`Error al registrar usuario: ${error.message}`);
+  
+          // Manejar el límite de envíos de correo
+          if (error.code === "over_email_send_rate_limit") {
+            throw new Error("Se ha excedido el límite de envíos de correo.");
           }
-        );
-
-      if (updateError) {
-        console.error(`Error al confirmar usuario: ${updateError.message}`);
-        throw new Error(updateError.message);
+  
+          throw new Error(error.message);
+        }
+  
+        if (!data.user) {
+          throw new Error("El usuario no se creó correctamente.");
+        }
+  
+        // Autoconfirmar el usuario
+        const { error: updateError } =
+          await AuthService.supabaseAdmin.auth.admin.updateUserById(data.user.id, {
+            email_confirm: true,
+          });
+  
+        if (updateError) {
+          console.error(`Error al confirmar usuario: ${updateError.message}`);
+          throw new Error(updateError.message);
+        }
+  
+        // Iniciar sesión automáticamente después del registro
+        const { error: errorLogin } =
+          await AuthService.supabase.auth.signInWithPassword({
+            email: correo,
+            password: contrasena,
+          });
+  
+        if (errorLogin) {
+          console.error(`Error al iniciar sesión: ${errorLogin.message}`);
+          throw new Error(errorLogin.message);
+        }
+  
+        // Retornar el ID del usuario creado
+        return data.user.id;
+      } catch (err) {
+        retries++;
+  
+        // Si se superan los reintentos, lanzar el error
+        if (retries >= maxRetries) {
+          console.error(`Error en crearUsuarioAuth después de ${maxRetries} intentos: ${(err as Error).message}`);
+          throw err;
+        }
+  
+        // Calcular el retardo exponencial
+        const delay = initialDelay * Math.pow(2, retries - 1);
+        console.warn(`Reintentando en ${delay} ms... (Intento ${retries}/${maxRetries})`);
+  
+        // Esperar antes de reintentar
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
-    const { error: errorLogin } =
-      await AuthService.supabase.auth.signInWithPassword({
-        email: correo,
-        password: contrasena,
-      });
-    if (errorLogin) {
-      console.error(`Error al confirmar usuario: ${errorLogin.message}`);
-      throw new Error(errorLogin.message);
-    }
-    return data.user?.id || "";
+  
+    // Si se sale del bucle sin éxito, lanzar un error genérico
+    throw new Error("No se pudo crear el usuario después de varios intentos.");
   }
+  
   static async actualizarPerfil(
     userId: string,
     nombre: string,

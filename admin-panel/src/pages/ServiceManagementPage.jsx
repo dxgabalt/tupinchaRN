@@ -7,6 +7,9 @@ const ServiceManagementPage = () => {
   const [servicios, setServicios] = useState([]);
   const [filtro, setFiltro] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("Todos");
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [cotizaciones, setCotizaciones] = useState([]);
+
 
   // 📌 Cargar servicios desde el servicio
   useEffect(() => {
@@ -25,6 +28,10 @@ const ServiceManagementPage = () => {
           servicio.id === id ? { ...servicio, status: nuevoEstado } : servicio
         )
       );
+  };
+  const verCotizaciones = (cotizaciones) => {
+    setCotizaciones(cotizaciones)
+    setModalAbierto(true)
   };
 
   // 📌 Eliminar servicio
@@ -71,6 +78,7 @@ const ServiceManagementPage = () => {
             <tr>
               <th>Categoría</th>
               <th>Proveedor</th>
+              <th>Descripcion</th>
               <th>Cliente</th>
               <th>Estado</th>
               <th>Acciones</th>
@@ -82,6 +90,7 @@ const ServiceManagementPage = () => {
                 <tr key={servicio.id}>
                   <td>{servicio.services.category}</td>
                   <td>{servicio.providers.profiles.name}</td>
+                  <td>{servicio.request_description}</td>
                   <td>{servicio.usuarioPerfil.name}</td>
                   <td>
                     <span className={`estado ${servicio.status.toLowerCase()}`}>
@@ -89,6 +98,12 @@ const ServiceManagementPage = () => {
                     </span>
                   </td>
                   <td>
+                  <button
+                    className="btn-approve"
+                    onClick={() => verCotizaciones(servicio.cotizaciones)}
+                  >
+                    Ver Cotización
+                  </button>
                     {servicio.status === "Pendiente" && (
                       <>
                         <button
@@ -127,6 +142,39 @@ const ServiceManagementPage = () => {
           </tbody>
         </table>
       </main>
+      {modalAbierto && (
+        <div className="modal">
+          <div className="modal-content">
+            <h2>Cotizaciones</h2>
+             {/* 📌 Tabla de Servicios */}
+        <table className="service-table">
+          <thead>
+            <tr>
+              <th>Costo de mano de obra</th>
+              <th>Costo de materiales</th>
+              <th>Descripcion</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cotizaciones.length > 0 ? (
+              cotizaciones.map((cotizacion) => (
+                <tr key={cotizacion.id}>
+                  <td>{cotizacion.costo_mano_obra}</td>
+                  <td>{cotizacion.costo_materiales}</td>
+                  <td>{cotizacion.descripcion}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="no-results">No hay cotizaciones disponibles.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+            <button onClick={() => setModalAbierto(false)}>❌ Cancelar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -245,7 +245,7 @@ const PantallaNegocios = () => {
         keyExtractor={(item) => item.id}
         numColumns={3}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.cardCategoria} onPress={() => navigation.navigate("PantallaResultadosBusqueda", { servicio: item.category , service_id: item.id })}>
+          <TouchableOpacity style={styles.cardCategoria} onPress={() => navigation.navigate("PantallaResultadosBusqueda", { servicio: item.category , service_id: item.id,municipio_id:municipioSeleccionado })}>
             <Text style={styles.emoji}>{item.icono}</Text>
             <Text style={styles.textoCategoria} numberOfLines={1} ellipsizeMode="tail">{item.category}</Text>
           </TouchableOpacity>

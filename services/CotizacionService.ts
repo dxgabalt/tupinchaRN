@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { Cotizacion } from "../models/Cotizacion";
+import { CotizacionNota } from "../models/CotizacionNota";
 import { supabase_client } from "./supabaseClient";
 import SupabaseService from "./SupabaseService";
 
@@ -46,7 +47,31 @@ export class CotizacionService {
         costo_materiales: costo_materiales,
         request_id: request_id,
       });
+  }  
+  
+  static async agregarNotaCotizacion(
+    cotizacion_id: number,
+    nota: string,
+    is_provider: boolean = false
+  ) {
+    if (is_provider) {
+      return await SupabaseService.actualizarRegistro<CotizacionNota>('cotizacion_notas', {nota_provider: nota}, 'cotizacion_id', cotizacion_id);
+    } else {
+      // Si no es proveedor, inserta la nota del cliente
+      const { data, error } = await supabase_client
+        .from('cotizacion_notas')
+        .insert({
+          cotizacion_id: cotizacion_id,
+          nota_client: nota,
+        });
+  
+      if (error) {
+        console.error('Error insertando nota del cliente:', error);
+      }
+      return data;
+    }
   }
+  
   static async actualizarCotizacion(
     id: number,
     datosActualizados: Partial<Cotizacion>

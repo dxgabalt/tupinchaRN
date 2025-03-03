@@ -20,6 +20,7 @@ export interface ProviderService {
       rating: number;
       profile_pic_url: string;
       phone: string;
+      municipio_id:number;
     };
     availability: string;
   }

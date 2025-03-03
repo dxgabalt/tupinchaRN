@@ -18,7 +18,7 @@ import { AuthService } from '../services/AuthService';
 const PantallaResultadosBusqueda = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { servicio,service_id } = route.params || {};
+  const { servicio,service_id,municipio_id } = route.params || {};
 
   const [busqueda, setBusqueda] = useState('');
   const [fadeAnim] = useState(new Animated.Value(0));
@@ -41,7 +41,9 @@ const PantallaResultadosBusqueda = () => {
   useEffect(() => {
     const obtenerNegocios = async () => {
       try {
-        const providers_services = await ProviderServiceService.obtenerPorServicio(service_id);
+        const municipio = municipio_id !== null ?municipio_id:0
+        console.log('municipio_id',municipio);
+        const providers_services = await ProviderServiceService.obtenerPorServicio(service_id,municipio);
         const negociosFormateados = providers_services.map((servicio) => ({
           id: servicio.id,
           nombre: servicio.providers?.profiles?.name || 'Sin nombre',

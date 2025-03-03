@@ -84,7 +84,7 @@ const UserProfilePage = () => {
         <div className="perfil-container">
           {/* 📸 Foto de perfil y detalles básicos */}
           <div className="perfil-detalles">
-            <img src="https://via.placeholder.com/120" alt="Foto de perfil" className="perfil-imagen" />
+            <img src={usuario.imagen} alt="Foto de perfil" className="perfil-imagen" />
             <h2>{nombre}</h2>
             <p>📧 {usuario.correo}</p>
             <p>📞 {telefono}</p>
@@ -92,39 +92,6 @@ const UserProfilePage = () => {
             <p>⭐ {usuario.calificacion ? usuario.calificacion + " / 5" : "Sin calificaciones"}</p>
             <p className={estado === "Activo" ? "estadoActivo" : "estadoSuspendido"}>🔵 Estado: {estado}</p>
           </div>
-
-          {/* ✏ Formulario de edición */}
-          {editando ? (
-            <div className="perfil-edicion">
-              <label>Nombre:</label>
-              <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} />
-
-              <label>Teléfono:</label>
-              <input type="text" value={telefono} onChange={(e) => setTelefono(e.target.value)} />
-
-              <label>Estado:</label>
-              <select value={estado} onChange={(e) => setEstado(e.target.value)}>
-                <option value="Activo">Activo</option>
-                <option value="Suspendido">Suspendido</option>
-              </select>
-
-              {usuario.tipo === "Proveedor" && (
-                <>
-                  <label>Categoría:</label>
-                  <input type="text" value={categoria} onChange={(e) => setCategoria(e.target.value)} />
-                </>
-              )}
-
-              <button className="btn-guardar" onClick={guardarEdicion}>
-                💾 Guardar Cambios
-              </button>
-            </div>
-          ) : (
-            <button className="btn-editar" onClick={() => setEditando(true)}>
-              ✏ Editar Perfil
-            </button>
-          )}
-
           {/* 📜 Historial de Servicios Solicitados */}
           <div className="perfil-historial">
             <h3>📋 Historial de Servicios Solicitados</h3>

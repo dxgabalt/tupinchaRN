@@ -1,4 +1,5 @@
 import { PortafolioService } from "./PortafolioService";
+import { ProviderServiceService } from "./ProviderServiceService";
 import { supabase_admin } from "./supabaseAdmin";
 import { supabase_client } from "./supabaseClient";
 import SupabaseService from "./SupabaseService";
@@ -30,7 +31,7 @@ export class AuthService {
       // Obtener perfiles desde la tabla profiles
       const { data: perfiles, error: errorPerfil } = await supabase_client
         .from("profiles")
-        .select("id, name, role_id, roles(id, name), phone, rating, is_verified, user_id");
+        .select("id, name, role_id, roles(id, name),municipio_id,municipios(id,name,provincia_id), phone, rating, is_verified,profile_pic_url, user_id");
   
       if (errorPerfil || !perfiles) {
         console.error("Error obteniendo perfiles:", errorPerfil);
@@ -44,7 +45,7 @@ export class AuthService {
       if (proveedoresIds.length > 0) {
         const { data: providersData, error: errorProviders } = await supabase_client
           .from("providers")
-          .select("*")
+          .select("*,provider_services(id,provider_id,service_id)")
           .in("profile_id", proveedoresIds);
   
         if (errorProviders) {
@@ -75,19 +76,24 @@ export class AuthService {
         const perfil = perfiles.find((p) => p.user_id === usuario.id);
         const provider = proveedores.find((p) => p.profile_id === perfil?.id);
         const portafolio = provider ? portafolios.filter(p => p.provider_id === provider.id) : [];
-  
-        return {
+         return {
           id: usuario.id,
+          id_profile: perfil?.id,
           nombre: perfil?.name ?? usuario.email, // Usa el nombre o el email como fallback
           tipo: perfil?.roles?.name ?? "Desconocido", // Si no hay rol, asigna "Desconocido"
           categoria: perfil?.role_id === 3 ? "Pendiente" : "No aplica", // Categoría si es proveedor
           correo: usuario.email,
           telefono: perfil?.phone ?? "No registrado",
           calificacion: perfil?.rating ?? 0, // Si no hay calificación, asigna 0
-          estado: perfil?.is_verified ? "Activo" : "Pendiente",
+          estado: perfil?.is_verified ? "Activo" : "Inactivo",
           especialidad: provider?.speciality,
+          descripcion: provider?.description,
+          provincia_id: perfil?.municipios.provincia_id,
+          municipio_id: perfil?.municipio_id,
           provider_id: provider?.id,
           is_premium: provider?.is_premium?? false, 
+          service_id: provider?.provider_services[0]?.service_id,
+          imagen: perfil?.profile_pic_url,
           portafolio, 
           orden: index + 1,
         };
@@ -111,6 +117,16 @@ export class AuthService {
     const { error } = await supabase_client
       .from("providers")
       .update({ is_premium: nuevoEstado })
+      .eq("id", id);
+
+    if (error) {
+      throw new Error(`Error al actualizar el estado de premium: ${error.message}`);
+    }
+  }  
+  static async cambiarEstadoUsuario(id, nuevoEstado){
+    const { error } = await supabase_client
+      .from("profiles")
+      .update({ is_verified: nuevoEstado })
       .eq("id", id);
 
     if (error) {
@@ -194,6 +210,8 @@ export class AuthService {
     esProveedor = false,
     speciality = " ",
     description = " ",
+    servicio_id =0,
+    municipio_id=0,
     profile_pic_url = " "
   ) {
     // Insertar perfil en "profiles"
@@ -207,6 +225,7 @@ export class AuthService {
         rating: 0,
         profile_pic_url: profile_pic_url,
         is_verified: false,
+        municipio_id:municipio_id
       })
       .select();
 
@@ -246,6 +265,8 @@ export class AuthService {
           description,
           ""
         );
+                await ProviderServiceService.agregarServicioProveedor(provider_id,servicio_id)
+        
       }
     }
   }

@@ -109,7 +109,7 @@ const RegistroScreen = () => {
     if (!validarCampos()) return;
     setLoading(true);
     try {
-     const id_usuario = await AuthService.crearUsuarioAuth(correo, contrasena); 
+      const id_usuario = await AuthService.crearUsuarioAuth(correo, contrasena); 
      if(esProveedor){
        const url_foto = await AuthService.subirFotoPerfil(id_usuario,imagenPerfil);
        AuthService.guardarPerfil(id_usuario, nombre, telefono,municipioSeleccionado,servicio,esProveedor,especialidad,descripcion,url_foto);
@@ -260,9 +260,9 @@ const RegistroScreen = () => {
           <TextInput placeholder="Descripción del servicio" style={styles.input} value={descripcion} onChangeText={setDescripcion} multiline />
           <View style={styles.switchContainer}>
           <Text style={styles.labelSwitch}>Categoria</Text>
-             <Picker style={styles.input} selectedValue={servicio} onValueChange={(itemValue) => setServicio(itemValue?.id)}>
-               {servicios.map((servicio) => (
-                 <Picker.Item key={servicio.id} label={servicio.category} value={servicio.category} />
+             <Picker style={styles.input} selectedValue={servicio} onValueChange={(itemValue) => setServicio(itemValue)}>
+               {servicios.map((servicio_data) => (
+                 <Picker.Item key={servicio_data.id} label={servicio_data.category} value={servicio_data.id} />
                ))}
              </Picker>
            </View>
