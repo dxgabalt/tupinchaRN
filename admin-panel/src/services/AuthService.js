@@ -88,7 +88,7 @@ export class AuthService {
           estado: perfil?.is_verified ? "Activo" : "Inactivo",
           especialidad: provider?.speciality,
           descripcion: provider?.description,
-          provincia_id: perfil?.municipios.provincia_id,
+          provincia_id: perfil?.municipios?.provincia_id,
           municipio_id: perfil?.municipio_id,
           provider_id: provider?.id,
           is_premium: provider?.is_premium?? false, 

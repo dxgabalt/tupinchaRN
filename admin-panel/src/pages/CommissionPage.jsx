@@ -1,64 +1,71 @@
-import React, { useState } from "react";
+import  { useState,useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import "../styles/global.css";
+import { Comisioneservice } from "../services/ComisionService";
 
 const CommissionPage = () => {
   // 🔢 Datos Simulados de Proveedores con Estado de Pago
-  const [proveedores, setProveedores] = useState([
-    {
-      id: 1,
-      nombre: "Carlos López",
-      categoria: "Fontanería",
-      estadoPago: "Pagado",
-      comision: "10%",
-      fechaPago: "2024-02-01",
-    },
-    {
-      id: 2,
-      nombre: "Luis Ramírez",
-      categoria: "Electricidad",
-      estadoPago: "Pendiente",
-      comision: "15%",
-      fechaPago: "2024-02-05",
-    },
-    {
-      id: 3,
-      nombre: "Ana Pérez",
-      categoria: "Reparación de Electrodomésticos",
-      estadoPago: "Atrasado",
-      comision: "12%",
-      fechaPago: "2024-01-25",
-    },
-  ]);
+  const [proveedores, setProveedores] = useState([]);
 
-  const [comisionGlobal, setComisionGlobal] = useState("10%");
-
+  const [comisionGlobal, setComisionGlobal] = useState(10);
+  useEffect(() => {
+    const obtenerComisiones = async () => {
+      try {
+        const comisiones = await Comisioneservice.obtenerTodos();
+        setProveedores(comisiones);
+      } catch (error) {
+        console.error("Error obteniendo comisiones:", error);
+      }
+    };
+    obtenerComisiones();
+  }, []);
   // 📌 Cambiar comisión global
   const actualizarComision = (nuevaComision) => {
     setComisionGlobal(nuevaComision);
+    Comisioneservice.actualizarComisionGlobal(nuevaComision);
     setProveedores((prevProveedores) =>
       prevProveedores.map((prov) => ({ ...prov, comision: nuevaComision }))
     );
   };
 
   // 📌 Aprobar pago manualmente
-  const aprobarPago = (id) => {
+  const aprobarPago = async(id) => {
+    await Comisioneservice.cambiarEstado(id, "Pagado");
     setProveedores((prevProveedores) =>
       prevProveedores.map((prov) =>
-        prov.id === id ? { ...prov, estadoPago: "Pagado" } : prov
+        prov.id === id ? { ...prov, estado: "Pagado" } : prov
       )
     );
   };
 
   // 📌 Prórroga de pago
-  const otorgarProrroga = (id) => {
+  const otorgarProrroga = async (id,fecha) => {
+    await Comisioneservice.cambiarEstado(id, "Prórroga");
+      // Convertir la fecha a un objeto Date
+      const fechaActual = new Date(fecha);
+
+      // Sumar 7 días
+      fechaActual.setDate(fechaActual.getDate() + 7);
+   
     setProveedores((prevProveedores) =>
       prevProveedores.map((prov) =>
-        prov.id === id ? { ...prov, estadoPago: "Prórroga" } : prov
+        prov.id === id ? { ...prov, estado: "Prórroga",fecha_pago:fechaActual.toISOString().split("T")[0] } : prov
       )
     );
   };
-
+ // 📌 Actualizar comisión individual
+ const actualizarComisionIndividual = async (id, nuevaComision) => {
+  try {
+    await Comisioneservice.actualizarComision(id, nuevaComision);
+    setProveedores((prevProveedores) =>
+      prevProveedores.map((prov) =>
+        prov.id === id ? { ...prov, comision: nuevaComision } : prov
+      )
+    );
+  } catch (error) {
+    console.error("Error actualizando la comisión:", error);
+  }
+};
   return (
     <div className="dashboard">
       <Sidebar />
@@ -70,10 +77,10 @@ const CommissionPage = () => {
           <label>📊 Comisión Global (%):</label>
           <input
             type="number"
-            value={comisionGlobal.replace("%", "")}
-            onChange={(e) => actualizarComision(`${e.target.value}%`)}
+            value={comisionGlobal}
+            onChange={(e) => actualizarComision(`${e.target.value}`)}
             className="comision-input"
-          />
+          /> 
         </div>
 
         {/* 📌 Tabla de Proveedores con Estados de Pago */}
@@ -83,7 +90,7 @@ const CommissionPage = () => {
               <th>Proveedor</th>
               <th>Categoría</th>
               <th>Estado de Pago</th>
-              <th>Comisión</th>
+              <th>Comisión (%)</th>
               <th>Fecha de Pago</th>
               <th>Acciones</th>
             </tr>
@@ -92,17 +99,26 @@ const CommissionPage = () => {
             {proveedores.length > 0 ? (
               proveedores.map((prov) => (
                 <tr key={prov.id}>
-                  <td>{prov.nombre}</td>
-                  <td>{prov.categoria}</td>
+                  <td>{prov.providers.profiles.name}</td>
+                  <td>{prov.services.category}</td>
                   <td>
-                    <span className={`estado ${prov.estadoPago.toLowerCase()}`}>
-                      {prov.estadoPago}
+                    <span className={`estado ${prov.estado.toLowerCase()}`}>
+                      {prov.estado}
                     </span>
                   </td>
-                  <td>{prov.comision}</td>
-                  <td>{prov.fechaPago}</td>
                   <td>
-                    {prov.estadoPago !== "Pagado" && (
+                    <input
+                      type="number"
+                      value={prov.comision}
+                      onChange={(e) =>
+                        actualizarComisionIndividual(prov.id, `${e.target.value}`)
+                      }
+                      className="comision-input"
+                    />  
+                  </td>                  
+                  <td>{prov.fecha_pago}</td>
+                  <td>
+                    {prov.estado !== "Pagado" && (
                       <>
                         <button
                           className="btn-approve"
@@ -112,13 +128,13 @@ const CommissionPage = () => {
                         </button>
                         <button
                           className="btn-prorroga"
-                          onClick={() => otorgarProrroga(prov.id)}
+                          onClick={() => otorgarProrroga(prov.id,prov.fecha_pago)}
                         >
                           🔄 Otorgar Prórroga
                         </button>
                       </>
                     )}
-                    {prov.estadoPago === "Pagado" && (
+                    {prov.estado === "Pagado" && (
                       <span className="completado">✅ Pagado</span>
                     )}
                   </td>

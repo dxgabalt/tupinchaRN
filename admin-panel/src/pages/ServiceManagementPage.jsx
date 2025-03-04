@@ -153,6 +153,7 @@ const ServiceManagementPage = () => {
               <th>Costo de mano de obra</th>
               <th>Costo de materiales</th>
               <th>Descripcion</th>
+              <th>Notas</th>
             </tr>
           </thead>
           <tbody>
@@ -162,6 +163,30 @@ const ServiceManagementPage = () => {
                   <td>{cotizacion.costo_mano_obra}</td>
                   <td>{cotizacion.costo_materiales}</td>
                   <td>{cotizacion.descripcion}</td>
+                  <td>
+            <div className="chat-container">
+              {cotizacion.cotizacion_notas && cotizacion.cotizacion_notas.length > 0 ? (
+                cotizacion.cotizacion_notas.map((nota, index) => (
+                  <div key={index} className="chat-message">
+                    {nota.nota_client && (
+                      <div className="chat-bubble client">
+                        <span className="chat-label">Cliente:</span> {nota.nota_client}
+                        <span className="chat-time">{new Date(nota.created_at).toLocaleString()}</span>
+                      </div>
+                    )}
+                    {nota.nota_provider && (
+                      <div className="chat-bubble provider">
+                        <span className="chat-label">Proveedor:</span> {nota.nota_provider}
+                        <span className="chat-time">{new Date(nota.created_at).toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="chat-bubble no-notes">Sin notas</div>
+              )}
+            </div>
+          </td>
                 </tr>
               ))
             ) : (
