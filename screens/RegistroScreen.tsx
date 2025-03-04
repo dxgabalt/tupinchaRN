@@ -116,12 +116,15 @@ const RegistroScreen = () => {
       }else{
         AuthService.guardarPerfil(id_usuario, nombre, telefono,municipioSeleccionado,0,esProveedor);
       }
-      // Simulación de registro exitoso
-      setTimeout(() => {
-        setLoading(false);
+      const perfil =await AuthService.obtenerPerfil()
+      
+      if (perfil?.role_id === 3) {
         Alert.alert('Registro exitoso', 'Tu cuenta ha sido creada y será validada en 24 horas.');
-        navigation.navigate('Login'); // Redirigir a la pantalla de Login
-      }, 2000);
+        navigation.navigate('Login'); 
+      } else {
+        Alert.alert('Registro exitoso', 'Tu cuenta ha sido creada y será validada en 24 horas.');
+        navigation.navigate('PantallaNegocios'); 
+      }
     } catch (error) {
       setLoading(false);
       Alert.alert('Error', 'No se pudo registrar el usuario.');
