@@ -21,6 +21,7 @@ export interface ProviderService {
       profile_pic_url: string;
       phone: string;
       municipio_id:number;
+      provincia_id:number;
     };
     availability: string;
   }

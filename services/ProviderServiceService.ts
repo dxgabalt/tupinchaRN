@@ -22,10 +22,11 @@ export class ProviderServiceService {
     );
     return providerservice.length > 0 ? providerservice[0] : null;
   } 
-  static async obtenerPorServicio(service_id: number, municipio_id: number = 0): Promise<ProviderService[]> {
+  static async obtenerPorServicio(service_id: number, municipio_id: number = 0,provincia_id:number=0): Promise<ProviderService[]> {
     // Obtener perfil
     const perfil = await AuthService.obtenerPerfil();
     const municipio = municipio_id === 0 ? perfil?.municipio_id : municipio_id;
+    const provincia = provincia_id === 0 ? perfil?.provincia_id : provincia_id;
     console.log(municipio);
 
     // Obtener los servicios del proveedor
@@ -43,7 +44,12 @@ export class ProviderServiceService {
             provider.providers?.profiles?.municipio_id === municipio
         );
     }
-
+    // Filtrar los resultados por municipio_id si es necesario
+    if (provincia !== 0) {
+      return providerservice.filter(provider => 
+          provider.providers?.profiles?.provincia_id === provincia
+      );
+  }
     // Si no se necesita filtro, devolver todos los resultados
     return providerservice.length > 0 ? providerservice : [];
 }

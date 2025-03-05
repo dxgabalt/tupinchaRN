@@ -105,7 +105,11 @@ const PantallaNegocios = () => {
   }, []);
   const handlePress = () => {
     Linking.openURL("https://servicios.tupincha.com/shop/"); // Cambia la URL según lo necesites
-  };
+  }; 
+   const contactar = () => {
+ const numero = '+5355655190';
+    const mensaje = encodeURIComponent('Hola, necesito ayuda con la aplicación.');
+    Linking.openURL(`https://wa.me/${numero}?text=${mensaje}`);  };
   const buscar = (texto:string) => {
     texto.length === 0 ? obtenerCategorias():setCategorias(categorias.filter(c => c.category.toLowerCase().includes(texto.toLowerCase())));
     setBusqueda(texto);
@@ -245,16 +249,23 @@ const PantallaNegocios = () => {
         keyExtractor={(item) => item.id}
         numColumns={3}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.cardCategoria} onPress={() => navigation.navigate("PantallaResultadosBusqueda", { servicio: item.category , service_id: item.id,municipio_id:municipioSeleccionado })}>
+          <TouchableOpacity style={styles.cardCategoria} onPress={() => navigation.navigate("PantallaResultadosBusqueda", { servicio: item.category , service_id: item.id,municipio_id:municipioSeleccionado, provincia_id:provinciaSeleccionada})}> 
             <Text style={styles.emoji}>{item.icono}</Text>
             <Text style={styles.textoCategoria} numberOfLines={1} ellipsizeMode="tail">{item.category}</Text>
           </TouchableOpacity>
         )}
       />
-    {/* 📌 Banner Promocional */}
-    <TouchableOpacity style={styles.banner} onPress={handlePress}>
-    <Text style={styles.textoBanner}> 🛒 Realiza tus compras aqui</Text>
-    </TouchableOpacity>
+      <View style={styles.containerBanner}>
+      {/* 📌 Banner Promocional (Rojo) */}
+      <TouchableOpacity style={[styles.banner, { backgroundColor: 'red' }]} onPress={handlePress}>
+        <Text style={styles.textoBanner}> 🛒 Realiza tus compras aquí</Text>
+      </TouchableOpacity>
+
+      {/* Botón de WhatsApp (Verde) */}
+      <TouchableOpacity style={[styles.banner, { backgroundColor: 'green' }]} onPress={contactar}>
+        <Text style={styles.textoBanner}> 📞 WhatsApp</Text>
+      </TouchableOpacity>
+    </View>
     </View>
   );
 };

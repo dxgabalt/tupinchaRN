@@ -208,27 +208,24 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
    
-  /** 🔥 Banner Promocional */
-  banner: {
-    backgroundColor: "#FF0314",
-    borderRadius: 10,
-    paddingVertical: 15,
-    alignItems: "center",
-    marginTop: 10,
-    elevation: 3,
-    flexDirection: "row",
-    justifyContent: "center",
+  containerBanner: {
+    flexDirection: 'row',  // Alinea los botones en fila
+    justifyContent: 'flex-start',  // Alinea los botones al inicio sin mucho espacio entre ellos
+    alignItems: 'center',  // Alinea los botones verticalmente
+    width: '100%',  // Hace que el contenedor ocupe todo el ancho disponible
+    paddingHorizontal: 10,  // Añade un poco de espacio en los bordes
   },
-  imagenBanner: {
-    width: 100,
-    height: 40,
-    resizeMode: "contain",
-    marginRight: 10,
+  banner: {
+    paddingVertical: 10,  // Ajusta el padding vertical para el botón
+    paddingHorizontal: 15,  // Ajusta el padding horizontal
+    borderRadius: 5,  // Esquinas redondeadas
+    marginRight: 5,  // Reduce el espacio entre los botones
+    flex: 1,  // Hace que los botones ocupen todo el ancho disponible
   },
   textoBanner: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
+    color: 'white',  // Color del texto
+    fontSize: 16,  // Tamaño del texto
+    textAlign: 'center',  // Centra el texto dentro del botón
   },
   botonVolver: {
     padding: 10,
