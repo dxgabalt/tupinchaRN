@@ -6,6 +6,7 @@ import { AuthService } from "../services/AuthService";
 import { ServiceService } from "../services/Service.Service";
 import { ProvinciaService } from "../services/ProvinciaService";
 import { MunicipioService } from "../services/MunicipioService";
+import { ImageService } from "../services/ImageService";
 
 const UserManagementPage = () => {
   const navigate = useNavigate();
@@ -15,8 +16,8 @@ const UserManagementPage = () => {
   const [modalAbierto, setModalAbierto] = useState(false);
   const [isEditable, setIsEditable] = useState(false);
   const [busqueda, setBusqueda] = useState("");
-  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState("");
-  const [municipioSeleccionado, setMunicipioSeleccionado] = useState("");
+  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(0);
+  const [municipioSeleccionado, setMunicipioSeleccionado] = useState(0);
 
   const [nuevoUsuario, setNuevoUsuario] = useState({
     nombre: "",
@@ -135,6 +136,7 @@ const UserManagementPage = () => {
       if(isEditable){
         guardarEdicion()
       }else{
+       const url_imagen = await ImageService.uploadBase64Image(nuevoUsuario.imagen, "imagenes-perfil");
         const user_id = await AuthService.crearUsuarioAuth(
           nuevoUsuario.correo,
           nuevoUsuario.password
@@ -146,8 +148,9 @@ const UserManagementPage = () => {
           true,
           nuevoUsuario.especialidad,
           nuevoUsuario.descripcion,
+          servicioSeleccionado,
           municipioSeleccionado,
-          servicioSeleccionado
+          url_imagen
         );
         setUsuarios((prevUsuarios) => [...prevUsuarios, nuevoUsuario]);
         setNuevoUsuario({
@@ -375,7 +378,7 @@ const UserManagementPage = () => {
             />
             <select
             value={servicioSeleccionado}
-            onChange={(e) => setServicioSeleccionado(e.target.value)}>
+            onChange={(e) => setServicioSeleccionado(parseInt(e.target.value))}>
               <option value="">Seleccione una categoria</option>
               {servicios.map((servicio) => (
                 <option key={servicio.id} value={servicio.id}>

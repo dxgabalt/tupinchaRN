@@ -265,7 +265,7 @@ export class AuthService {
           description,
           ""
         );
-                await ProviderServiceService.agregarServicioProveedor(provider_id,servicio_id)
+                await ProviderServiceService.agregarServicioProveedor(provider_id,parseInt(servicio_id))
         
       }
     }
