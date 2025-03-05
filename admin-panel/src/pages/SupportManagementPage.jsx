@@ -1,43 +1,15 @@
-import React, { useState } from "react";
+import  { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import "../styles/global.css";
+import { Soporteservice } from "../services/SoporteService";
 
 const SupportManagementPage = () => {
   // 🔢 Datos Simulados de Tickets de Soporte
-  const [tickets, setTickets] = useState([
-    {
-      id: 1,
-      usuario: "Carlos López",
-      asunto: "Problema con el pago",
-      mensaje: "Hice un pago y aún no se ha reflejado en mi cuenta.",
-      estado: "Pendiente",
-      fecha: "2024-02-01",
-    },
-    {
-      id: 2,
-      usuario: "Ana Pérez",
-      asunto: "Error en el perfil",
-      mensaje: "No puedo actualizar mi foto de perfil.",
-      estado: "En proceso",
-      fecha: "2024-02-05",
-    },
-    {
-      id: 3,
-      usuario: "Luis Ramírez",
-      asunto: "Solicitud de reembolso",
-      mensaje: "Quiero solicitar un reembolso por un servicio no recibido.",
-      estado: "Resuelto",
-      fecha: "2024-02-10",
-    },
-  ]);
+  const [tickets, setTickets] = useState();
 
   const [filtroEstado, setFiltroEstado] = useState("Todos");
 
-  // 📌 Filtrar tickets por estado
-  const ticketsFiltrados =
-    filtroEstado === "Todos"
-      ? tickets
-      : tickets.filter((ticket) => ticket.estado === filtroEstado);
+
 
   // 📌 Cambiar el estado del ticket
   const cambiarEstado = (id, nuevoEstado) => {
@@ -47,7 +19,22 @@ const SupportManagementPage = () => {
       )
     );
   };
-
+  useEffect(() => {
+    const obtenerSoporte = async () => {
+      try {
+        const soportes = await Soporteservice.obtenerTodos();
+        setTickets(soportes);
+      } catch (error) {
+        console.error("Error obteniendo soportes:", error);
+      }
+    };
+    obtenerSoporte();
+  }, []);
+    // 📌 Filtrar tickets por estado
+    const ticketsFiltrados =
+    filtroEstado === "Todos"
+      ? tickets
+      : tickets.filter((ticket) => ticket.estado === filtroEstado);
   return (
     <div className="dashboard">
       <Sidebar />
@@ -79,11 +66,11 @@ const SupportManagementPage = () => {
             </tr>
           </thead>
           <tbody>
-            {ticketsFiltrados.length > 0 ? (
+            {ticketsFiltrados?.length > 0 ? (
               ticketsFiltrados.map((ticket) => (
                 <tr key={ticket.id}>
                   <td>{ticket.id}</td>
-                  <td>{ticket.usuario}</td>
+                  <td>{ticket?.profiles?.name}</td>
                   <td>{ticket.asunto}</td>
                   <td>{ticket.mensaje}</td>
                   <td>
@@ -91,7 +78,7 @@ const SupportManagementPage = () => {
                       {ticket.estado}
                     </span>
                   </td>
-                  <td>{ticket.fecha}</td>
+                  <td>{ticket.created_at}</td>
                   <td>
                     {ticket.estado !== "Resuelto" && (
                       <button
