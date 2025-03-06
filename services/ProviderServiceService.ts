@@ -27,27 +27,26 @@ export class ProviderServiceService {
     const perfil = await AuthService.obtenerPerfil();
     const municipio = municipio_id === 0 ? perfil?.municipio_id : municipio_id;
     const provincia = provincia_id === 0 ? perfil?.provincia_id : provincia_id;
-    console.log(municipio);
-
     // Obtener los servicios del proveedor
     const providerservice = await SupabaseService.obtenerDatos<ProviderService>(
         this.TABLE_NAME,
-        'id,provider_id,service_id,providers(id,phone,portafolio_provider(id,especialidad,imagen),profile_id,ubicacion,profiles(name,rating,profile_pic_url,phone,municipio_id),description,speciality,availability),services(id,category,tags)',
+        'id,provider_id,service_id,providers(id,phone,portafolio_provider(id,especialidad,imagen),profile_id,ubicacion,profiles(name,rating,profile_pic_url,phone,municipio_id,provincia_id),description,speciality,availability),services(id,category,tags)',
         {
             service_id,
         }
     );
+console.log(providerservice);
 
     // Filtrar los resultados por municipio_id si es necesario
     if (municipio !== 0) {
         return providerservice.filter(provider => 
-            provider.providers?.profiles?.municipio_id === municipio
+          provider.providers?.profiles?.municipio_id === municipio || provider.providers?.profiles?.provincia_id === provincia 
         );
     }
     // Filtrar los resultados por municipio_id si es necesario
     if (provincia !== 0) {
       return providerservice.filter(provider => 
-          provider.providers?.profiles?.provincia_id === provincia
+        provider.providers?.profiles?.municipio_id === municipio || provider.providers?.profiles?.provincia_id === provincia 
       );
   }
     // Si no se necesita filtro, devolver todos los resultados

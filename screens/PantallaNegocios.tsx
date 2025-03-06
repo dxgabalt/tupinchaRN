@@ -110,10 +110,22 @@ const PantallaNegocios = () => {
  const numero = '+5355655190';
     const mensaje = encodeURIComponent('Hola, necesito ayuda con la aplicación.');
     Linking.openURL(`https://wa.me/${numero}?text=${mensaje}`);  };
-  const buscar = (texto:string) => {
-    texto.length === 0 ? obtenerCategorias():setCategorias(categorias.filter(c => c.category.toLowerCase().includes(texto.toLowerCase())));
-    setBusqueda(texto);
-  };
+    const buscar = (texto: string) => {
+      console.log(categorias);
+      
+      if (texto.length === 0) {
+        obtenerCategorias();
+      } else {
+        setCategorias(
+          categorias.filter(c => 
+            c.category.toLowerCase().includes(texto.toLowerCase()) ||
+            c.tags?.subcategorias?.some((sub: string) => sub.toLowerCase().includes(texto.toLowerCase()))
+          )
+        );
+      }
+    
+      setBusqueda(texto);
+    };
   return (
     <View style={styles.container}>
  {/* 🔥 Menú Lateral con Animación */}
@@ -263,7 +275,7 @@ const PantallaNegocios = () => {
 
       {/* Botón de WhatsApp (Verde) */}
       <TouchableOpacity style={[styles.banner, { backgroundColor: 'green' }]} onPress={contactar}>
-        <Text style={styles.textoBanner}> 📞 WhatsApp</Text>
+        <Text style={styles.textoBanner}> 📞  Atencion Personalizada</Text>
       </TouchableOpacity>
     </View>
     </View>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,77 +11,99 @@ import {
   Image,
   Modal,
   FlatList,
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker'; // 📌 Importar librería para seleccionar imágenes
-import { useNavigation } from '@react-navigation/native';
-import styles from '../styles/stylesRegistro';
-import { AuthService } from '../services/AuthService';
-import { Picker } from '@react-native-picker/picker';
-import { ServiceService } from '../services/ServiceService';
-import { Service } from '../models/Service';
-import { MunicipioService } from '../services/MunicipoService';
-import { ProvinciaService } from '../services/ProvinciaService';
+} from "react-native";
+import * as ImagePicker from "expo-image-picker"; // 📌 Importar librería para seleccionar imágenes
+import { useNavigation } from "@react-navigation/native";
+import styles from "../styles/stylesRegistro";
+import { AuthService } from "../services/AuthService";
+import { Picker } from "@react-native-picker/picker";
+import { ServiceService } from "../services/ServiceService";
+import { Service } from "../models/Service";
+import { MunicipioService } from "../services/MunicipoService";
+import { ProvinciaService } from "../services/ProvinciaService";
+import { PlanService } from "../services/PlanService";
 
 const RegistroScreen = () => {
   const navigation = useNavigation();
-  const [nombre, setNombre] = useState('');
-  const [correo, setCorreo] = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [telefono, setTelefono] = useState('');
+  const [nombre, setNombre] = useState("");
+  const [correo, setCorreo] = useState("");
+  const [contrasena, setContrasena] = useState("");
+  const [telefono, setTelefono] = useState("");
   const [esProveedor, setEsProveedor] = useState(false);
-  const [especialidad, setEspecialidad] = useState('');
+  const [esComision, setEsComision] = useState(false);
+  const [especialidad, setEspecialidad] = useState("");
   const [servicio, setServicio] = useState(0);
-  const [descripcion, setDescripcion] = useState('');
+  const [plan, setPlan] = useState(0);
+  const [descripcion, setDescripcion] = useState("");
   const [imagenPerfil, setImagenPerfil] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [servicios, setServicios] = useState<Service[]>([]);
   const [provincias, setProvincias] = useState([]);
   const [municipios, setMunicipios] = useState([]);
+  const [planes, setPlanes] = useState<Plan[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(null);
   const [municipioSeleccionado, setMunicipioSeleccionado] = useState(0);
-  const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] = useState(null);
+  const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] =
+    useState(null);
   const [mostrarMunicipios, setMostrarMunicipios] = useState(false); // Nuevo estado
-  const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] = useState(null);
+  const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] =
+    useState(null);
 
   // 📌 Permitir al usuario subir una imagen desde su galería
   const seleccionarImagen = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permiso denegado', 'Necesitamos acceso a tu galería para subir la imagen.');
+    if (status !== "granted") {
+      Alert.alert(
+        "Permiso denegado",
+        "Necesitamos acceso a tu galería para subir la imagen."
+      );
       return;
     }
 
-     const resultado = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            quality: 1,
-          });
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
 
-          if (!resultado.cancelled && resultado.assets) {
-            const imageUri = resultado.assets[0].uri;
-            setImagenPerfil(imageUri);
-          }
+    if (!resultado.cancelled && resultado.assets) {
+      const imageUri = resultado.assets[0].uri;
+      setImagenPerfil(imageUri);
+    }
   };
 
   // 📌 Validar campos antes de registrar
   const validarCampos = () => {
-    if (!nombre.trim() || !correo.trim() || !contrasena.trim() || !telefono.trim()) {
-      Alert.alert('Error', 'Todos los campos son obligatorios.');
+    if (
+      !nombre.trim() ||
+      !correo.trim() ||
+      !contrasena.trim() ||
+      !telefono.trim()
+    ) {
+      Alert.alert("Error", "Todos los campos son obligatorios.");
+      console.log("Error", "Todos los campos son obligatorios.");
+
       return false;
     }
 
-    if (!correo.includes('@')) {
-      Alert.alert('Error', 'Por favor, ingresa un correo válido.');
+    if (!correo.includes("@")) {
+      Alert.alert("Error", "Por favor, ingresa un correo válido.");
+      console.log("Error", "Por favor, ingresa un correo válido.");
+
       return false;
     }
 
     if (contrasena.length < 6) {
-      Alert.alert('Error', 'La contraseña debe tener al menos 6 caracteres.');
+      Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres.");
+      console.log("Error", "La contraseña debe tener al menos 6 caracteres.");
+
       return false;
     }
     if (esProveedor && !imagenPerfil) {
-      Alert.alert('Error', 'Los proveedores deben subir una imagen de perfil.');
+      Alert.alert("Error", "Los proveedores deben subir una imagen de perfil.");
+      console.log("Error", "Los proveedores deben subir una imagen de perfil.");
+
       return false;
     }
 
@@ -91,12 +113,30 @@ const RegistroScreen = () => {
   const obtenerServicios = async () => {
     try {
       const servicios = await ServiceService.obtenerTodos();
-      setServicios(servicios.map(servicio => ({
-        id: servicio.id,
-        category: servicio.category,
-        icono: servicio.icono,
-        tags: servicio.tags,
-      })));
+      setServicios(
+        servicios.map((servicio) => ({
+          id: servicio.id,
+          category: servicio.category,
+          icono: servicio.icono,
+          tags: servicio.tags,
+        }))
+      );
+    } catch (error) {
+      console.error("Error obteniendo servicios:", error);
+    }
+  };
+  const obtenerPlanes = async () => {
+    try {
+      const servicios = await PlanService.obtenerTodos();
+      setPlanes(
+        servicios.map((plan) => ({
+          id: plan.id,
+          nombre: plan.nombre,
+          costo: plan.costo,
+          duracion: plan.duracion,
+          created_at: plan.created_at,
+        }))
+      );
     } catch (error) {
       console.error("Error obteniendo servicios:", error);
     }
@@ -104,63 +144,95 @@ const RegistroScreen = () => {
   useEffect(() => {
     obtenerServicios();
   }, []);
+  useEffect(() => {
+    obtenerPlanes();
+  }, []);
   // 📌 Función simulada para registrar usuario
   const registrarUsuario = async () => {
     if (!validarCampos()) return;
     setLoading(true);
     try {
-      const id_usuario = await AuthService.crearUsuarioAuth(correo, contrasena); 
-     if(esProveedor){
-       const url_foto = await AuthService.subirFotoPerfil(id_usuario,imagenPerfil);
-       AuthService.guardarPerfil(id_usuario, nombre, telefono,municipioSeleccionado,servicio,esProveedor,especialidad,descripcion,url_foto);
-      }else{
-        AuthService.guardarPerfil(id_usuario, nombre, telefono,municipioSeleccionado,0,esProveedor);
-      }
-      const perfil =await AuthService.obtenerPerfil()
-      
-      if (perfil?.role_id === 3) {
-        Alert.alert('Registro exitoso', 'Tu cuenta ha sido creada y será validada en 24 horas.');
-        navigation.navigate('Login'); 
+      const id_usuario = await AuthService.crearUsuarioAuth(correo, contrasena);
+      if (esProveedor) {
+        const url_foto = await AuthService.subirFotoPerfil(
+          id_usuario,
+          imagenPerfil
+        );
+        AuthService.guardarPerfil({
+          usuario_id: id_usuario,
+          nombre,
+          telefono,
+          municipio_id: municipioSeleccionado,
+          servicio_id: servicio,
+          plan_id: plan,
+          esProveedor,
+          especialidad,
+          descripcion,
+          url_foto,
+          esComision,
+        });
       } else {
-        Alert.alert('Registro exitoso', 'Tu cuenta ha sido creada y será validada en 24 horas.');
-        navigation.navigate('PantallaNegocios'); 
+        AuthService.guardarPerfil({
+          usuario_id: id_usuario,
+          nombre,
+          telefono,
+          municipio_id: municipioSeleccionado,
+          esProveedor,
+        });
+      }
+      const perfil = await AuthService.obtenerPerfil();
+
+      if (perfil?.role_id !== 3) {
+        console.log("No es proveedor");
+        Alert.alert(
+          "Registro exitoso",
+          "Tu cuenta ha sido creada y será validada en 24 horas."
+        );
+        navigation.navigate("PantallaNegocios");
+      } else {
+        console.log("es proveedor");
+
+        Alert.alert(
+          "Registro exitoso",
+          "Tu cuenta ha sido creada y será validada en 24 horas."
+        );
+        navigation.navigate("Login");
       }
     } catch (error) {
       setLoading(false);
-      Alert.alert('Error', 'No se pudo registrar el usuario.');
+      Alert.alert("Error", "No se pudo registrar el usuario.");
     }
   };
 
   // Obtener las provincias
-    useEffect(() => {
-      const obtenerProvincias = async () => {
+  useEffect(() => {
+    const obtenerProvincias = async () => {
+      try {
+        const provincias = await ProvinciaService.obtenerTodos();
+        setProvincias(provincias);
+      } catch (error) {
+        console.error("Error obteniendo provincias:", error);
+      }
+    };
+    obtenerProvincias();
+  }, []);
+
+  // Obtener municipios cuando una provincia es seleccionada
+  useEffect(() => {
+    if (provinciaSeleccionada) {
+      const obtenerMunicipios = async () => {
         try {
-          const provincias = await ProvinciaService.obtenerTodos();
-          setProvincias(provincias);
+          const municipios = await MunicipioService.obtenerTodos({
+            provincia_id: provinciaSeleccionada,
+          });
+          setMunicipios(municipios);
         } catch (error) {
-          console.error("Error obteniendo provincias:", error);
+          console.error("Error obteniendo municipios:", error);
         }
       };
-      obtenerProvincias();
-    }, []);
-  
-    // Obtener municipios cuando una provincia es seleccionada
-    useEffect(() => {
-      if (provinciaSeleccionada) {
-        const obtenerMunicipios = async () => {
-          try {
-            const municipios = await MunicipioService.obtenerTodos({ provincia_id: provinciaSeleccionada });
-            setMunicipios(municipios);
-          } catch (error) {
-            console.error("Error obteniendo municipios:", error);
-          }
-        };
-        obtenerMunicipios();
-      }
-    }, [provinciaSeleccionada]);
-  
-
-
+      obtenerMunicipios();
+    }
+  }, [provinciaSeleccionada]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -169,7 +241,10 @@ const RegistroScreen = () => {
       {/* 📸 Foto de perfil */}
       {esProveedor && (
         <>
-          <TouchableOpacity style={styles.fotoPerfilContainer} onPress={seleccionarImagen}>
+          <TouchableOpacity
+            style={styles.fotoPerfilContainer}
+            onPress={seleccionarImagen}
+          >
             {imagenPerfil ? (
               <Image source={{ uri: imagenPerfil }} style={styles.fotoPerfil} />
             ) : (
@@ -183,17 +258,47 @@ const RegistroScreen = () => {
       )}
 
       {/* 📌 Campos de entrada */}
-      <TextInput placeholder="Nombre Completo" style={styles.input} value={nombre} onChangeText={setNombre} />
-      <TextInput placeholder="Correo Electrónico" style={styles.input} value={correo} keyboardType="email-address" onChangeText={setCorreo} />
-      <TextInput placeholder="Contraseña" style={styles.input} value={contrasena} secureTextEntry onChangeText={setContrasena} />
-      <TextInput placeholder="Teléfono" style={styles.input} value={telefono} keyboardType="phone-pad" onChangeText={setTelefono} />
+      <TextInput
+        placeholder="Nombre Completo"
+        style={styles.input}
+        value={nombre}
+        onChangeText={setNombre}
+      />
+      <TextInput
+        placeholder="Correo Electrónico"
+        style={styles.input}
+        value={correo}
+        keyboardType="email-address"
+        onChangeText={setCorreo}
+      />
+      <TextInput
+        placeholder="Contraseña"
+        style={styles.input}
+        value={contrasena}
+        secureTextEntry
+        onChangeText={setContrasena}
+      />
+      <TextInput
+        placeholder="Teléfono"
+        style={styles.input}
+        value={telefono}
+        keyboardType="phone-pad"
+        onChangeText={setTelefono}
+      />
       {/* 📌 Modal de selección de ubicación */}
-         {/* 🌍 Botón para seleccionar ubicación */}
-      <TouchableOpacity style={styles.botonFiltro} onPress={() => setModalVisible(true)}>
-         <Text style={styles.textoBoton}>
-           {provinciaSeleccionada ? `${nombreProvinciaSeleccionada} - ${nombreMunicipioSeleccionado || "Selecciona municipio"}` : "Seleccionar Ubicación"}
-         </Text>
-       </TouchableOpacity>
+      {/* 🌍 Botón para seleccionar ubicación */}
+      <TouchableOpacity
+        style={styles.botonFiltro}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={styles.textoBoton}>
+          {provinciaSeleccionada
+            ? `${nombreProvinciaSeleccionada} - ${
+                nombreMunicipioSeleccionado || "Selecciona municipio"
+              }`
+            : "Seleccionar Ubicación"}
+        </Text>
+      </TouchableOpacity>
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={styles.modalContenido}>
@@ -202,14 +307,18 @@ const RegistroScreen = () => {
                 <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
                 <ScrollView style={styles.scrollView}>
                   {provincias.map((item) => (
-                    <TouchableOpacity 
-                      key={item.id} 
-                      style={[styles.opcion, provinciaSeleccionada === item.id && styles.opcionActiva]}
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[
+                        styles.opcion,
+                        provinciaSeleccionada === item.id &&
+                          styles.opcionActiva,
+                      ]}
                       onPress={() => {
                         setProvinciaSeleccionada(item.id);
                         setNombreProvinciaSeleccionada(item.nombre);
                         setMunicipioSeleccionado(null);
-                        setMunicipios([]); 
+                        setMunicipios([]);
                         setMostrarMunicipios(true); // Cambia a mostrar municipios
                       }}
                     >
@@ -220,7 +329,10 @@ const RegistroScreen = () => {
               </>
             ) : (
               <>
-                <TouchableOpacity onPress={() => setMostrarMunicipios(false)} style={styles.botonVolver}>
+                <TouchableOpacity
+                  onPress={() => setMostrarMunicipios(false)}
+                  style={styles.botonVolver}
+                >
                   <Text style={styles.textoBoton}>← Volver</Text>
                 </TouchableOpacity>
                 <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
@@ -228,8 +340,12 @@ const RegistroScreen = () => {
                   data={municipios}
                   keyExtractor={(item) => item.id.toString()}
                   renderItem={({ item }) => (
-                    <TouchableOpacity 
-                      style={[styles.opcion, municipioSeleccionado === item.id && styles.opcionActiva]}
+                    <TouchableOpacity
+                      style={[
+                        styles.opcion,
+                        municipioSeleccionado === item.id &&
+                          styles.opcionActiva,
+                      ]}
                       onPress={() => {
                         setMunicipioSeleccionado(item.id);
                         setNombreMunicipioSeleccionado(item.name);
@@ -242,14 +358,17 @@ const RegistroScreen = () => {
                 />
               </>
             )}
-      
-            <TouchableOpacity style={styles.botonCerrar} onPress={() => setModalVisible(false)}>
+
+            <TouchableOpacity
+              style={styles.botonCerrar}
+              onPress={() => setModalVisible(false)}
+            >
               <Text style={styles.textoBoton}>Cerrar</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    
+
       {/* 📌 Toggle para proveedores */}
       <View style={styles.switchContainer}>
         <Text style={styles.labelSwitch}>¿Te registras como proveedor?</Text>
@@ -259,28 +378,84 @@ const RegistroScreen = () => {
       {/* 📌 Campos adicionales para proveedores */}
       {esProveedor && (
         <>
-          <TextInput placeholder="Especialidad (Ej: Fontanería, Electricidad)" style={styles.input} value={especialidad} onChangeText={setEspecialidad} />
-          <TextInput placeholder="Descripción del servicio" style={styles.input} value={descripcion} onChangeText={setDescripcion} multiline />
+          <TextInput
+            placeholder="Especialidad (Ej: Fontanería, Electricidad)"
+            style={styles.input}
+            value={especialidad}
+            onChangeText={setEspecialidad}
+          />
+          <TextInput
+            placeholder="Descripción del servicio"
+            style={styles.input}
+            value={descripcion}
+            onChangeText={setDescripcion}
+            multiline
+          />
           <View style={styles.switchContainer}>
-          <Text style={styles.labelSwitch}>Categoria</Text>
-             <Picker style={styles.input} selectedValue={servicio} onValueChange={(itemValue) => setServicio(itemValue)}>
-               {servicios.map((servicio_data) => (
-                 <Picker.Item key={servicio_data.id} label={servicio_data.category} value={servicio_data.id} />
-               ))}
-             </Picker>
-           </View>
-          </>
+            <Text style={styles.labelSwitch}>Categoria</Text>
+            <Picker
+              style={styles.input}
+              selectedValue={servicio}
+              onValueChange={(itemValue) => setServicio(itemValue)}
+            >
+              {servicios.map((servicio_data) => (
+                <Picker.Item
+                  key={servicio_data.id}
+                  label={servicio_data.category}
+                  value={servicio_data.id}
+                />
+              ))}
+            </Picker>
+          </View>
+          {/* 📌 Toggle para comision */}
+          <View style={styles.switchContainer}>
+            <Text style={styles.labelSwitch}>
+              ¿Deseeas suscripcion por porcentaje?
+            </Text>
+            <Switch value={esComision} onValueChange={setEsComision} />
+          </View>
+          {!esComision && (
+            <View style={styles.switchContainer}>
+              <Text style={styles.labelSwitch}>Plan</Text>
+              <Picker
+                style={styles.input}
+                selectedValue={plan}
+                onValueChange={(itemValue) => setPlan(itemValue)}
+              >
+                {planes.map((plan_data) => (
+                  <Picker.Item
+                    key={plan_data.id}
+                    label={plan_data.nombre}
+                    value={plan_data.id}
+                  />
+                ))}
+              </Picker>
+            </View>
+          )}
+        </>
       )}
 
       {/* 📌 Botón de registro */}
-      <TouchableOpacity style={styles.botonRegistrar} onPress={registrarUsuario} disabled={loading}>
+      <TouchableOpacity
+        style={styles.botonRegistrar}
+        onPress={registrarUsuario}
+        disabled={loading}
+      >
         <Text style={styles.textoBoton}>✅ Registrarse</Text>
       </TouchableOpacity>
 
-      {loading && <ActivityIndicator size="large" color="#FF0314" style={{ marginTop: 10 }} />}
+      {loading && (
+        <ActivityIndicator
+          size="large"
+          color="#FF0314"
+          style={{ marginTop: 10 }}
+        />
+      )}
 
       {/* 🔗 Link para iniciar sesión */}
-      <Text style={styles.link} onPress={() => navigation.navigate('Login')}>¿Ya tienes una cuenta? Iniciar sesión</Text>
+      <Text style={styles.link} onPress={() => navigation.navigate("Login")}>
+        ¿Ya tienes una cuenta? Iniciar sesión
+      </Text>
     </ScrollView>
   );
 };

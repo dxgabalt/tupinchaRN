@@ -387,6 +387,115 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
+  /** 🔥 Botones de Aceptar y Rechazar */
+  botonesContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+  },
+  botonAceptar: {
+    flex: 1,
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginRight: 5,
+  },  
+  botonCotizar: {
+    flex: 1,
+    backgroundColor: '#074366FF',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginRight: 5,
+  },
+  botonRechazar: {
+    flex: 1,
+    backgroundColor: '#FF0314',
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginLeft: 5,
+  },
+/** 🔥 Modal de Selección de Ubicación */
+modalContainer: {
+  flex: 1,
+  backgroundColor: "rgba(0, 0, 0, 0.5)",
+  justifyContent: "center",
+  alignItems: "center",
+},
+modalContenido: {
+  backgroundColor: "#FFFFFF",
+  width: "90%",
+  borderRadius: 10,
+  padding: 20,
+  alignItems: "center",
+  maxHeight: "80%",
+},
+modalTitulo: {
+  fontSize: 18,
+  fontWeight: "bold",
+  marginBottom: 10,
+  color: "#1E3A8A",
+},
+scrollView: {
+  width: "100%",
+  maxHeight: 200, // 🔥 Máximo alto para evitar overflow en pantallas pequeñas
+},
+opcion: {
+  paddingVertical: 10,
+  borderBottomWidth: 1,
+  borderBottomColor: "#E5E7EB",
+  width: "100%",
+  alignItems: "center",
+},
+opcionActiva: {
+  backgroundColor: "#1E3A8A",
+},
+textoOpcion: {
+  fontSize: 16,
+  fontWeight: "bold",
+  color: "#374151",
+},
+botonCerrar: {
+  marginTop: 10,
+  backgroundColor: "#FF0314",
+  paddingVertical: 10,
+  borderRadius: 8,
+  alignItems: "center",
+  width: "80%",
+},
+input: {
+  width: "100%",
+  borderWidth: 1,
+  borderColor: "gray",
+  borderRadius: 5,
+  padding: 10,
+  marginBottom: 10,
+},
+boton: {
+  backgroundColor: "blue",
+  padding: 10,
+  borderRadius: 5,
+  marginTop: 10,
+  width: "100%",
+  alignItems: "center",
+},
+botonGuardar: {
+  backgroundColor: "#28a745",
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderRadius: 5,
+  marginTop: 10,
+},
+botonCerrarModal: {
+  backgroundColor: "#FF0314",
+  paddingVertical: 10,
+  paddingHorizontal: 20,
+  borderRadius: 5,
+  marginTop: 10,
+},
+
 });
 
 export default styles;

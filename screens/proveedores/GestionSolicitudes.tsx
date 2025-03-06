@@ -19,6 +19,8 @@ import { Solicitud } from "../../models/Solicitud";
 import { AuthService } from "../../services/AuthService";
 import CotizacionService from "../../services/CotizacionService";
 import { CotizacionNota } from "../../models/CotizacionNota";
+import { ContraOfertaNota } from "../../models/ContraOfertaNota";
+import ContraOfertaService from "../../services/ContraOfertaService";
 
 const PantallaGestionSolicitudes = () => {
   const navigation = useNavigation();
@@ -33,6 +35,7 @@ const PantallaGestionSolicitudes = () => {
   const [provider, setProvider] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [respuestaNota, setRespuestaNota] = useState("");
+  const [nuevaNota, setNuevaNota] = useState("");
 
   /** 🔥 Cargar Solicitudes del Proveedor */
   useEffect(() => {
@@ -174,6 +177,39 @@ const PantallaGestionSolicitudes = () => {
     // Limpiar el estado de la respuesta
     setRespuestaNota("");
   };
+  const handleCrearNota = (contraofertaId:number,respuesta:string) => {
+    // Aquí se podría enviar la respuesta al backend si es necesario
+    console.log(respuesta);
+    
+    ContraOfertaService.agregarNotaContraOferta(contraofertaId, respuesta, true);
+      // Actualizar la cotización correspondiente con la respuesta
+      setSolicitudes((prevSolicitudes) => 
+        prevSolicitudes.map((solicitud) => {
+          // Actualizar la cotización específica dentro de la solicitud
+          const updatedContraofertas = solicitud.contraofertas.map((contraoferta) => {
+            if (contraoferta.id === contraofertaId) {
+              return {
+                ...contraoferta,
+                contraoferta_notas: contraoferta.contraoferta_notas.map((notaItem) => ({
+                  ...notaItem,
+                  nota_provider: notaItem.nota_provider || respuesta, // Solo actualiza si está vacío
+                })),
+              };
+            }
+            return contraoferta;
+          });
+      
+          return {
+            ...solicitud,
+            contraofertas: updatedContraofertas, // Corrige el nombre de la propiedad
+          };
+        })
+      );
+      
+    // Limpiar el estado de la respuesta
+    setNuevaNota("");
+ 
+  }
   
   return (
     <View style={styles.container}>
@@ -357,6 +393,70 @@ const PantallaGestionSolicitudes = () => {
                           />
                         </View>
                       )}
+                    </View>
+                  )}
+                />
+                {/* 🔥 Listado de Contraofertas */}
+                <FlatList
+                  data={item.contraofertas}
+                  keyExtractor={(contraoferta) => contraoferta.id.toString()}
+                  renderItem={({ item: contraoferta }) => (
+                    <View style={styles.cardCotizacion}>
+                      {/* Costo Mano de Obra */}
+                      <View style={styles.cardContent}>
+                        <Text style={styles.icon}>🛠️</Text>
+                        <Text style={styles.precio}>
+                          Costo Mano de Obra: {contraoferta.costo_mano_obra}
+                        </Text>
+                      </View>
+
+                      {/* Costo Materiales */}
+                      <View style={styles.cardContent}>
+                        <Text style={styles.icon}>⚙️</Text>
+                        <Text style={styles.precio}>
+                          Costo Materiales: {contraoferta.costo_materiales}
+                        </Text>
+                      </View>
+
+                      {/* Descripción */}
+                      <View style={styles.cardContent}>
+                        <Text style={styles.icon}>📝</Text>
+                        <Text style={styles.descripcion}>
+                          Descripción: {contraoferta.descripcion}
+                        </Text>
+                      </View>
+
+                      {/* 🔥 Notas de Cotización */}
+                      <View style={styles.notasContainer}>
+                      <Text style={styles.tituloNotas}>🗒️ Notas:</Text>
+                      
+                      {/* Mostrar las notas existentes */}
+                      <FlatList
+                        data={contraoferta.contraoferta_notas}
+                        keyExtractor={(nota, index) => index.toString()}
+                        renderItem={({ item: nota }) => (
+                          <View style={styles.notaItem}>
+                            <Text style={styles.descripcion}>- {nota.nota_client}</Text>
+                            <Text style={styles.descripcion}>- {nota.nota_provider}</Text>
+                          </View>
+                        )}
+                      />
+                    
+                      {/* Agregar una nueva nota */}
+                      <TextInput
+                        style={styles.input}
+                        placeholder="Escribir nueva nota..."
+                        value={nuevaNota}
+                        onChangeText={setNuevaNota}
+                      />
+                    
+                      <TouchableOpacity
+                        style={styles.boton}
+                        onPress={() => handleCrearNota(contraoferta.id, nuevaNota)}
+                      >
+                        <Text style={styles.textoBoton}>Agregar Nota</Text>
+                      </TouchableOpacity>
+                    </View>
                     </View>
                   )}
                 />

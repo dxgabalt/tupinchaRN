@@ -44,6 +44,7 @@ const PantallaResultadosBusqueda = () => {
         const municipio = municipio_id !== null ?municipio_id:0
         const provincia = provincia_id !== null ?provincia_id:0
         console.log('municipio_id',municipio);
+        console.log('provincia_id',provincia);
         const providers_services = await ProviderServiceService.obtenerPorServicio(service_id,municipio,provincia);
         const negociosFormateados = providers_services.map((servicio) => ({
           id: servicio.id,

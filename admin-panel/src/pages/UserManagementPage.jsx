@@ -2,152 +2,445 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "../styles/global.css";
-import { PlanService } from "../services/PlanService";
+import { AuthService } from "../services/AuthService";
+import { ServiceService } from "../services/Service.Service";
+import { ProvinciaService } from "../services/ProvinciaService";
+import { MunicipioService } from "../services/MunicipioService";
+import { ImageService } from "../services/ImageService";
 
-const PlanesManagmentPage = () => {
+const UserManagementPage = () => {
   const navigate = useNavigate();
-
-  // 📌 Estado de los planes
-  const [planes, setPlanes] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  // 📌 Estados de edición
-  const [editando, setEditando] = useState(null);
-  const [nombre, setNombre] = useState("");
-  const [costo, setCosto] = useState("");
-  const [duracion, setDuracion] = useState("");
-
-  // 📌 Estado del modal
+  const [usuarios, setUsuarios] = useState([]);
+  const [provincias, setProvincias] = useState([]);
+  const [municipios, setMunicipios] = useState([]);
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [isEditable, setIsEditable] = useState(false);
+  const [busqueda, setBusqueda] = useState("");
+  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(0);
+  const [municipioSeleccionado, setMunicipioSeleccionado] = useState(0);
+
+  const [nuevoUsuario, setNuevoUsuario] = useState({
+    nombre: "",
+    especialidad: "",
+    descripcion: "",
+    correo: "",
+    telefono: "",
+    password: "",
+    imagen: "",
+  });
+  const [servicios, setServicios] = useState([]);
+  const [servicioSeleccionado, setServicioSeleccionado] = useState(0);
 
   useEffect(() => {
-    obtenerPlanes();
+    const cargarUsuarios = async () => {
+      try {
+        const usuariosObtenidos = await AuthService.obtenerUsuarios();
+        setUsuarios(usuariosObtenidos || []);
+      } catch (error) {
+        console.error("Error obteniendo usuarios:", error);
+      }
+    };
+
+    cargarUsuarios();
+  }, []);
+  useEffect(() => {
+    const cargarServicios = async () => {
+      try {
+        const servicios = await ServiceService.obtenerTodos();
+        setServicios(servicios);
+      } catch (error) {
+        console.error("Error obteniendo usuarios:", error);
+      }
+    };
+
+    cargarServicios();
+  }, []);
+  // Obtener las provincias
+  useEffect(() => {
+    const obtenerProvincias = async () => {
+      try {
+        const provincias = await ProvinciaService.obtenerTodos();
+        setProvincias(provincias);
+      } catch (error) {
+        console.error("Error obteniendo provincias:", error);
+      }
+    };
+    obtenerProvincias();
   }, []);
 
-  // 📌 Obtener todos los planes
-  const obtenerPlanes = async () => {
+  // Obtener municipios cuando una provincia es seleccionada
+  useEffect(() => {
+    if (provinciaSeleccionada) {
+      const obtenerMunicipios = async () => {
+        try {
+          const municipios = await MunicipioService.obtenerTodos({
+            provincia_id: provinciaSeleccionada,
+          });
+          setMunicipios(municipios);
+        } catch (error) {
+          console.error("Error obteniendo municipios:", error);
+        }
+      };
+      obtenerMunicipios();
+    }
+  }, [provinciaSeleccionada]);
+  const guardarEdicion = () => {
+    setUsuarios((prev) =>
+      prev.map((user) =>
+        user.id === nuevoUsuario.id 
+          ? {
+              ...user,
+              nombre: nuevoUsuario.nombre,
+              especialidad: nuevoUsuario.especialidad,
+              descripcion: nuevoUsuario.descripcion,
+              correo: nuevoUsuario.correo,
+              telefono: nuevoUsuario.telefono,
+              imagen: nuevoUsuario.imagen,
+            }
+          : user
+      )
+    );
+    setModalAbierto(false);
+  }
+  const togglePremium = async (id, esPremium) => {
     try {
-      const planesData = await PlanService.obtenerTodos(); // Llamar al servicio para obtener los planes
-      setPlanes(planesData);
-      setLoading(false);
+      const nuevoEstado = !esPremium;
+      await AuthService.actualizarPremium(id, nuevoEstado);
+      setUsuarios((prev) =>
+        prev.map((user) =>
+          user.provider_id === id ? { ...user, is_premium: nuevoEstado } : user
+        )
+      );
     } catch (error) {
-      console.error("Error obteniendo los planes:", error);
+      console.error("Error actualizando estado premium:", error);
     }
   };
-
-  // 📌 Guardar cambios del plan
-  const guardarEdicion = async () => {
+  const editarProveedor = async (usuario) => {
+    setModalAbierto(true);
+    setNuevoUsuario({
+      nombre: usuario.nombre,
+      especialidad: usuario.especialidad,
+      descripcion: usuario.descripcion,
+      correo: usuario.correo,
+      telefono: usuario.telefono,
+      password: "",
+      imagen: usuario.imagen,
+    });
+    setServicioSeleccionado(usuario.service_id)
+    setProvinciaSeleccionada(usuario.provincia_id)
+    setMunicipioSeleccionado(usuario.municipio_id);
+    setIsEditable(true);
+  }
+  const agregarUsuario = async () => {
     try {
-      if (editando) {
-        await PlanService.actualizarPlan(editando, { nombre, costo, duracion });
-        alert("✅ Plan actualizado con éxito.");
-      } else {
-        await PlanService.agregarPlan({ nombre, costo, duracion });
-        alert("✅ Plan agregado con éxito.");
+      if(isEditable){
+        guardarEdicion()
+      }else{
+       const url_imagen = await ImageService.uploadBase64Image(nuevoUsuario.imagen, "imagenes-perfil");
+        const user_id = await AuthService.crearUsuarioAuth(
+          nuevoUsuario.correo,
+          nuevoUsuario.password
+        );
+        await AuthService.guardarProveedor(
+          user_id,
+          nuevoUsuario.nombre,
+          nuevoUsuario.telefono,
+          true,
+          nuevoUsuario.especialidad,
+          nuevoUsuario.descripcion,
+          servicioSeleccionado,
+          municipioSeleccionado,
+          url_imagen
+        );
+        setUsuarios((prevUsuarios) => [...prevUsuarios, nuevoUsuario]);
+        setNuevoUsuario({
+          nombre: "",
+          especialidad: "",
+          descripcion: "",
+          correo: "",
+          telefono: "",
+          password: "",
+          imagen: "",
+        });
+        setModalAbierto(false);
       }
-      setModalAbierto(false);
-      obtenerPlanes(); // Refrescar la lista de planes
     } catch (error) {
-      console.error("Error guardando el plan:", error);
+      console.error("Error agregando usuario:", error);
     }
   };
 
-  const abrirModalAgregar = () => {
-    setNombre("");
-    setCosto("");
-    setDuracion("");
-    setEditando(null);
-    setModalAbierto(true);
+  const eliminarUsuario = (id) => {
+    if (window.confirm("¿Seguro que quieres eliminar este usuario?")) {
+      setUsuarios((prev) => prev.filter((user) => user.id !== id));
+      AuthService.eliminarPerfil(id);
+    }
   };
 
-  const abrirModalEditar = (plan) => {
-    setNombre(plan.nombre);
-    setCosto(plan.costo);
-    setDuracion(plan.duracion);
-    setEditando(plan.id);
-    setModalAbierto(true);
+  const handleImagenChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNuevoUsuario((prev) => ({ ...prev, imagen: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  if (loading) {
-    return <p className="loading-msg">⏳ Cargando planes...</p>;
+  const usuariosFiltrados = usuarios.filter((usuario) => {
+    const nombre = usuario.nombre?.toLowerCase() || "";
+    const correo = usuario.correo?.toLowerCase() || "";
+    const especialidad = usuario.especialidad?.toLowerCase() || "";
+
+    return (
+      nombre.includes(busqueda.toLowerCase()) ||
+      correo.includes(busqueda.toLowerCase()) ||
+      especialidad.includes(busqueda.toLowerCase())
+    );
+  });
+  const activarUsuario =async(id,estado)=>{
+    await AuthService.cambiarEstadoUsuario(id,!estado)
+    setUsuarios((prev) =>
+      prev.map((user) =>
+        user.id_profile === id ? { ...user, estado: !estado?'Activo':'Inactivo' } : user
+      )
+    );
   }
 
   return (
     <div className="dashboard">
       <Sidebar />
       <main className="content">
-        <h1>🛠 Administración de Planes</h1>
-        <button onClick={abrirModalAgregar} className="btn-agregar">
-          Agregar Plan
+        <h1>👥 Gestión de Usuarios</h1>
+
+        <input
+          type="text"
+          placeholder="🔍 Buscar usuario..."
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          className="input-busqueda"
+        />
+
+        <button className="btn-agregar" onClick={() => setModalAbierto(true)}>
+          ➕ Agregar Usuario
         </button>
-        <div className="plan-container">
-          {/* 📋 Tabla de Planes */}
-          <table className="table-planes">
-            <thead>
-              <tr>
-                <th>Nombre del Plan</th>
-                <th>Costo</th>
-                <th>Duración</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {planes.map((plan) => (
-                <tr key={plan.id}>
-                  <td>{plan.nombre}</td>
-                  <td>{`$${plan.costo}`}</td>
-                  <td>{plan.duracion}</td>
-                  <td>
+
+        <table className="table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Usuario</th>
+              <th>Especialidad</th>
+              <th>Correo</th>
+              <th>Teléfono</th>
+              <th>⭐ Calificación</th>
+              <th>Estado</th>
+              <th>Premium</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {usuariosFiltrados.map((usuario, index) => (
+              <tr key={usuario.id}>
+                <td>{index + 1}</td>
+                <td>{usuario.nombre}</td>
+                <td>{usuario.especialidad}</td>
+                <td>{usuario.correo}</td>
+                <td>{usuario.telefono}</td>
+                <td>
+                  {usuario.calificacion ? usuario.calificacion + " / 5" : "N/A"}
+                </td>
+                <td
+                  className={
+                    usuario.estado === "Activo"
+                      ? "estadoActivo"
+                      : "estadoSuspendido"
+                  }
+                >
+                  {usuario.estado}
+                </td>
+                <td>
+                  {usuario.tipo === "Proveedor" && (
                     <button
-                      onClick={() => abrirModalEditar(plan)}
-                      className="btn-editar"
+                      className={
+                        usuario.is_premium ? "btn-premium" : "btn-no-premium"
+                      }
+                      onClick={() =>
+                        togglePremium(usuario.provider_id, usuario.is_premium)
+                      }
                     >
-                      Editar
+                      {usuario.is_premium ? "✅ Premium" : "❌ No Premium"}
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  )}
+                </td>
+                <td>
+                <button
+                      className={
+                        usuario.estado ? "btn-premium" : "btn-no-premium"
+                      }
+                      onClick={() =>
+                        activarUsuario(usuario.id_profile,usuario.estado=='Activo')
+                      }
+                    >
+                      {usuario.estado=='Activo' ? "✅ Activo" : "❌ Inactivo"}
+                    </button>
+                  <button
+                    className="btn-ver"
+                    onClick={() => {
+                      if (usuario && usuario.id) {
+                        navigate(`/user-profile/${usuario.id}`, {
+                          state: { usuario },
+                        });
+                      } else {
+                        alert("⚠ Error: Usuario no encontrado.");
+                      }
+                    }}
+                  >
+                    🔍 Ver Perfil
+                  </button>
+                  <button
+                    className="btn-editar"
+                    onClick={() => editarProveedor(usuario)}
+                  >
+                    ✏ Editar
+                  </button>
+                  <button
+                    className="btn-eliminar"
+                    onClick={() => eliminarUsuario(usuario.id)}
+                  >
+                    ❌ Eliminar
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </main>
 
-      {/* Modal */}
       {modalAbierto && (
         <div className="modal">
           <div className="modal-content">
-            <h2>{editando ? "Editar Plan" : "Agregar Plan"}</h2>
+            <h2>Agregar Usuario</h2>
             <input
               type="text"
-              placeholder="Nombre del Plan"
-              value={nombre}
-              onChange={(e) => setNombre(e.target.value)}
-            />
-            <input
-              type="number"
-              placeholder="Costo"
-              value={costo}
-              onChange={(e) => setCosto(e.target.value)}
+              placeholder="Nombre"
+              value={nuevoUsuario.nombre}
+              onChange={(e) =>
+                setNuevoUsuario({ ...nuevoUsuario, nombre: e.target.value })
+              }
             />
             <input
               type="text"
-              placeholder="Duración"
-              value={duracion}
-              onChange={(e) => setDuracion(e.target.value)}
+              placeholder="Especialidad"
+              value={nuevoUsuario.especialidad}
+              onChange={(e) =>
+                setNuevoUsuario({
+                  ...nuevoUsuario,
+                  especialidad: e.target.value,
+                })
+              }
             />
-            <button onClick={guardarEdicion}>
-              {editando ? "Guardar Cambios" : "Agregar Plan"}
-            </button>
-            <button
-              onClick={() => {
-                setModalAbierto(false);
-                setNombre("");
-                setCosto("");
-                setDuracion("");
-              }}
-            >
-              ❌ Cancelar
-            </button>
+            <input
+              type="text"
+              placeholder="Descripción"
+              value={nuevoUsuario.descripcion}
+              onChange={(e) =>
+                setNuevoUsuario({
+                  ...nuevoUsuario,
+                  descripcion: e.target.value,
+                })
+              }
+            />
+            <input
+              type="email"
+              placeholder="Correo"
+              value={nuevoUsuario.correo}
+              onChange={(e) =>
+                setNuevoUsuario({ ...nuevoUsuario, correo: e.target.value })
+              }
+            />
+            <input
+              type="password"
+              placeholder="Contraseña"
+              value={nuevoUsuario.password}
+              onChange={(e) =>
+                setNuevoUsuario({ ...nuevoUsuario, password: e.target.value })
+              }
+            />
+
+            <input
+              type="text"
+              placeholder="Teléfono"
+              value={nuevoUsuario.telefono}
+              onChange={(e) =>
+                setNuevoUsuario({ ...nuevoUsuario, telefono: e.target.value })
+              }
+            />
+            <select
+            value={servicioSeleccionado}
+            onChange={(e) => setServicioSeleccionado(parseInt(e.target.value))}>
+              <option value="">Seleccione una categoria</option>
+              {servicios.map((servicio) => (
+                <option key={servicio.id} value={servicio.id}>
+                  {servicio.category}
+                </option>
+              ))}
+            </select>
+            <div>
+              <select
+                value={provinciaSeleccionada}
+                onChange={(e) => {
+                  setProvinciaSeleccionada(e.target.value);
+                  setMunicipioSeleccionado(""); // Reiniciar municipio al cambiar de provincia
+                }}
+              >
+                <option value="">Seleccione una provincia</option>
+                {provincias.map((provincia) => (
+                  <option key={provincia.id} value={provincia.id}>
+                    {provincia.nombre}
+                  </option>
+                ))}
+              </select>
+
+              {provinciaSeleccionada && (
+                <>
+                  <select
+                    value={municipioSeleccionado}
+                    onChange={(e) => setMunicipioSeleccionado(e.target.value)}
+                  >
+                    <option value="">Seleccione un municipio</option>
+                    {municipios.map((municipio) => (
+                      <option key={municipio.id} value={municipio.id}>
+                        {municipio.name}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
+            </div>
+            <input type="file" accept="image/*" onChange={handleImagenChange} />
+            {nuevoUsuario.imagen && (
+              <img
+                src={nuevoUsuario.imagen}
+                alt="Vista previa"
+                className="preview-img"
+              />
+            )}
+            <button onClick={agregarUsuario}>✅ Guardar</button>
+            <button onClick={() => {setModalAbierto(false)
+              setNuevoUsuario({
+                nombre: "",
+                especialidad: "",
+                descripcion: "",
+                correo: "",
+                telefono: "",
+                password: "",
+                imagen: "",
+              })
+              setProvinciaSeleccionada("")
+              setMunicipioSeleccionado("")
+              setServicioSeleccionado("")
+            }}>❌ Cancelar</button>
           </div>
         </div>
       )}
@@ -155,4 +448,4 @@ const PlanesManagmentPage = () => {
   );
 };
 
-export default PlanesManagmentPage;
+export default UserManagementPage;
