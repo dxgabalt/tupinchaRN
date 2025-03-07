@@ -56,7 +56,8 @@ const SupabaseService = {
     const {error} = await supabase
       .from(tabla)
       .update(datos)
-      .eq(columnaCondicion, valorCondicion);
+      .eq(columnaCondicion, valorCondicion)
+      .select();
 
     if (error) {
       console.error(`Error al actualizar registro en ${tabla}:`, error.message);

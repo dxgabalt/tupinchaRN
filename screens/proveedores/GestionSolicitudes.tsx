@@ -36,6 +36,7 @@ const PantallaGestionSolicitudes = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [respuestaNota, setRespuestaNota] = useState("");
   const [nuevaNota, setNuevaNota] = useState("");
+  const [nuevaNotaSolicitud, setNuevaNotaSolicitud] = useState("");
 
   /** 🔥 Cargar Solicitudes del Proveedor */
   useEffect(() => {
@@ -178,9 +179,7 @@ const PantallaGestionSolicitudes = () => {
     setRespuestaNota("");
   };
   const handleCrearNota = (contraofertaId:number,respuesta:string) => {
-    // Aquí se podría enviar la respuesta al backend si es necesario
-    console.log(respuesta);
-    
+    // Aquí se podría enviar la respuesta al backend si es necesario   
     ContraOfertaService.agregarNotaContraOferta(contraofertaId, respuesta, true);
       // Actualizar la cotización correspondiente con la respuesta
       setSolicitudes((prevSolicitudes) => 
@@ -210,6 +209,36 @@ const PantallaGestionSolicitudes = () => {
     setNuevaNota("");
  
   }
+  const handleCrearNotaSolicitud =async (request_id:number,nota:string)=>{
+    const nuevoItemNotaSolicitud = {
+      id: obtenerUltimoIdNotaSolicitud(request_id)??0 + 1, // Incrementar el id de la cotización
+      nota_client: "",
+      nota_provider: nota,
+  };
+await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
+    setSolicitudes((prevSolicitudes) =>
+      prevSolicitudes.map((solicitud) =>
+          solicitud.id === request_id
+              ? { 
+                  ...solicitud, 
+                  request_notas: [...solicitud.request_notas, nuevoItemNotaSolicitud]  
+                }
+              : solicitud
+      ));
+  }
+  const obtenerUltimoIdNotaSolicitud = (idSolicitud:number) => {
+    // Encuentra la solicitud correspondiente
+    const solicitud = solicitudes.find((solicitud) => solicitud.id === idSolicitud);
+    
+    if (solicitud && solicitud.request_notas.length > 0) {
+      // Obtener el último id de la cotización
+      const ultimoId = solicitud.request_notas[solicitud.request_notas.length - 1].id;
+      return ultimoId;
+    } else {
+      // Si no hay cotizaciones, devuelve null o cualquier valor predeterminado
+      return null;
+    }
+  };
   
   return (
     <View style={styles.container}>
@@ -297,7 +326,7 @@ const PantallaGestionSolicitudes = () => {
                   {item.status.toUpperCase()}
                 </Text>
 
-                {item.status !== "aceptada" && (
+                {item.status !== "rechazada" && (
                   <View style={styles.botonesContainer}>
                     <TouchableOpacity
                       style={styles.botonCotizar}
@@ -321,7 +350,34 @@ const PantallaGestionSolicitudes = () => {
                     </TouchableOpacity>
                   </View>
                 )}
-
+            {/* 🔥 Listado de Notas */}
+            {item.status !== "rechazada" && (
+              <View style={styles.cardCotizacion}>
+                <Text style={styles.subTitulo}>Notas:</Text>
+                <FlatList
+                  data={item.request_notas}
+                  keyExtractor={(nota) => nota.id.toString()}
+                  renderItem={({ item: nota }) => (
+                    <View style={styles.notaItem}>
+                      <Text style={styles.descripcion}>- {nota.nota_client}</Text>
+                      <Text style={styles.descripcion}>- {nota.nota_provider}</Text>
+                    </View>
+                  )}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Escribir nueva nota..."
+                  value={nuevaNotaSolicitud}
+                  onChangeText={setNuevaNotaSolicitud}
+                />
+                <TouchableOpacity
+                  style={styles.boton}
+                  onPress={() => handleCrearNotaSolicitud(item.id, nuevaNotaSolicitud)}
+                >
+                  <Text style={styles.textoBoton}>Agregar Nota</Text>
+                </TouchableOpacity>
+              </View>
+            )}
                 {/* 🔥 Listado de Cotizaciones */}
                 <FlatList
                   data={item.cotizaciones}
@@ -368,7 +424,7 @@ const PantallaGestionSolicitudes = () => {
                                   - {nota.nota_provider}
                                 </Text>
                                 {/* Responder Nota */}
-                                {nota.nota_client && !nota.nota_provider && (
+                                {nota.nota_client && !nota.nota_provider && item.status !== "rechazada" && (
                                   <TextInput
                                     style={styles.input}
                                     placeholder="Responder a la nota..."
@@ -443,7 +499,9 @@ const PantallaGestionSolicitudes = () => {
                       />
                     
                       {/* Agregar una nueva nota */}
-                      <TextInput
+                      {item.status !== "rechazada" && (
+                        <View>
+                        <TextInput
                         style={styles.input}
                         placeholder="Escribir nueva nota..."
                         value={nuevaNota}
@@ -456,6 +514,9 @@ const PantallaGestionSolicitudes = () => {
                       >
                         <Text style={styles.textoBoton}>Agregar Nota</Text>
                       </TouchableOpacity>
+                        </View>
+                      )}
+                    
                     </View>
                     </View>
                   )}

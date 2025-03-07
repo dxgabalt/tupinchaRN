@@ -1,5 +1,6 @@
 import { ContraOferta } from "./ContraOferta";
 import { Cotizacion } from "./Cotizacion";
+import { RequestNota } from "./RequestNota";
 import { Service } from "./Service";
 
 export interface Solicitud {
@@ -12,6 +13,7 @@ export interface Solicitud {
     tags: any; // Se recomienda usar `any` en lugar de `JSON`, o definir un tipo adecuado si sabes su estructura.
     icono?: string;
   } | Service[]
+  request_notas: RequestNota[];
   providers:{
     id?: number;
     phone: string;

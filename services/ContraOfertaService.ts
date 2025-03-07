@@ -70,7 +70,7 @@ export class ContraOfertaService {
       }
       return data;
     } else {
-      return await SupabaseService.actualizarRegistro<ContraOfertaNota>('contraoferta_notas', {nota_client: nota}, 'contraoferta_id', contraoferta_id)
+      return await SupabaseService.actualizarRegistro<ContraOfertaNota>('contraoferta_notas', {nota_client: nota}, 'id', contraoferta_id)
     }
   }
   
