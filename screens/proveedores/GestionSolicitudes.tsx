@@ -181,34 +181,61 @@ const PantallaGestionSolicitudes = () => {
   const handleCrearNota = (contraofertaId:number,respuesta:string) => {
     // Aquí se podría enviar la respuesta al backend si es necesario   
     ContraOfertaService.agregarNotaContraOferta(contraofertaId, respuesta, true);
-      // Actualizar la cotización correspondiente con la respuesta
-      setSolicitudes((prevSolicitudes) => 
-        prevSolicitudes.map((solicitud) => {
-          // Actualizar la cotización específica dentro de la solicitud
-          const updatedContraofertas = solicitud.contraofertas.map((contraoferta) => {
-            if (contraoferta.id === contraofertaId) {
-              return {
-                ...contraoferta,
-                contraoferta_notas: contraoferta.contraoferta_notas.map((notaItem) => ({
+    // Actualizar la cotización correspondiente con la respuesta
+    ContraOfertaService.agregarNotaContraOferta(contraofertaId, respuesta, true);
+
+    // Actualizar la cotización correspondiente con la respuesta
+    setSolicitudes((prevSolicitudes) => 
+      prevSolicitudes.map((solicitud) => {
+        // Actualizar la cotización específica dentro de la solicitud
+        const updatedContraofertas = solicitud.contraofertas.map((contraoferta) => {
+          if (contraoferta.id === contraofertaId) {
+            // Verificar si ya existe una nota con la respuesta en contraoferta_notas
+            const updatedNotas = contraoferta.contraoferta_notas.some(notaItem => notaItem.nota_provider === respuesta)
+              ? contraoferta.contraoferta_notas.map((notaItem) => ({
                   ...notaItem,
                   nota_provider: notaItem.nota_provider || respuesta, // Solo actualiza si está vacío
-                })),
-              };
-            }
-            return contraoferta;
-          });
-      
-          return {
-            ...solicitud,
-            contraofertas: updatedContraofertas, // Corrige el nombre de la propiedad
-          };
-        })
-      );
-      
+                }))
+              : [
+                  ...contraoferta.contraoferta_notas,
+                  {
+                    contraoferta_id: contraofertaId,
+                    nota_client: '',  // Si es una nota del proveedor, se puede dejar vacío o asignar un valor
+                    nota_provider: respuesta,
+                    created_at: new Date().toISOString(),  // Fecha actual
+                  }
+                ];
+    
+            return {
+              ...contraoferta,
+              contraoferta_notas: updatedNotas,
+            };
+          }
+          return contraoferta;
+        });
+    
+        return {
+          ...solicitud,
+          contraofertas: updatedContraofertas,
+        };
+      })
+    );
     // Limpiar el estado de la respuesta
     setNuevaNota("");
- 
   }
+  const obtenerUltimoIdNotaContraoferta= (idSolicitud:number) => {
+    // Encuentra la solicitud correspondiente
+    const solicitud = solicitudes.find((solicitud) => solicitud.id === idSolicitud);
+    
+    if (solicitud && solicitud.request_notas.length > 0) {
+      // Obtener el último id de la cotización
+      const ultimoId = solicitud.request_notas[solicitud.request_notas.length - 1].id;
+      return ultimoId;
+    } else {
+      // Si no hay cotizaciones, devuelve null o cualquier valor predeterminado
+      return null;
+    }
+  };
   const handleCrearNotaSolicitud =async (request_id:number,nota:string)=>{
     const nuevoItemNotaSolicitud = {
       id: obtenerUltimoIdNotaSolicitud(request_id)??0 + 1, // Incrementar el id de la cotización
