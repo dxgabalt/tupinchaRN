@@ -21,6 +21,7 @@ export interface Solicitud {
     description: string;
     speciality: string;
     ubicacion: string;
+    is_premium: boolean;
     profiles: {
       id?: number;
       name: string;

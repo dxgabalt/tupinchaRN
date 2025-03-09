@@ -5,4 +5,5 @@ interface Perfil {
     profile_pic_url: string;
     phone: string;
     user_id: number;
+    is_premium?: boolean;
   }

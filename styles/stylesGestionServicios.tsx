@@ -195,6 +195,136 @@ const styles = StyleSheet.create({
     color: '#333',
     marginTop: 10,
   },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 25,
+    marginBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    paddingBottom: 8,
+  },
+  
+  // Portfolio item styles
+  portfolioItem: {
+    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  
+  portfolioContent: {
+    flexDirection: 'row',
+    flex: 1,
+  },
+  
+  portfolioImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 15,
+  },
+  
+  noImage: {
+    backgroundColor: '#e0e0e0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  noImageText: {
+    color: '#888',
+    fontSize: 12,
+  },
+  
+  portfolioInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  
+  portfolioTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  
+  portfolioDescription: {
+    fontSize: 14,
+    color: '#666',
+  },
+  
+  deleteButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#ffefef',
+    marginLeft: 10,
+  },
+  
+  deleteButtonText: {
+    fontSize: 18,
+  },
+  
+  // Preview image container
+  previewContainer: {
+    position: 'relative',
+    width: 200,
+    height: 200,
+    marginVertical: 15,
+    alignSelf: 'center',
+  },
+  
+  previewImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+  },
+  
+  removeImageButton: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: 'red',
+    padding: 5,
+    borderRadius: 50,
+    width: 25,
+    height: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  removeImageText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
+  },
+  
+  // Text area for description
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+    paddingTop: 10,
+  },
+  
+  // Empty message
+  emptyMessage: {
+    textAlign: 'center',
+    color: '#888',
+    marginVertical: 20,
+    fontStyle: 'italic',
+  },
+  
+  // Disabled button
+  botonDesactivado: {
+    backgroundColor: '#cccccc',
+    opacity: 0.7,
+  },
 });
 
 export default styles;

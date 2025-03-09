@@ -175,7 +175,13 @@ const PantallaResultadosBusqueda = () => {
                 
                 <View style={styles.infoContainer}>
                   <Text style={styles.nombre}>{item.nombre}</Text>
-                  <Text style={styles.descripcion}>{item.descripcion}</Text>
+                  <ScrollView style={styles.containerDescription}
+                  contentContainerStyle={styles.scrollViewContent}
+                  showsVerticalScrollIndicator={true} // Esto fuerza la visualización del indicador de scroll
+                  nestedScrollEnabled={true} // Habilita scroll anidado si es necesario
+                  >
+                    <Text style={styles.descripcion}>{item.descripcion}</Text>
+                  </ScrollView>
                   <Text style={styles.ubicacion}>📍 {item.ubicacion}</Text>
                   <Text style={styles.calificacion}>⭐ {item.calificacion}/5</Text>
                 </View>

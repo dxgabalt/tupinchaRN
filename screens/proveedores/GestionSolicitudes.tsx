@@ -36,6 +36,7 @@ const PantallaGestionSolicitudes = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [respuestaNota, setRespuestaNota] = useState("");
   const [nuevaNota, setNuevaNota] = useState("");
+
   const [nuevaNotaSolicitud, setNuevaNotaSolicitud] = useState("");
 
   /** 🔥 Cargar Solicitudes del Proveedor */
@@ -223,19 +224,6 @@ const PantallaGestionSolicitudes = () => {
     // Limpiar el estado de la respuesta
     setNuevaNota("");
   }
-  const obtenerUltimoIdNotaContraoferta= (idSolicitud:number) => {
-    // Encuentra la solicitud correspondiente
-    const solicitud = solicitudes.find((solicitud) => solicitud.id === idSolicitud);
-    
-    if (solicitud && solicitud.request_notas.length > 0) {
-      // Obtener el último id de la cotización
-      const ultimoId = solicitud.request_notas[solicitud.request_notas.length - 1].id;
-      return ultimoId;
-    } else {
-      // Si no hay cotizaciones, devuelve null o cualquier valor predeterminado
-      return null;
-    }
-  };
   const handleCrearNotaSolicitud =async (request_id:number,nota:string)=>{
     const nuevoItemNotaSolicitud = {
       id: obtenerUltimoIdNotaSolicitud(request_id)??0 + 1, // Incrementar el id de la cotización

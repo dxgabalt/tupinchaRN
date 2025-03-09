@@ -170,7 +170,16 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     textAlign: 'justify',
   },
+  containerDescription: {
+    height: 150, // Define una altura fija o usa porcentajes como '40%'
+    marginVertical: 10,
+  },
 
+  scrollViewContent: {
+    // Estilos para el contenido dentro del ScrollView
+    paddingVertical: 5,
+    paddingHorizontal: 5,
+  },
   /** 🔥 Sección de Horario */
   horarioContainer: {
     backgroundColor: '#F8F9FA',
@@ -238,6 +247,10 @@ modalContainer: {
   justifyContent: "center",
   alignItems: "center",
 },
+scrollView: {
+  width: "100%",
+  maxHeight: 200, // 🔥 Máximo alto para evitar overflow en pantallas pequeñas
+},
 modalContenido: {
   backgroundColor: "#FFFFFF",
   width: "90%",
@@ -251,10 +264,6 @@ modalTitulo: {
   fontWeight: "bold",
   marginBottom: 10,
   color: "#1E3A8A",
-},
-scrollView: {
-  width: "100%",
-  maxHeight: 200, // 🔥 Máximo alto para evitar overflow en pantallas pequeñas
 },
 opcion: {
   paddingVertical: 10,

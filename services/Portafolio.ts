@@ -30,6 +30,7 @@ export class PortafolioService {
     provider_id: number,
     nuevaEspecialidad: string,
     nuevaDescripcion: string,
+    servicio_id: number,
     imagen: string
   ) {
     const { data, error } = await supabase_client
@@ -39,6 +40,7 @@ export class PortafolioService {
         provider_id: provider_id,
         descripcion: nuevaDescripcion,
         imagen: imagen,
+        servicio_id: servicio_id,
       });
   }
 

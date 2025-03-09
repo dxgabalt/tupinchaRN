@@ -52,7 +52,7 @@ export class SolicitudService {
   static async obtenerSolicitudPorId(id: number): Promise<Solicitud | null> {
     const solicituds = await SupabaseService.obtenerDatos<Solicitud>(
       this.TABLE_NAME,
-      'id, provider_id,request_notas(id,nota_client,nota_provider),contraofertas(id,costo_mano_obra,costo_materiales,descripcion,contraoferta_notas(id,nota_client,nota_provider)), cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at)),providers(id, phone, profile_id, profiles(name, rating, profile_pic_url, phone), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id',
+      'id, provider_id,request_notas(id,nota_client,nota_provider),contraofertas(id,costo_mano_obra,costo_materiales,descripcion,contraoferta_notas(id,nota_client,nota_provider)), cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at)),providers(id, phone, profile_id,is_premium, profiles(name, rating, profile_pic_url, phone), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id',
       {id},
     );
     return solicituds[0] || null;

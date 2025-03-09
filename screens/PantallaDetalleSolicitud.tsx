@@ -140,8 +140,6 @@ const PantallaDetalleSolicitud = () => {
     notasolicitudId: number,
     texto: string
   ) => {
-    console.log("Responder nota:", notasolicitudId, texto);
-
     setRequestNotas((prevState) => ({
       ...prevState,
       [notasolicitudId]: {
@@ -160,7 +158,7 @@ const PantallaDetalleSolicitud = () => {
         ...prevState[contraofertaId],
         texto,
       },
-    }));
+    }));    
   };
 
   // 📌 Enviar nota a la cotización
@@ -248,7 +246,10 @@ const PantallaDetalleSolicitud = () => {
   };
   // 📌 Enviar nota a la contraoferta
   const enviarNotaContraOferta = async (notaContraofertaId: number) => {
+    console.log('id', notaContraofertaId);
+    console.log('nota',contraofertaNotas);
     const nota = contraofertaNotas[notaContraofertaId]?.texto;
+    
     if (!nota || nota.trim() === "") {
       console.log("Nota vacía", "Por favor escribe una nota antes de enviar.");
 
@@ -429,8 +430,11 @@ const PantallaDetalleSolicitud = () => {
             <TextInput
               style={styles.inputNota}
               placeholder="Escribe una nota..."
-              value={notasInfo.texto}
-              onChangeText={(texto) => handleCambioNota(cotizacionId, texto)}
+              value={cotizacionesNotas[cotizacionId] || {
+                texto: "",
+                notas: [],
+              }.texto}
+              onChangeText={(texto) => handleCambioNota(nota.id, texto)}
               multiline
             />
             <TouchableOpacity
@@ -449,15 +453,11 @@ const PantallaDetalleSolicitud = () => {
       </View>
     );
   };
-  // Renderizar un item de cotización
+  // Renderizar un item de contraoferta
   const renderContraOfertaItem = ({ item, index }) => {
     const contraofertaId = item.id;
-    const notasInfo = contraofertaNotas[contraofertaId] || {
-      texto: "",
-      notas: [],
-    };
     const hayNotas = item.contraoferta_notas.length > 0;
-    const ultimaNota = hayNotas ? notasInfo[notasInfo.length - 1] : null;
+  
     return (
       <View style={styles.cotizacionItem}>
         <Text style={styles.cotizacionTitulo}>ContraOferta #{index + 1}</Text>
@@ -478,54 +478,60 @@ const PantallaDetalleSolicitud = () => {
           </Text>
         </View>
         <Text style={styles.cotizacionDescripcion}>{item.descripcion}</Text>
-
+  
         {/* Sección de Notas */}
         <View style={styles.notasContainer}>
           <Text style={styles.notasTitulo}>Notas:</Text>
-
+  
           {/* Lista de notas existentes */}
           {hayNotas ? (
-            item.contraoferta_notas.map((nota, i) => (
-              <View key={`nota-${i}`} style={styles.notaItem}>
-                <Text style={styles.notaTexto}>{nota.nota_client}</Text>
-                <Text style={styles.notaProveedor}>{nota.nota_provider}</Text>
-                <Text style={styles.notaFecha}>{nota.created_at}</Text>
-              </View>
-            ))
+            item.contraoferta_notas.map((nota, i) => {
+              const notasInfo = contraofertaNotas[nota.id] || { texto: "", notas: [] };
+  
+              return (
+                <View key={`nota-${i}`} style={styles.notaItem}>
+                  <Text style={styles.notaTexto}>{nota.nota_client}</Text>
+                  <Text style={styles.notaProveedor}>{nota.nota_provider}</Text>
+                  <Text style={styles.notaFecha}>{nota.created_at}</Text>
+  
+                  {/* Campo para agregar nueva nota */}
+                  {nota.nota_client === null && (
+                    <View style={styles.nuevaNotaContainer}>
+                    <TextInput
+                      style={styles.inputNota}
+                      placeholder="Escribe una nota..."
+                      value={notasInfo.texto}
+                      onChangeText={(texto) =>
+                        handleCambioNotaContraoferta(nota.id, texto)
+                      }
+                      multiline
+                    />
+                    <TouchableOpacity
+                      style={styles.botonEnviarNota}
+                      onPress={() => enviarNotaContraOferta(nota.id)}
+                      disabled={enviandoNota}
+                    >
+                      {enviandoNota ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                      ) : (
+                        <Text style={styles.textoBotonNota}>Enviar</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                  )}
+                </View>
+              );
+            })
           ) : (
             <Text style={styles.sinNotas}>
               No hay notas para esta contraoferta
             </Text>
           )}
-
-          {/* Campo para agregar nueva nota */}
-          {hayNotas && (
-            <View style={styles.nuevaNotaContainer}>
-              <TextInput
-                style={styles.inputNota}
-                placeholder="Escribe una nota..."
-                value={notasInfo.texto}
-                onChangeText={(texto) =>
-                  handleCambioNotaContraoferta(contraofertaId, texto)
-                }
-                multiline
-              />
-              <TouchableOpacity
-                style={styles.botonEnviarNota}
-                onPress={() => enviarNotaContraOferta(contraofertaId)}
-              >
-                {enviandoNota ? (
-                  <ActivityIndicator size="small" color="#FFFFFF" />
-                ) : (
-                  <Text style={styles.textoBotonNota}>Enviar</Text>
-                )}
-              </TouchableOpacity>
-            </View>
-          )}
         </View>
       </View>
     );
   };
+  
 
   return (
     <View style={styles.container}>
@@ -709,15 +715,17 @@ const PantallaDetalleSolicitud = () => {
           )}
 
           {/* 📞 Botón para Contactar */}
-          <Animated.View style={{ transform: [{ scale: animacion }] }}>
-            <TouchableOpacity
-              style={styles.botonContactar}
-              onPress={contactarProveedor}
-              disabled={!solicitud?.providers?.profiles?.phone}
-            >
-              <Text style={styles.textoBoton}>📲 Contactar Proveedor</Text>
-            </TouchableOpacity>
-          </Animated.View>
+          {solicitud?.providers?.is_premium && (
+            <Animated.View style={{ transform: [{ scale: animacion }] }}>
+              <TouchableOpacity
+                style={styles.botonContactar}
+                onPress={contactarProveedor}
+                disabled={!solicitud?.providers?.profiles?.phone}
+              >
+                <Text style={styles.textoBoton}>📲 Contactar Proveedor</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          )}
 
           {/* 🔙 Botón para Volver */}
           <TouchableOpacity

@@ -85,14 +85,17 @@ console.log(providerservice);
     );
   }
 static async actualizarProveedor(perfil:any){
+  console.log(perfil.plan_id);
+  
     const { data, error } = await supabase_client
       .from('providers')
       .update({
         phone: perfil.phone,
         speciality: perfil.speciality,
         availability: perfil.availability,
+        plan_id: perfil.plan_id=== undefined?null:perfil.plan_id,
       })
-      .eq("id", perfil.id)
+      .eq("id", perfil.id) .select();
 }
   // Eliminar un PROVIDERSERVICE por ID
   static async eliminar(id: number): Promise<boolean> {

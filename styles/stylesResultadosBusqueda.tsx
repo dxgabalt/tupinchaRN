@@ -173,6 +173,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  containerDescription: {
+    height: 150, // Define una altura fija o usa porcentajes como '40%'
+    marginVertical: 10,
+  },
+
+  scrollViewContent: {
+    // Estilos para el contenido dentro del ScrollView
+    paddingVertical: 5,
+    paddingHorizontal: 5,
+  },
 });
 
 export default styles;

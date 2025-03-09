@@ -10,6 +10,7 @@ import {
   Alert,
   Animated,
   ActivityIndicator,
+  Linking,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import styles from "../styles/stylesDetallesProveedor";
@@ -61,10 +62,9 @@ const PantallaDetallesProveedor = () => {
 
   // 📌 Función para contactar al proveedor
   const contactarProveedor = () => {
-    Alert.alert(
-      "Contacto",
-      `Puedes contactar a ${proveedor?.providers.profiles.name}:\n📞 ${proveedor?.providers.phone}\n📧 ${proveedor?.providers.profiles.email}`
-    );
+
+    const mensaje = "Hola, deseeo informaccion acerca de servicio de: "+proveedor?.providers.description;
+    abrirWhatsApp(proveedor?.providers.phone??"", mensaje??" ");
   };
 
   // 📌 Obtener datos del proveedor
@@ -74,6 +74,7 @@ const PantallaDetallesProveedor = () => {
         const providerService = await ProviderServiceService.obtenerPorId(
           idProveedor
         );
+       
         setProveedor(providerService);
       } catch (error) {
         console.error("Error obteniendo datos del proveedor:", error);
@@ -84,7 +85,9 @@ const PantallaDetallesProveedor = () => {
     };
     obtenerProveedor();
   }, []);
-
+const abrirWhatsApp = (phone:string,mensaje:string) => {
+    Linking.openURL(`https://wa.me/${phone}?text=${mensaje}`);
+  };
   return (
     <View style={styles.container}>
       {/* 🔥 Menú Lateral con Animación */}
@@ -175,13 +178,19 @@ const PantallaDetallesProveedor = () => {
           </View>
 
           {/* 📌 Descripción */}
-          <View style={styles.detallesContainer}>
-            <Text style={styles.tituloSeccion}>Sobre el Servicio</Text>
-            <Text style={styles.descripcion}>
-              {proveedor?.providers.description}
-            </Text>
-          </View>
-
+         
+            <View style={styles.detallesContainer}>
+              <Text style={styles.tituloSeccion}>Sobre el Servicio</Text>
+              <ScrollView style={styles.containerDescription}
+              contentContainerStyle={styles.scrollViewContent}
+              showsVerticalScrollIndicator={true} // Esto fuerza la visualización del indicador de scroll
+              nestedScrollEnabled={true} // Habilita scroll anidado si es necesario
+              >
+              <Text style={styles.descripcion}>
+                {proveedor?.providers.description}
+              </Text>
+              </ScrollView>
+            </View>
           {/* 📌 Portafolio de Trabajos */}
           <View style={styles.portafolioContainer}>
           <Text style={styles.tituloSeccion}>📸 Portafolio</Text>

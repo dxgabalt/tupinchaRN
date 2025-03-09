@@ -292,13 +292,12 @@ export class AuthService {
       const { data: providerData, error: providerError } =
         await AuthService.supabase
           .from("providers")
-          .select("*")
-          .eq("profile_id", profile.id)
-          .single();
+          .select("*,planes(id,nombre)")
+          .eq("profile_id", profile.id);
       if (providerError) {
         console.error("Error al obtener el proveedor:", providerError);
       } else {
-        providers = providerData;
+        providers = providerData[0];
       }
       const { data: portafolioData, error: portafolioError } =
         await AuthService.supabase

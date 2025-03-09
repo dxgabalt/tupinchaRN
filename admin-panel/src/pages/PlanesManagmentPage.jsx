@@ -11,6 +11,7 @@ const PlanesManagmentPage = () => {
 
   // 📌 Estados de edición
   const [editando, setEditando] = useState(null);
+  const [id, setId] = useState(0);
   const [nombre, setNombre] = useState("");
   const [costo, setCosto] = useState("");
   const [duracion, setDuracion] = useState("");
@@ -36,7 +37,7 @@ const PlanesManagmentPage = () => {
   const guardarEdicion = async () => {
     if (modoEdicion) {
       try {
-        await PlanService.actualizarPlan(editando, { nombre, costo, duracion });
+        await PlanService.actualizar(id, { nombre, costo, duracion });
         alert("✅ Plan actualizado con éxito.");
         setEditando(null);
       } catch (error) {
@@ -44,7 +45,7 @@ const PlanesManagmentPage = () => {
       }
     } else {
       try {
-        await PlanService.agregarPlan({ nombre, costo, duracion });
+        await PlanService.crear({ nombre, costo, duracion });
         alert("✅ Plan agregado con éxito.");
       } catch (error) {
         console.error("Error agregando el plan:", error);
@@ -61,6 +62,7 @@ const PlanesManagmentPage = () => {
       setNombre(plan.nombre);
       setCosto(plan.costo);
       setDuracion(plan.duracion);
+      setId(plan.id)
       setModoEdicion(true);
     } else {
       setNombre("");
