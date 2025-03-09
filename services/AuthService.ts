@@ -200,8 +200,6 @@ export class AuthService {
       const profile_id = profile[0]?.id;
 
       // Insertar en "providers"
-      console.log(userRequest.esComision=== false);
-      
       const { data: provider, error: providerError } =
         await AuthService.supabase
           .from("providers")
@@ -243,7 +241,6 @@ export class AuthService {
       email: correo,
       password: contrasena,
     });
-    console.log("Autenticación exitosa:", data);
     const { data: profiles } = await AuthService.supabase
       .from("profiles")
       .select("*")
@@ -277,7 +274,7 @@ export class AuthService {
     // Obtener el perfil del usuario
     const { data: profile, error: profileError } = await AuthService.supabase
       .from("profiles")
-      .select("*")
+      .select("*,provincias(id,nombre),municipios(id,name)")
       .eq("user_id", data.user.id)
       .single();
 

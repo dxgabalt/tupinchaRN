@@ -38,6 +38,10 @@ const styles = StyleSheet.create({
   completado: {
     backgroundColor: '#4CAF50',
     color: '#FFFFFF',
+  },  
+  rechazada: {
+    backgroundColor: '#BE0A19FF',
+    color: '#FFFFFF',
   },
 
   /** 🔥 Imagen del Servicio */

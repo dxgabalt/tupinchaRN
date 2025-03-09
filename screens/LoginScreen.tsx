@@ -42,8 +42,6 @@ const LoginScreen = () => {
     setLoading(true);
     try {
       const response = await AuthService.autenticarUsuario(correo, contrasena);
-      console.log('Rol del usuario:', response.role);
-
       if (!response.success) {
         Alert.alert('⚠️ Error', 'Credenciales incorrectas. Inténtalo de nuevo.');
         return;

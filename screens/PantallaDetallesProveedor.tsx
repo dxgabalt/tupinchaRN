@@ -52,13 +52,13 @@ const PantallaDetallesProveedor = () => {
 
   // 📌 Animación del Menú Hamburguesa
   const toggleMenu = () => {
-    setMenuVisible(!menuVisible);
-    Animated.timing(menuAnim, {
-      toValue: menuVisible ? -300 : 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
+      setMenuVisible(!menuVisible);
+      Animated.timing(menuAnim, {
+        toValue: menuVisible ? -300 : 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    };
 
   // 📌 Función para contactar al proveedor
   const contactarProveedor = () => {
@@ -123,6 +123,9 @@ const abrirWhatsApp = (phone:string,mensaje:string) => {
           >
             <Text style={styles.menuText}>❓ Soporte</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("PantallaNotificacion")}>
+            <Text style={styles.menuText}>🔔 Notificaciones</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => navigation.navigate("MiPerfil")}
@@ -170,7 +173,7 @@ const abrirWhatsApp = (phone:string,mensaje:string) => {
               {proveedor?.providers.speciality}
             </Text>
             <Text style={styles.ubicacion}>
-              📍 {proveedor?.providers.ubicacion}
+              📍 {proveedor?.providers.profiles.provincias.nombre} {" - "} {proveedor?.providers.profiles.municipios.name}
             </Text>
             <Text style={styles.calificacion}>
               ⭐ {proveedor?.providers.profiles.rating} / 5

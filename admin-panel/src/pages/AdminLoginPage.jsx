@@ -19,7 +19,6 @@ const AdminLoginPage = () => {
     setTimeout(() => {
       // Iniciar sesión con el correo y contraseña
       let  is_auth= AuthService.autenticarUsuario(email, password)
-      console.log(is_auth)
       if(is_auth){
         localStorage.setItem("adminAuth", "true"); // Guardar sesión
         navigate("/dashboard"); // Redirigir al Dashboard

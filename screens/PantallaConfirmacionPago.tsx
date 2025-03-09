@@ -49,8 +49,6 @@ const PantallaConfirmacionPago = () => {
     try {
     const profile = await AuthService.obtenerPerfil();
     const userId =profile.user_id || '';
-    console.log('userId',profile);
-    
     const id=  await SolicitudService.crearSolicitudDeServicio(
       id_proveedor,
         service_id,

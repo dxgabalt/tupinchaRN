@@ -83,7 +83,7 @@ const PantallaHistorialUsuario = () => {
 
       {/* 🔍 Filtros de Estado */}
       <View style={styles.filtrosContainer}>
-        {['Todos', 'Completado', 'Pendiente', 'Cancelado'].map(estado => (
+        {['Todos', 'Completado', 'Pendiente', 'Rechazada'].map(estado => (
           <Animated.View key={estado} style={{ transform: [{ scale: animacionFiltro }] }}>
             <TouchableOpacity
               style={[styles.botonFiltro, filtro === estado && styles.botonFiltroActivo]}

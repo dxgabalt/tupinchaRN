@@ -1,4 +1,6 @@
+import { Municipio } from "./Municipio";
 import { Portafolio } from "./Portafolio";
+import { Provincia } from "./Provincia";
 
 export interface ProviderService {
   id?: number;
@@ -21,8 +23,12 @@ export interface ProviderService {
       profile_pic_url: string;
       phone: string;
       municipio_id:number;
+      municipios:Municipio;
       provincia_id:number;
-    };
+      provincias:{
+        id?: number;
+        nombre: string;
+      };
     availability: string;
   }
   services:{

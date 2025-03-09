@@ -303,6 +303,9 @@ const PantallaGestionServicios = () => {
           >
             <Text style={styles.menuText}>📋 Ver Solicitudes</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("PantallaNotificacion")}>
+          <Text style={styles.menuText}>🔔 Notificaciones</Text>
+        </TouchableOpacity>
           <TouchableOpacity
             style={styles.menuCerrar}
             onPress={async () => {

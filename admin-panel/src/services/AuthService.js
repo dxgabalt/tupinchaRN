@@ -15,8 +15,6 @@ export class AuthService {
       console.error(`Error de autenticación: ${error.message}`, error);
       return { success: false, error };
     }
-
-    console.log("Autenticación exitosa:", data);
     return { success: true, data };
   }
   static async obtenerUsuarios() {

@@ -9,22 +9,21 @@ const styles = StyleSheet.create({
 
   /** 🔥 Menú Hamburguesa */
   menuContainer: {
-    position: 'absolute',
-    top: 0,
+    position: "absolute",
     left: 0,
+    top: 0,
     width: 280,
-    height: '100%',
+    height: "100%",
     backgroundColor: '#FF0314',
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
     paddingVertical: 30,
-    paddingHorizontal: 20,
-    zIndex: 10,
+    zIndex: 1000,
     elevation: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 3, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
-    borderTopRightRadius: 20,
-    borderBottomRightRadius: 20,
   },
   menuItem: {
     paddingVertical: 15,
@@ -52,10 +51,10 @@ const styles = StyleSheet.create({
 
   /** 🔥 Fondo Oscuro cuando el Menú está Abierto */
   overlay: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     zIndex: 999,
   },
 

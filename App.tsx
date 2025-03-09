@@ -20,6 +20,7 @@ import PantallaDetalleSolicitud from './screens/PantallaDetalleSolicitud';
 import PantallaGestionSolicitudes from './screens/proveedores/GestionSolicitudes';
 import PantallaGestionServicios from './screens/proveedores/PantallaGestionServicios';
 import OnboardingScreen from './screens/OnboardingScreen';
+import PantallaNotificaciones from './screens/PantallaNotificaciones';
 
 const Stack = createStackNavigator();
 
@@ -31,6 +32,7 @@ const AppNavigator = () => {
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="PantallaNegocios" component={PantallaNegocios} />
       <Stack.Screen name="RegistroScreen" component={RegistroScreen} />
+      <Stack.Screen name="PantallaNotificacion" component={PantallaNotificaciones} />
       <Stack.Screen
         name="OlvidarContrasena"
         component={OlvidarContrasenaScreen}
@@ -66,7 +68,9 @@ const AppNavigator = () => {
       <Stack.Screen
         name="GestionServicios"
         component={PantallaGestionServicios}
-      />
+      />      
+
+
       <Stack.Screen
         name="PantallaHistorialUsuario"
         component={PantallaHistorialUsuario}

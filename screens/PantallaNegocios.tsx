@@ -51,6 +51,10 @@ const PantallaNegocios = () => {
       try {
         const profile = await AuthService.obtenerPerfil();
         setUsuario(profile || usuario);
+        setProvinciaSeleccionada(profile?.provincias.id);
+        setNombreProvinciaSeleccionada(profile?.provincias.nombre);
+        setMunicipioSeleccionado(profile?.municipios.id);
+        setNombreMunicipioSeleccionado(profile?.municipios.name);
       } catch (error) {
         console.error("Error obteniendo usuario:", error);
       }
@@ -106,13 +110,16 @@ const PantallaNegocios = () => {
   const handlePress = () => {
     Linking.openURL("https://servicios.tupincha.com/shop/"); // Cambia la URL según lo necesites
   }; 
+  const seleccionarUbicacion = () => {
+    setModalVisible(true);
+    setMunicipioSeleccionado(null);
+    setNombreMunicipioSeleccionado(null);
+  };
    const contactar = () => {
  const numero = '+5355655190';
     const mensaje = encodeURIComponent('Hola, necesito ayuda con la aplicación.');
     Linking.openURL(`https://wa.me/${numero}?text=${mensaje}`);  };
     const buscar = (texto: string) => {
-      console.log(categorias);
-      
       if (texto.length === 0) {
         obtenerCategorias();
       } else {
@@ -142,6 +149,9 @@ const PantallaNegocios = () => {
     
     <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("PantallaSoporteFAQ")}>
       <Text style={styles.menuText}>❓ Soporte</Text>
+    </TouchableOpacity>   
+     <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("PantallaNotificacion")}>
+      <Text style={styles.menuText}>🔔 Notificaciones</Text>
     </TouchableOpacity>
     
     <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("MiPerfil")}>
@@ -192,7 +202,7 @@ const PantallaNegocios = () => {
       </View>
 
       {/* 🌍 Botón para seleccionar ubicación */}
-      <TouchableOpacity style={styles.botonFiltro} onPress={() => setModalVisible(true)}>
+      <TouchableOpacity style={styles.botonFiltro} onPress={() => seleccionarUbicacion()}>
         <Text style={styles.textoBoton}>
           {provinciaSeleccionada ? `${nombreProvinciaSeleccionada} - ${nombreMunicipioSeleccionado || "Selecciona municipio"}` : "Seleccionar Ubicación"}
         </Text>
@@ -228,7 +238,7 @@ const PantallaNegocios = () => {
                 <TouchableOpacity onPress={() => setMostrarMunicipios(false)} style={styles.botonVolver}>
                   <Text style={styles.textoBoton}>← Volver</Text>
                 </TouchableOpacity>
-                <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
+                <Text style={styles.modalTitulo}>Selecciona un Municipio (Opcional)</Text>
                 <FlatList
                   data={municipios}
                   keyExtractor={(item) => item.id.toString()}

@@ -82,28 +82,20 @@ const RegistroScreen = () => {
       !telefono.trim()
     ) {
       Alert.alert("Error", "Todos los campos son obligatorios.");
-      console.log("Error", "Todos los campos son obligatorios.");
-
       return false;
     }
 
     if (!correo.includes("@")) {
       Alert.alert("Error", "Por favor, ingresa un correo válido.");
-      console.log("Error", "Por favor, ingresa un correo válido.");
-
       return false;
     }
 
     if (contrasena.length < 6) {
       Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres.");
-      console.log("Error", "La contraseña debe tener al menos 6 caracteres.");
-
       return false;
     }
     if (esProveedor && !imagenPerfil) {
       Alert.alert("Error", "Los proveedores deben subir una imagen de perfil.");
-      console.log("Error", "Los proveedores deben subir una imagen de perfil.");
-
       return false;
     }
 
@@ -183,15 +175,12 @@ const RegistroScreen = () => {
       const perfil = await AuthService.obtenerPerfil();
 
       if (perfil?.role_id !== 3) {
-        console.log("No es proveedor");
         Alert.alert(
           "Registro exitoso",
           "Tu cuenta ha sido creada y será validada en 24 horas."
         );
         navigation.navigate("PantallaNegocios");
       } else {
-        console.log("es proveedor");
-
         Alert.alert(
           "Registro exitoso",
           "Tu cuenta ha sido creada y será validada en 24 horas."

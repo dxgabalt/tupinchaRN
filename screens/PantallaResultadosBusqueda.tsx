@@ -43,8 +43,6 @@ const PantallaResultadosBusqueda = () => {
       try {
         const municipio = municipio_id !== null ?municipio_id:0
         const provincia = provincia_id !== null ?provincia_id:0
-        console.log('municipio_id',municipio);
-        console.log('provincia_id',provincia);
         const providers_services = await ProviderServiceService.obtenerPorServicio(service_id,municipio,provincia);
         const negociosFormateados = providers_services.map((servicio) => ({
           id: servicio.id,
@@ -52,7 +50,7 @@ const PantallaResultadosBusqueda = () => {
           tags: servicio.services?.tags || [],
           categoria: servicio.services?.category || 'Sin categoría',
           descripcion: servicio.providers?.description || 'No hay descripción disponible',
-          ubicacion: servicio.providers?.ubicacion || 'Sin ubicación',
+          ubicacion: servicio.providers?.profiles.provincias.nombre+" - "+servicio.providers?.profiles.municipios.name || 'Sin ubicación',
           imagen: servicio.providers?.profiles?.profile_pic_url || '',
           calificacion: servicio.providers?.profiles?.rating || 0,
         }));
@@ -108,6 +106,9 @@ const PantallaResultadosBusqueda = () => {
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("PantallaSoporteFAQ")}>
             <Text style={styles.menuText}>❓ Soporte</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("PantallaNotificacion")}>
+            <Text style={styles.menuText}>🔔 Notificaciones</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("MiPerfil")}>
             <Text style={styles.menuText}>👤 Mi Perfil</Text>

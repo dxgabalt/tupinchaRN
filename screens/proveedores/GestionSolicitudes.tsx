@@ -272,6 +272,9 @@ await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
           >
             <Text style={styles.menuText}>⚙️ Gestionar Servicios</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("PantallaNotificacion")}>
+            <Text style={styles.menuText}>🔔 Notificaciones</Text>
+          </TouchableOpacity>
 
           <TouchableOpacity style={styles.menuItem} onPress={cerrarSesion}>
             <Text style={styles.menuText}>🚪 Cerrar Sesión</Text>
@@ -353,13 +356,13 @@ await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.botonAceptar}
-                      onPress={() => manejarSolicitud(item.id, "aceptada")}
+                      onPress={() => manejarSolicitud(item.id, "aceptada por proveedor")}
                     >
                       <Text style={styles.textoBoton}>✅ Aceptar</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={styles.botonRechazar}
-                      onPress={() => manejarSolicitud(item.id, "rechazada")}
+                      onPress={() => manejarSolicitud(item.id, "Rechazada")}
                     >
                       <Text style={styles.textoBoton}>❌ Rechazar</Text>
                     </TouchableOpacity>

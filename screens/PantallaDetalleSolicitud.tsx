@@ -246,13 +246,8 @@ const PantallaDetalleSolicitud = () => {
   };
   // 📌 Enviar nota a la contraoferta
   const enviarNotaContraOferta = async (notaContraofertaId: number) => {
-    console.log('id', notaContraofertaId);
-    console.log('nota',contraofertaNotas);
     const nota = contraofertaNotas[notaContraofertaId]?.texto;
-    
     if (!nota || nota.trim() === "") {
-      console.log("Nota vacía", "Por favor escribe una nota antes de enviar.");
-
       Alert.alert("Nota vacía", "Por favor escribe una nota antes de enviar.");
       return;
     }
@@ -303,6 +298,13 @@ const PantallaDetalleSolicitud = () => {
   const manejarSolicitud = async (idSolicitud: number, estado: string) => {
     try {
       await SolicitudService.actualizarEstadoSolicitud(idSolicitud, estado);
+      //actualzar status de solicitud
+      setSolicitud((prevSolicitud) => {
+        return {
+          ...prevSolicitud,
+          status: estado,
+        };
+      });
       Alert.alert("Éxito", `Solicitud ${estado} con éxito`);
     } catch (error) {
       Alert.alert("Error", "No se pudo actualizar la solicitud.");
@@ -342,7 +344,7 @@ const PantallaDetalleSolicitud = () => {
     }
   };
   const renderNotaSolicitudItem = ({ item, index }) => {
-    const hayNotas = notasSolicitud.length > 0;
+    const hayNotas = item.nota_client === null &&(solicitud?.status === "aceptada" || solicitud?.status === "aceptada por proveedor" || solicitud?.status === "Pendiente");
     const notasInfo = requestNotas[item.id] || { texto: "", notas: [] };
     return (
       <View style={styles.notasContainer}>
@@ -426,29 +428,32 @@ const PantallaDetalleSolicitud = () => {
           )}
 
           {/* Campo para agregar nueva nota */}
-          <View style={styles.nuevaNotaContainer}>
-            <TextInput
-              style={styles.inputNota}
-              placeholder="Escribe una nota..."
-              value={cotizacionesNotas[cotizacionId] || {
-                texto: "",
-                notas: [],
-              }.texto}
-              onChangeText={(texto) => handleCambioNota(nota.id, texto)}
-              multiline
-            />
-            <TouchableOpacity
-              style={styles.botonEnviarNota}
-              onPress={() => enviarNota(cotizacionId, index)}
-              disabled={enviandoNota}
-            >
-              {enviandoNota ? (
-                <ActivityIndicator size="small" color="#FFFFFF" />
-              ) : (
-                <Text style={styles.textoBotonNota}>Enviar</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+{(solicitud?.status === "aceptada" || solicitud?.status === "aceptada por proveedor" || solicitud?.status === "Pendiente") && (
+  <View style={styles.nuevaNotaContainer}>
+    <TextInput
+      style={styles.inputNota}
+      placeholder="Escribe una nota..."
+      value={cotizacionesNotas[cotizacionId] || {
+        texto: "",
+        notas: [],
+      }.texto}
+      onChangeText={(texto) => handleCambioNota(nota.id, texto)}
+      multiline
+    />
+    <TouchableOpacity
+      style={styles.botonEnviarNota}
+      onPress={() => enviarNota(cotizacionId, index)}
+      disabled={enviandoNota}
+    >
+      {enviandoNota ? (
+        <ActivityIndicator size="small" color="#FFFFFF" />
+      ) : (
+        <Text style={styles.textoBotonNota}>Enviar</Text>
+      )}
+    </TouchableOpacity>
+  </View>
+ )}
+          
         </View>
       </View>
     );
@@ -456,7 +461,7 @@ const PantallaDetalleSolicitud = () => {
   // Renderizar un item de contraoferta
   const renderContraOfertaItem = ({ item, index }) => {
     const contraofertaId = item.id;
-    const hayNotas = item.contraoferta_notas.length > 0;
+    const hayNotas = item.contraoferta_notas.length > 0 ;
   
     return (
       <View style={styles.cotizacionItem}>
@@ -495,7 +500,7 @@ const PantallaDetalleSolicitud = () => {
                   <Text style={styles.notaFecha}>{nota.created_at}</Text>
   
                   {/* Campo para agregar nueva nota */}
-                  {nota.nota_client === null && (
+                  {nota.nota_client === null &&(solicitud?.status === "aceptada" || solicitud?.status === "aceptada por proveedor" || solicitud?.status === "Pendiente") && (
                     <View style={styles.nuevaNotaContainer}>
                     <TextInput
                       style={styles.inputNota}
@@ -598,6 +603,9 @@ const PantallaDetalleSolicitud = () => {
               solicitud?.status === "Pendiente"
                 ? styles.pendiente
                 : styles.completado,
+                solicitud?.status === "Rechazada"
+                ? styles.rechazada
+                : styles.completado,
             ]}
           >
             {solicitud?.status || "Desconocido"}
@@ -622,7 +630,7 @@ const PantallaDetalleSolicitud = () => {
           <Text style={styles.fecha}>
             📅 {solicitud?.service_date || "Fecha no especificada"}
           </Text>
-          {solicitud?.status !== "aceptada" && (
+          {(solicitud?.status === "aceptada" || solicitud?.status === "aceptada por proveedor" || solicitud?.status === "Pendiente") && (
             <View style={styles.botonesContainer}>
               <TouchableOpacity
                 style={styles.botonCotizar}
@@ -635,10 +643,16 @@ const PantallaDetalleSolicitud = () => {
                 onPress={() => manejarSolicitud(solicitud?.id, "aceptada")}
               >
                 <Text style={styles.textoBoton}>✅ Aceptar</Text>
+              </TouchableOpacity>  
+              <TouchableOpacity
+                style={styles.botonAceptar}
+                onPress={() => manejarSolicitud(solicitud?.id, "Completado")}
+              >
+                <Text style={styles.textoBoton}>✅ Confirmar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.botonRechazar}
-                onPress={() => manejarSolicitud(solicitud?.id, "rechazada")}
+                onPress={() => manejarSolicitud(solicitud?.id, "Rechazada")}
               >
                 <Text style={styles.textoBoton}>❌ Rechazar</Text>
               </TouchableOpacity>

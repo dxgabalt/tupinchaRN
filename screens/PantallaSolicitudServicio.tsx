@@ -109,6 +109,9 @@ const PantallaSolicitudServicio = () => {
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('PantallaSoporteFAQ')}>
             <Text style={styles.menuText}>❓ Soporte</Text>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("PantallaNotificacion")}>
+            <Text style={styles.menuText}>🔔 Notificaciones</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('MiPerfil')}>
             <Text style={styles.menuText}>👤 Mi Perfil</Text>
           </TouchableOpacity>

@@ -26,8 +26,6 @@ const UserProfilePage = () => {
   const [historialPrestados, setHistorialPrestados] = useState([]);
 
   useEffect(() => {
-    console.log(usuario);
-    
     if (!usuario) {
       alert("⚠ Usuario no encontrado. Redirigiendo...");
       navigate("/users");
@@ -54,8 +52,6 @@ const UserProfilePage = () => {
       // Obtener solicitudes prestadas (si el usuario es proveedor)
       if (usuario.tipo === "Proveedor") {
         const prestados = await SolicitudService.obtenerSolicitudesComoProveedor(id);
-        console.log("Historial de servicios prestados:", prestados);
-        
         setHistorialPrestados(prestados || []);
       }
     } catch (error) {
