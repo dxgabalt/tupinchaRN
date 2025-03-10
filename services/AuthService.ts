@@ -4,6 +4,7 @@ import { PortafolioService } from "./Portafolio";
 import { supabase_client } from "./supabaseClient";
 import { ProviderServiceService } from "./ProviderServiceService";
 import { UserRequest } from "../models/UserRequest";
+import { ConfiguracionService } from "./ConfiguracionService";
 export class AuthService {
   private static SUPABASE_URL = "https://idngwsekicptfluqumys.supabase.co";
   private static SUPABASE_KEY =
@@ -209,7 +210,8 @@ export class AuthService {
             speciality: userRequest.speciality || "",
             availability: userRequest.description || "",
             description: userRequest.description || "",
-            plan_id: userRequest.esComision=== false?userRequest.plan_id:null,
+            plan_id:
+              userRequest.esComision === false ? userRequest.plan_id : null,
           })
           .select();
 
@@ -222,10 +224,26 @@ export class AuthService {
 
       if (provider) {
         const provider_id = provider[0]?.id;
+        if (userRequest.esComision === true) {
+          const configuracion = await ConfiguracionService.obtenerPorId(1);
+          const fechaActual = new Date().toISOString().split("T")[0];
+          const { data, error } = await supabase_client
+            .from("comisiones")
+            .insert([
+              {
+                proveedor_id: provider_id, // ID del proveedor
+                servicio_id: userRequest.servicio_id || 0, // ID del servicio
+                estado: "pendiente", // Estado de la comisión
+                comision: configuracion?.porcentaje_comision, // Monto de la comisión
+                fecha_pago: fechaActual, // Fecha de pago
+              },
+            ]);
+        }
         await PortafolioService.agregarServicio(
           provider_id,
           userRequest.speciality || " ",
           userRequest.descripcion || " ",
+          userRequest.servicio_id || 0,
           ""
         );
         await ProviderServiceService.agregarServicioProveedor(

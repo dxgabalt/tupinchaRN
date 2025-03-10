@@ -8,6 +8,7 @@ import {
   Animated,
   Alert,
   Linking,
+  Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles/stylesNotificaciones";
@@ -78,11 +79,7 @@ const PantallaNotificaciones = () => {
   const handlePress = () => {
     Linking.openURL("https://servicios.tupincha.com/shop/"); // Cambia la URL según lo necesites
   };
-  const seleccionarUbicacion = () => {
-    setModalVisible(true);
-    setMunicipioSeleccionado(null);
-    setNombreMunicipioSeleccionado(null);
-  };
+
   const contactar = () => {
     const numero = "+5355655190";
     const mensaje = encodeURIComponent(
@@ -105,29 +102,47 @@ const PantallaNotificaciones = () => {
   };
   const deleteNotification = async (id: number) => {
     try {
-      Alert.alert(
-        "Eliminar notificación",
-        "¿Estás seguro de que deseas eliminar esta notificación?",
-        [
-          {
-            text: "Cancelar",
-            style: "cancel"
-          },
-          {
-            text: "Eliminar",
-            onPress: async () => {
-              const result = await NotificationsService.eliminar(id);
-              if (result) {
-                setNotifications(notifications.filter((n) => n.id !== id));
-                Alert.alert("Éxito", "Notificación eliminada");
-              } else {
-                Alert.alert("Error", "No se pudo eliminar la notificación");
+            if (Platform.OS === "web") {
+              const confirmation = window.confirm(
+                "¿Estás seguro de que deseas eliminar esta notificación?"
+              );
+              if (confirmation) {
+                const result = await NotificationsService.eliminar(id);
+                if (result) {
+                  setNotifications(notifications.filter((n) => n.id !== id));
+                  alert("Notificación eliminada");
+                } else {
+                 alert("No se pudo eliminar la notificación");
+                }
               }
-            },
-            style: "destructive"
-          }
-        ]
-      );
+            }else{
+              Alert.alert(
+                "Eliminar notificación",
+                "¿Estás seguro de que deseas eliminar esta notificación?",
+                [
+                  {
+                    text: "Cancelar",
+                    style: "cancel"
+                  },
+                  {
+                    text: "Eliminar",
+                    onPress: async () => {
+                      console.log("Eliminando notificación", id);
+                      
+                      const result = await NotificationsService.eliminar(id);
+                      if (result) {
+                        setNotifications(notifications.filter((n) => n.id !== id));
+                        Alert.alert("Éxito", "Notificación eliminada");
+                      } else {
+                        Alert.alert("Error", "No se pudo eliminar la notificación");
+                      }
+                    },
+                    style: "destructive"
+                  }
+                ]
+              );
+            }
+      
     } catch (error) {
       console.error("Error al eliminar la notificación:", error);
       Alert.alert("Error", "Hubo un problema al eliminar la notificación");

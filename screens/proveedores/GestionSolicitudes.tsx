@@ -63,7 +63,7 @@ const PantallaGestionSolicitudes = () => {
   /** 📌 Aceptar/Rechazar Solicitud */
   const manejarSolicitud = async (idSolicitud: number, estado: string) => {
     try {
-      await SolicitudService.actualizarEstadoSolicitud(idSolicitud, estado);
+      await SolicitudService.actualizarEstadoSolicitud(idSolicitud, estado,true);
       Alert.alert("Éxito", `Solicitud ${estado} con éxito`);
 
       setSolicitudes((prevSolicitudes) =>
@@ -344,7 +344,7 @@ await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
                   {item.status.toUpperCase()}
                 </Text>
 
-                {item.status !== "rechazada" && (
+                {item.status !== "Rechazada" && (
                   <View style={styles.botonesContainer}>
                     <TouchableOpacity
                       style={styles.botonCotizar}
@@ -369,7 +369,7 @@ await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
                   </View>
                 )}
             {/* 🔥 Listado de Notas */}
-            {item.status !== "rechazada" && (
+            {item.status !== "Rechazada" && (
               <View style={styles.cardCotizacion}>
                 <Text style={styles.subTitulo}>Notas:</Text>
                 <FlatList
@@ -442,7 +442,7 @@ await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
                                   - {nota.nota_provider}
                                 </Text>
                                 {/* Responder Nota */}
-                                {nota.nota_client && !nota.nota_provider && item.status !== "rechazada" && (
+                                {nota.nota_client && !nota.nota_provider && item.status !== "Rechazada" && (
                                   <TextInput
                                     style={styles.input}
                                     placeholder="Responder a la nota..."
@@ -517,7 +517,7 @@ await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
                       />
                     
                       {/* Agregar una nueva nota */}
-                      {item.status !== "rechazada" && (
+                      {item.status !== "Rechazada" && (
                         <View>
                         <TextInput
                         style={styles.input}

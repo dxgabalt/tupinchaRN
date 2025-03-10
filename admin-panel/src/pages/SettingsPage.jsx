@@ -20,6 +20,16 @@ const SettingsPage = () => {
   // 📌 Guardar Configuración
   const guardarConfiguracion = () => {
     alert("✅ Configuración guardada con éxito.");
+    console.log("frecuenciaPago",frecuenciaPago);
+    console.log("subscripcionActiva", subscripcionActiva);
+    console.log("diasProrroga", diasProrroga);
+    console.log("notificaciones", notificaciones);
+    console.log("diasProrroga", diasProrroga);
+    console.log("metodosPago", metodosPago);
+    console.log("comision", comision);
+    
+
+    
   };
 
   return (

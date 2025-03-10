@@ -1,37 +1,39 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import SupabaseService from './SupabaseService';
-import {Solicitud} from '../models/Solicitud';
-import {HistorialItem} from '../models/HistorialItem';
-import {createClient, SupabaseClient} from '@supabase/supabase-js';
-import { supabase_client } from './supabaseClient';
-import { ProviderService } from '../models/ProviderService';
-import { Alert } from 'react-native';
-import { Cotizacion } from '../models/Cotizacion';
-import { RequestNota } from '../models/RequestNota';
+import SupabaseService from "./SupabaseService";
+import { Solicitud } from "../models/Solicitud";
+import { HistorialItem } from "../models/HistorialItem";
+import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { supabase_client } from "./supabaseClient";
+import { ProviderService } from "../models/ProviderService";
+import { Alert } from "react-native";
+import { Cotizacion } from "../models/Cotizacion";
+import { RequestNota } from "../models/RequestNota";
 
 export class SolicitudService {
-  private static readonly TABLE_NAME = 'requests';
+  private static readonly TABLE_NAME = "requests";
   // Configuración de Supabase
-  private static SUPABASE_URL = 'https://idngwsekicptfluqumys.supabase.co';
+  private static SUPABASE_URL = "https://idngwsekicptfluqumys.supabase.co";
   private static SUPABASE_KEY =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbmd3c2VraWNwdGZsdXF1bXlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1OTcyMDcsImV4cCI6MjA1NDE3MzIwN30.sBCVdh7CxLpbtJkhtKyGeQ-mWZXZrVxWWiINhtBxhso';
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbmd3c2VraWNwdGZsdXF1bXlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1OTcyMDcsImV4cCI6MjA1NDE3MzIwN30.sBCVdh7CxLpbtJkhtKyGeQ-mWZXZrVxWWiINhtBxhso";
 
   private static supabase: SupabaseClient = createClient(
     SolicitudService.SUPABASE_URL,
-    SolicitudService.SUPABASE_KEY,
+    SolicitudService.SUPABASE_KEY
   );
 
   static async obtenerTodosLosSolicituds(): Promise<Solicitud[]> {
     return await SupabaseService.obtenerDatos<Solicitud>(this.TABLE_NAME);
   }
-  static async obtenerHistorialSolicitud(userId: string): Promise<HistorialItem[]> {
+  static async obtenerHistorialSolicitud(
+    userId: string
+  ): Promise<HistorialItem[]> {
     const { data, error } = await supabase_client
       .from(SolicitudService.TABLE_NAME)
       .select(
         `id, provider_id, request_description,providers(id, phone, profile_id, profiles(name, rating, profile_pic_url, phone), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id`
       )
       .eq("user_id", userId);
-  
+
     if (error) {
       throw new Error(`Error al obtener el historial: ${error.message}`);
     }
@@ -41,31 +43,41 @@ export class SolicitudService {
         const servicio = item.services?.category || "";
         const fecha = item.service_date;
         const estado = item.status;
-        const fotoProveedor = item.providers?.[0]?.profiles?.[0]?.profile_pic_url || "";
-        const request_description= item.request_description
-        return { id: item.id, proveedor, servicio, fecha, estado, fotoProveedor,request_description };
+        const fotoProveedor =
+          item.providers?.[0]?.profiles?.[0]?.profile_pic_url || "";
+        const request_description = item.request_description;
+        return {
+          id: item.id,
+          proveedor,
+          servicio,
+          fecha,
+          estado,
+          fotoProveedor,
+          request_description,
+        };
       }) || []
     );
   }
-  
 
   static async obtenerSolicitudPorId(id: number): Promise<Solicitud | null> {
     const solicituds = await SupabaseService.obtenerDatos<Solicitud>(
       this.TABLE_NAME,
-      'id, provider_id,request_notas(id,nota_client,nota_provider),contraofertas(id,costo_mano_obra,costo_materiales,descripcion,contraoferta_notas(id,nota_client,nota_provider)), cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at)),providers(id, phone, profile_id,is_premium, profiles(name, rating, profile_pic_url, phone,provincias(id,nombre),municipios(id,name)), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id',
-      {id},
+      "id, provider_id,request_notas(id,nota_client,nota_provider),contraofertas(id,costo_mano_obra,costo_materiales,descripcion,contraoferta_notas(id,nota_client,nota_provider)), cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at)),providers(id, phone, profile_id,is_premium, profiles(name, rating, profile_pic_url, phone,provincias(id,nombre),municipios(id,name)), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id",
+      { id }
     );
     return solicituds[0] || null;
-  }  
-  
+  }
+
   static async obtenerCotizaciones(id: number): Promise<Cotizacion[]> {
-    return await SupabaseService.obtenerDatos<Cotizacion>("cotizaciones","*",{request_id:id});
+    return await SupabaseService.obtenerDatos<Cotizacion>("cotizaciones", "*", {
+      request_id: id,
+    });
   }
 
   static async obtenerSolicitudsPorCategoria(
-    categoria: string,
+    categoria: string
   ): Promise<Solicitud[]> {
-    return await SupabaseService.obtenerDatos<Solicitud>(this.TABLE_NAME, '*', {
+    return await SupabaseService.obtenerDatos<Solicitud>(this.TABLE_NAME, "*", {
       category: categoria,
     });
   }
@@ -77,29 +89,55 @@ export class SolicitudService {
     fechaServicio: string,
     precioOfrecido: number,
     userId: string,
-    imagenesUrl?: string,
+    imagenesUrl?: string
   ): Promise<number> {
-
-   const {data,error} = await SolicitudService.supabase
-      .from(SolicitudService.TABLE_NAME)
+    const { data, error } = await SolicitudService.supabase
+    .from(SolicitudService.TABLE_NAME)
+    .insert({
+      provider_id: providerId,
+      service_id: serviceId,
+      request_description: descripcion,
+      service_date: fechaServicio,
+      images: imagenesUrl || "",
+      user_id: userId,
+      price: precioOfrecido,
+      status: "Pendiente",
+    })
+    .select(`
+      provider_id,
+      providers (
+        id,
+        profile_id,
+        profiles (
+          id,
+          name,
+          user_id
+        )
+      )
+    `);
+    const user_id_provider = data?.[0]?.providers?.profiles?.user_id
+    //insertara notificacion
+     const {error:notificationError} = await supabase_client
+      .from('notifications')
       .insert({
-        provider_id: providerId,
-        service_id: serviceId,
-        request_description: descripcion,
-        service_date: fechaServicio,
-        images: imagenesUrl || '',
-        user_id: userId,
-        price: precioOfrecido,
-        status: 'Pendiente',
-      }).select();;
+        user_id: user_id_provider,
+        message: 'Se ha creado una solicitud de servicio',
+        is_read: false,
+        type_id: 1,
+      }).select();
+      if (notificationError ) {
+        Alert.alert('Error', 'No se pudo crear la notificación');
+      }
     if (error) {
-      Alert.alert('Error', error.message);
+      Alert.alert("Error", error.message);
       return 0;
     }
-    return data !== null?data[0].id:0;
+    return data !== null ? data[0].id : 0;
   }
 
-  static async obtenerSolicitudesComoProveedor(user_id: string): Promise<Solicitud[]> {
+  static async obtenerSolicitudesComoProveedor(
+    user_id: string
+  ): Promise<Solicitud[]> {
     try {
       // Obtener el profile_id desde la tabla profiles usando el user_id
       const { data: perfil, error: errorPerfil } = await supabase_client
@@ -131,7 +169,9 @@ export class SolicitudService {
       return [];
     }
   }
-  static async obtenerSolicitudes(filtro: Record<string, any> = {}): Promise<Solicitud[]> {
+  static async obtenerSolicitudes(
+    filtro: Record<string, any> = {}
+  ): Promise<Solicitud[]> {
     try {
       // Obtener solicitudes con proveedores y servicios
       const { data: solicitudes, error: errorSolicitud } = await supabase_client
@@ -177,48 +217,86 @@ export class SolicitudService {
     is_provider: boolean = false
   ) {
     if (is_provider) {
-       // Si no es proveedor, inserta la nota del cliente
-       const { data, error } = await supabase_client
-       .from('request_notas')
-       .insert({
-         request_id: request_id,
-         nota_provider: nota,
-       });
- 
-     if (error) {
-       console.error('Error insertando nota del cliente:', error);
-     }
-     return data;
+      // Si no es proveedor, inserta la nota del cliente
+      const { data, error } = await supabase_client
+        .from("request_notas")
+        .insert({
+          request_id: request_id,
+          nota_provider: nota,
+        });
+
+      if (error) {
+        console.error("Error insertando nota del cliente:", error);
+      }
+      return data;
     } else {
-      return await SupabaseService.actualizarRegistro<RequestNota>('request_notas', {nota_client: nota}, 'id', request_id);
-     
+      return await SupabaseService.actualizarRegistro<RequestNota>(
+        "request_notas",
+        { nota_client: nota },
+        "id",
+        request_id
+      );
     }
   }
-  
-  static async actualizarEstadoSolicitud(id: number, status: string): Promise<void> {
-    const { error } = await supabase_client
+
+  static async actualizarEstadoSolicitud(
+    id: number,
+    status: string,
+    es_proveedor:boolean=false
+  ): Promise<void> {
+    const {data, error } = await supabase_client
       .from(this.TABLE_NAME)
       .update({ status })
-      .eq("id", id);
-  
+      .eq("id", id)
+      .select(`
+        request_description,
+        user_id,
+        provider_id,
+        providers (
+          id,
+          profile_id,
+          profiles (
+            id,
+            name,
+            user_id
+          )
+        )
+      `);
+      const user_id_provider = es_proveedor? data?.[0]?.user_id:data?.[0]?.providers?.profiles?.user_id
+      const estados: Record<'aceptada'|'aceptada por proveedor' | 'Rechazada' | 'Completado', number> = {
+        "aceptada por proveedor":5,
+        aceptada: 5,
+        Rechazada: 3,
+        Completado: 4
+      };
+      const type_id = estados[status as keyof typeof estados];
+      //insertara notificacion
+       const {error:notificationError} = await supabase_client
+        .from('notifications')
+        .insert({
+          user_id: user_id_provider,
+          message: 'Se ha cambiado solicidud a estado '+status+' referente a: '+data?.[0]?.request_description,
+          is_read: false,
+          type_id: type_id,
+        }).select();
     if (error) {
       throw new Error(`Error al actualizar el estado: ${error.message}`);
     }
   }
   static async actualizarSolicitud(
     id: number,
-    datosActualizados: Partial<Solicitud>,
+    datosActualizados: Partial<Solicitud>
   ): Promise<boolean> {
     return await SupabaseService.actualizarRegistro<Partial<Solicitud>>(
       this.TABLE_NAME,
       datosActualizados,
-      'id',
-      id,
+      "id",
+      id
     );
   }
 
   static async eliminarSolicitud(id: number): Promise<boolean> {
-    return await SupabaseService.eliminarRegistro(this.TABLE_NAME, 'id', id);
+    return await SupabaseService.eliminarRegistro(this.TABLE_NAME, "id", id);
   }
 }
 

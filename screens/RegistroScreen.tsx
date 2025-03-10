@@ -22,6 +22,8 @@ import { Service } from "../models/Service";
 import { MunicipioService } from "../services/MunicipoService";
 import { ProvinciaService } from "../services/ProvinciaService";
 import { PlanService } from "../services/PlanService";
+import { ConfiguracionService } from "../services/ConfiguracionService";
+import { Configuracion } from "../models/Configuracion";
 
 const RegistroScreen = () => {
   const navigation = useNavigation();
@@ -40,6 +42,7 @@ const RegistroScreen = () => {
   const [servicios, setServicios] = useState<Service[]>([]);
   const [provincias, setProvincias] = useState([]);
   const [municipios, setMunicipios] = useState([]);
+  const [configuracion, setConfiguracion] = useState<Configuracion |null>(null);
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(null);
@@ -117,6 +120,14 @@ const RegistroScreen = () => {
       console.error("Error obteniendo servicios:", error);
     }
   };
+   const obtenerConfiguracion= async () => {
+    try {
+      const configuracion = await ConfiguracionService.obtenerPorId(1);
+     setConfiguracion(configuracion);
+    } catch (error) {
+      console.error("Error obteniendo servicios:", error);
+    }
+  };
   const obtenerPlanes = async () => {
     try {
       const servicios = await PlanService.obtenerTodos();
@@ -133,6 +144,9 @@ const RegistroScreen = () => {
       console.error("Error obteniendo servicios:", error);
     }
   };
+  useEffect(() => {
+    obtenerConfiguracion();
+  }, []);  
   useEffect(() => {
     obtenerServicios();
   }, []);
@@ -403,6 +417,11 @@ const RegistroScreen = () => {
             </Text>
             <Switch value={esComision} onValueChange={setEsComision} />
           </View>
+          {esComision && (
+            <Text style={styles.labelSwitch}>
+            Porcentaje Comision: {configuracion?.porcentaje_comision}%
+            </Text>
+          )}
           {!esComision && (
             <View style={styles.switchContainer}>
               <Text style={styles.labelSwitch}>Plan</Text>

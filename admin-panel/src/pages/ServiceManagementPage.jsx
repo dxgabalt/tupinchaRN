@@ -80,6 +80,7 @@ const ServiceManagementPage = () => {
               <th>Proveedor</th>
               <th>Descripcion</th>
               <th>Cliente</th>
+              <th>Telefono del Cliente</th>
               <th>Estado</th>
               <th>Acciones</th>
             </tr>
@@ -92,6 +93,7 @@ const ServiceManagementPage = () => {
                   <td>{servicio.providers.profiles.name}</td>
                   <td>{servicio.request_description}</td>
                   <td>{servicio.usuarioPerfil.name}</td>
+                  <td>{servicio.usuarioPerfil.phone}</td>
                   <td>
                     <span className={`estado ${servicio.status.toLowerCase()}`}>
                       {servicio.status}

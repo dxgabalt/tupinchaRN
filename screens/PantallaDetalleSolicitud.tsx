@@ -12,6 +12,7 @@ import {
   TextInput,
   Keyboard,
   Modal,
+  Linking,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import styles from "../styles/stylesDetalleSolicitud";
@@ -108,12 +109,12 @@ const PantallaDetalleSolicitud = () => {
   // 📌 Función para contactar al proveedor
   const contactarProveedor = () => {
     animarBoton();
-    Alert.alert(
-      "Contacto",
-      `Llamando a ${solicitud?.providers?.profiles?.name} al ${solicitud?.providers?.profiles?.phone}...`
-    );
+        const mensaje = "Hola, deseeo informaccion acerca de servicio de: "+solicitud?.providers?.description;
+    abrirWhatsApp(solicitud?.providers?.profiles?.phone??"", mensaje??" ");
   };
-
+const abrirWhatsApp = (phone:string,mensaje:string) => {
+    Linking.openURL(`https://wa.me/${phone}?text=${mensaje}`);
+  };
   // 📌 Mostrar/Ocultar Menú de Navegación
   const toggleMenu = () => {
     setMenuVisible(!menuVisible);
