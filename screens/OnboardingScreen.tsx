@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,10 +8,12 @@ import {
   Animated,
   ScrollView,
   Platform,
+  Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { StackNavigationProp } from '@react-navigation/stack';
 import styles from '../styles/stylesOnboarding'; // ✅ Import corregido
+import { AuthService } from '../services/AuthService';
 
 const { width } = Dimensions.get('window');
 
@@ -35,7 +37,23 @@ const OnboardingScreen = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<ScrollView | null>(null);
-
+  // ✅ Verifica autenticación al montar el componente
+  useFocusEffect(
+    React.useCallback(() => {
+      const checkAuth = async () => {
+        const isAuth = await AuthService.esAutenticado();
+        const user = await AuthService.obtenerPerfil();
+        if (isAuth) {
+          if(user?.role_id===3){
+            navigation.replace('GestionSolicitudes');
+          }else{
+            navigation.replace('PantallaNegocios'); // 🔥 Redirige a la pantalla principal
+          }
+        }
+      };
+      checkAuth();
+    }, [navigation])
+  );
   // 📌 Manejo del scroll para actualizar el índice
   const handleScroll = (event: any) => {
     const index = Math.round(event.nativeEvent.contentOffset.x / width);

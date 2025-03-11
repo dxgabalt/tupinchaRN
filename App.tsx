@@ -29,8 +29,11 @@ const AppNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{headerShown: false}}>
     <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="PantallaNegocios" component={PantallaNegocios} />
+      <Stack.Screen name="Login" component={LoginScreen}       
+      />
+      <Stack.Screen name="PantallaNegocios" component={PantallaNegocios} 
+      options={{ gestureEnabled: false }}
+      />
       <Stack.Screen name="RegistroScreen" component={RegistroScreen} />
       <Stack.Screen name="PantallaNotificacion" component={PantallaNotificaciones} />
       <Stack.Screen

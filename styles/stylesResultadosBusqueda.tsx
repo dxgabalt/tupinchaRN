@@ -38,10 +38,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FFFFFF',
   },
-  ubicacion: {
-    fontSize: 14,
-    color: '#FFFFFF',
-  },
 
   /** 🔍 Barra de Búsqueda */
   barraBusqueda: {
@@ -110,6 +106,12 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#888',
   },
+  descripcionScroll: {
+    maxHeight: 40,
+    fontSize: 14,
+    color: '#555',
+    marginBottom: 3,
+  },
   calificacion: {
     fontSize: 13,
     fontWeight: 'bold',
@@ -174,7 +176,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   containerDescription: {
-    height: 150, // Define una altura fija o usa porcentajes como '40%'
     marginVertical: 10,
   },
 

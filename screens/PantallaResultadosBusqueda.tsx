@@ -25,9 +25,16 @@ const PantallaResultadosBusqueda = () => {
   const [negocios, setNegocios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [heights, setHeights] = useState({});
 
   const usuarioDefault = { id: '', name: '', email: '', phone: '', profile_pic_url: '', user_id: '' };
   const [usuario, setUsuario] = useState(usuarioDefault);
+  const handleLayout = (event, id) => {
+    const { height } = event.nativeEvent.layout;
+    setHeights((prevHeights) => ({ ...prevHeights, [id]: height }));
+    console.log(id,height);
+    
+  };
 
   // 🔥 Animación de entrada
   useEffect(() => {
@@ -160,35 +167,55 @@ const PantallaResultadosBusqueda = () => {
           <Text style={styles.textoVacio}>No se encontraron resultados.</Text>
         ) : (
           <FlatList
-            data={negociosFiltrados}
-            keyExtractor={(item) => item.id.toString()}
-            contentContainerStyle={{ flexGrow: 1 }}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.card}
-                onPress={() => navigation.navigate('PantallaDetallesProveedor', { idProveedor: item.id })}
-              >
-                {item.imagen ? (
-                  <Image source={{ uri: item.imagen }} style={styles.imagen} />
-                ) : (
-                  <View style={[styles.imagen, { backgroundColor: '#ccc' }]} />
-                )}
-                
-                <View style={styles.infoContainer}>
-                  <Text style={styles.nombre}>{item.nombre}</Text>
-                  <ScrollView style={styles.containerDescription}
-                  contentContainerStyle={styles.scrollViewContent}
-                  showsVerticalScrollIndicator={true} // Esto fuerza la visualización del indicador de scroll
-                  nestedScrollEnabled={true} // Habilita scroll anidado si es necesario
-                  >
-                    <Text style={styles.descripcion}>{item.descripcion}</Text>
-                  </ScrollView>
-                  <Text style={styles.ubicacion}>📍 {item.ubicacion}</Text>
-                  <Text style={styles.calificacion}>⭐ {item.calificacion}/5</Text>
-                </View>
-              </TouchableOpacity>
+      data={negociosFiltrados}
+      keyExtractor={(item) => item.id.toString()}
+      contentContainerStyle={{ flexGrow: 1 }}
+      renderItem={({ item }) => {
+        const isScrollable = heights[item.id] > 30;  
+        return (
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => navigation.navigate('PantallaDetallesProveedor', { idProveedor: item.id })}
+          >
+            {item.imagen ? (
+              <Image source={{ uri: item.imagen }} style={styles.imagen} />
+            ) : (
+              <View style={[styles.imagen, { backgroundColor: '#ccc' }]} />
             )}
-          />
+
+            <View style={styles.infoContainer}>
+              <Text style={styles.nombre}>{item.nombre}</Text>
+
+              {isScrollable ? (
+                <ScrollView
+                  style={styles.containerDescription}
+                  contentContainerStyle={styles.scrollViewContent}
+                  showsVerticalScrollIndicator={true}
+                  nestedScrollEnabled={true}
+                >
+                  <Text
+                    style={styles.descripcionScroll}
+                    onLayout={(event) => handleLayout(event, item.id)}
+                  >
+                    {item.descripcion}
+                  </Text>
+                </ScrollView>
+              ) : (
+                <Text
+                  style={styles.descripcion}
+                  onLayout={(event) => handleLayout(event, item.id)}
+                >
+                  {item.descripcion}
+                </Text>
+              )}
+
+              <Text style={styles.ubicacion}>📍 {item.ubicacion}</Text>
+              <Text style={styles.calificacion}>⭐ {item.calificacion}/5</Text>
+            </View>
+          </TouchableOpacity>
+        );
+      }}
+    />
         )}
       </Animated.View>
     </View>

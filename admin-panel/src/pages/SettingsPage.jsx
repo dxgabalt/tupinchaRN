@@ -1,35 +1,47 @@
-import React, { useState } from "react";
+import  { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import "../styles/global.css";
+import { ConfiguracionService } from "../services/ConfiguracionService";
 
 const SettingsPage = () => {
   // 📌 Estado de Configuración
-  const [comision, setComision] = useState(10);
-  const [metodosPago, setMetodosPago] = useState([
-    "Transfermovil",
-    "EnZona",
-    "Cash App",
-    "Zelle",
-    "Efectivo",
-  ]);
+  const [comision, setComision] = useState(0);
+  const [metodosPago, setMetodosPago] = useState([ ]);
   const [frecuenciaPago, setFrecuenciaPago] = useState("Mensual");
-  const [subscripcionActiva, setSubscripcionActiva] = useState(true);
-  const [diasProrroga, setDiasProrroga] = useState(3);
+  const [subscripcionActiva, setSubscripcionActiva] = useState(false);
+  const [diasProrroga, setDiasProrroga] = useState(0);
   const [notificaciones, setNotificaciones] = useState(true);
+ // 📌 Obtener configuración desde Supabase al iniciar
+ useEffect(() => {
+  const cargarConfiguracion = async () => {
+    try {
+      const configuracion = await ConfiguracionService.obtenerPorId(1); // ID de configuración
+      if (configuracion) {
+        setComision(configuracion.porcentaje_comision || 0);
+        setMetodosPago(configuracion.metodos_aceptados || []);
+        setFrecuenciaPago(configuracion.frecuencia_pago || "Mensual");
+        setSubscripcionActiva(configuracion.is_suscripcion || false);
+        setDiasProrroga(configuracion.prorroga || 3);
+        setNotificaciones(configuracion.is_notificacion || false);
+      }
+    } catch (error) {
+      console.error("❌ Error al cargar la configuración:", error);
+    }
+  };
 
+  cargarConfiguracion();
+}, []);
   // 📌 Guardar Configuración
   const guardarConfiguracion = () => {
-    alert("✅ Configuración guardada con éxito.");
-    console.log("frecuenciaPago",frecuenciaPago);
-    console.log("subscripcionActiva", subscripcionActiva);
-    console.log("diasProrroga", diasProrroga);
-    console.log("notificaciones", notificaciones);
-    console.log("diasProrroga", diasProrroga);
-    console.log("metodosPago", metodosPago);
-    console.log("comision", comision);
-    
-
-    
+    ConfiguracionService.actualizar(1,{
+      porcentaje_comision:comision,
+      metodos_aceptados:metodosPago,
+      frecuencia_pago:frecuenciaPago,
+      is_suscripcion:subscripcionActiva,
+      prorroga:diasProrroga,
+      is_notificacion:notificaciones,
+    })
+    alert("✅ Configuración guardada con éxito.");   
   };
 
   return (

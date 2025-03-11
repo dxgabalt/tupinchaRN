@@ -281,6 +281,16 @@ export class AuthService {
 
     return data.user;
   }
+  static async  esAutenticado():Promise<boolean>{
+    let isauthenticated = false;
+    const { data, error } = await AuthService.supabase.auth.getUser();
+    if (error || !data.user) {
+      isauthenticated = false;
+    }else{
+      isauthenticated = true;
+    }
+    return isauthenticated;
+  }
   static async obtenerPerfil() {
     const { data, error } = await AuthService.supabase.auth.getUser();
 
