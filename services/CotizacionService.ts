@@ -55,7 +55,7 @@ export class CotizacionService {
     is_provider: boolean = false
   ) {
     if (is_provider) {
-      return await SupabaseService.actualizarRegistro<CotizacionNota>('cotizacion_notas', {nota_provider: nota}, 'cotizacion_id', cotizacion_id);
+      return await SupabaseService.actualizarRegistro<CotizacionNota>('cotizacion_notas', {nota_provider: nota,updated_at:new Date().toISOString()}, 'id', cotizacion_id);
     } else {
       // Si no es proveedor, inserta la nota del cliente
       const { data, error } = await supabase_client

@@ -8,7 +8,7 @@ export class ServiceService {
 
   // Obtener todos los Service
   static async obtenerTodos(): Promise<Service[]> {
-    return await SupabaseService.obtenerDatos<Service>(this.TABLE_NAME);
+    return await SupabaseService.obtenerDatos<Service>(this.TABLE_NAME,"*",{},{campo: 'prioridad', ascendente: true });
   }
 
   // Obtener un SERVICE por ID

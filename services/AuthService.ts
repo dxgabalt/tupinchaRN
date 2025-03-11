@@ -114,6 +114,8 @@ export class AuthService {
     nombre: string,
     telefono: string,
     esProveedor = false,
+    provincia_id:number,
+    municipio_id:number,
     profile_pic_url: string = " "
   ): Promise<void> {
     const { data: user, error: authError } =
@@ -129,6 +131,8 @@ export class AuthService {
         phone: telefono,
         role_id: esProveedor ? 3 : 2,
         profile_pic_url: profile_pic_url,
+        provincia_id: provincia_id,
+        municipio_id: municipio_id,
       })
       .eq("user_id", userId);
 

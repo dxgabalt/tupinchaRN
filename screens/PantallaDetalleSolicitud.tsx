@@ -35,6 +35,7 @@ const PantallaDetalleSolicitud = () => {
   const [cotizaciones, setCotizaciones] = useState<Cotizacion[]>([]);
   const [contraofertas, setContraofertas] = useState<ContraOferta[]>([]);
   const [cotizacionesNotas, setCotizacionesNotas] = useState({});
+  const [cotizacionNota,setCotizacionNota] = useState("")
   const [contraofertaNotas, setContraofertaNotas] = useState({});
   const [requestNotas, setRequestNotas] = useState({});
   const [cargando, setCargando] = useState(true);
@@ -47,7 +48,9 @@ const PantallaDetalleSolicitud = () => {
   const [costoMateriales, setCostoMateriales] = useState("");
   const [request, setRequest] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
-
+  const [modalCalificacionVisible, setModalCalificacionVisible] = useState(false);
+  const [calificacion, setCalificacion] = useState(0);
+  const [comentario, setComentario] = useState("");
   // 📌 Animación para el botón de contacto
   const animacion = useRef(new Animated.Value(1)).current;
 
@@ -105,7 +108,33 @@ const PantallaDetalleSolicitud = () => {
       setCargando(false);
     }
   }, [solicitudId]);
-
+  const guardarCalificacion = async (idSolicitud:number) => {
+    if (calificacion === 0) {
+      Alert.alert("Error", "Por favor, selecciona una calificación.");
+      return;
+    }
+  
+    try {
+      // Aquí deberías agregar la lógica para enviar la calificación al backend
+      // Por ejemplo:
+      await SolicitudService.guardarCalificacion(idSolicitud, calificacion, comentario);
+      await SolicitudService.actualizarEstadoSolicitud(idSolicitud, "Completado");
+      //actualzar status de solicitud
+      setSolicitud((prevSolicitud) => {
+        return {
+          ...prevSolicitud,
+          status: "Completado",
+        };
+      });
+      Alert.alert("Éxito", "Calificación guardada correctamente.");
+      setModalCalificacionVisible(false);
+      setCalificacion(0);
+      setComentario("");
+    } catch (error) {
+      console.error("Error guardando la calificación:", error);
+      Alert.alert("Error", "No se pudo guardar la calificación. Intenta nuevamente.");
+    }
+  };
   // 📌 Función para contactar al proveedor
   const contactarProveedor = () => {
     animarBoton();
@@ -164,7 +193,7 @@ const abrirWhatsApp = (phone:string,mensaje:string) => {
 
   // 📌 Enviar nota a la cotización
   const enviarNota = async (cotizacionId: number) => {
-    const nota = cotizacionesNotas[cotizacionId]?.texto;
+    const nota = cotizacionNota;
     if (!nota || nota.trim() === "") {
       Alert.alert("Nota vacía", "Por favor escribe una nota antes de enviar.");
       return;
@@ -193,7 +222,7 @@ const abrirWhatsApp = (phone:string,mensaje:string) => {
             : cotizacion
         )
       );
-      cotizacionesNotas[cotizacionId] = { texto: " " };
+      setCotizacionNota("")
       Keyboard.dismiss();
       setEnviandoNota(false);
       Alert.alert("Éxito", "Nota enviada correctamente.");
@@ -298,15 +327,20 @@ const abrirWhatsApp = (phone:string,mensaje:string) => {
   /** 📌 Aceptar/Rechazar Solicitud */
   const manejarSolicitud = async (idSolicitud: number, estado: string) => {
     try {
-      await SolicitudService.actualizarEstadoSolicitud(idSolicitud, estado);
-      //actualzar status de solicitud
-      setSolicitud((prevSolicitud) => {
-        return {
-          ...prevSolicitud,
-          status: estado,
-        };
-      });
+     
       Alert.alert("Éxito", `Solicitud ${estado} con éxito`);
+      if(estado == 'Completado'){
+        setModalCalificacionVisible(true);
+      }else{
+        await SolicitudService.actualizarEstadoSolicitud(idSolicitud, estado);
+        //actualzar status de solicitud
+        setSolicitud((prevSolicitud) => {
+          return {
+            ...prevSolicitud,
+            status: estado,
+          };
+        });
+      }
     } catch (error) {
       Alert.alert("Error", "No se pudo actualizar la solicitud.");
     }
@@ -434,16 +468,13 @@ const abrirWhatsApp = (phone:string,mensaje:string) => {
     <TextInput
       style={styles.inputNota}
       placeholder="Escribe una nota..."
-      value={cotizacionesNotas[cotizacionId] || {
-        texto: "",
-        notas: [],
-      }.texto}
-      onChangeText={(texto) => handleCambioNota(nota.id, texto)}
+      value={cotizacionNota}
+      onChangeText={(texto) =>setCotizacionNota(texto)}
       multiline
     />
     <TouchableOpacity
       style={styles.botonEnviarNota}
-      onPress={() => enviarNota(cotizacionId, index)}
+      onPress={() => enviarNota(cotizacionId)}
       disabled={enviandoNota}
     >
       {enviandoNota ? (
@@ -601,12 +632,9 @@ const abrirWhatsApp = (phone:string,mensaje:string) => {
           <Text
             style={[
               styles.estado,
-              solicitud?.status === "Pendiente"
-                ? styles.pendiente
-                : styles.completado,
-                solicitud?.status === "Rechazada"
-                ? styles.rechazada
-                : styles.completado,
+              solicitud?.status === "Pendiente" && styles.pendiente,
+              solicitud?.status === "Rechazada" && styles.rechazada,
+              solicitud?.status !== "Pendiente" && solicitud?.status !== "Rechazada" && styles.completado
             ]}
           >
             {solicitud?.status || "Desconocido"}
@@ -633,24 +661,31 @@ const abrirWhatsApp = (phone:string,mensaje:string) => {
           </Text>
           {(solicitud?.status === "aceptada" || solicitud?.status === "aceptada por proveedor" || solicitud?.status === "Pendiente") && (
             <View style={styles.botonesContainer}>
+            {(solicitud?.status ==="aceptada" || solicitud?.status ==="aceptada por proveedor") &&(
               <TouchableOpacity
                 style={styles.botonCotizar}
                 onPress={() => mostarModalCotizacion(solicitud?.id)}
               >
                 <Text style={styles.textoBoton}>🛒📝 Enviar Contraoferta</Text>
               </TouchableOpacity>
-              <TouchableOpacity
+            )}
+              {solicitud?.status ==="Pendiente"&&(
+                <TouchableOpacity
                 style={styles.botonAceptar}
                 onPress={() => manejarSolicitud(solicitud?.id, "aceptada")}
               >
                 <Text style={styles.textoBoton}>✅ Aceptar</Text>
               </TouchableOpacity>  
-              <TouchableOpacity
-                style={styles.botonAceptar}
-                onPress={() => manejarSolicitud(solicitud?.id, "Completado")}
-              >
-                <Text style={styles.textoBoton}>✅ Confirmar</Text>
-              </TouchableOpacity>
+              )}
+            
+              {(solicitud?.status ==="aceptada" || solicitud?.status ==="aceptada por proveedor") &&(
+                  <TouchableOpacity
+                    style={styles.botonAceptar}
+                    onPress={() => manejarSolicitud(solicitud?.id, "Completado")}
+                  >
+                    <Text style={styles.textoBoton}>✅ Confirmar</Text>
+                  </TouchableOpacity>
+              )}
               <TouchableOpacity
                 style={styles.botonRechazar}
                 onPress={() => manejarSolicitud(solicitud?.id, "Rechazada")}
@@ -791,6 +826,48 @@ const abrirWhatsApp = (phone:string,mensaje:string) => {
           </View>
         </View>
       </Modal>
+      <Modal visible={modalCalificacionVisible} animationType="slide" transparent>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContenido}>
+      <Text style={styles.modalTitulo}>Calificar Servicio</Text>
+      
+      {/* Selector de calificación */}
+      <View style={styles.calificacionContainer}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <TouchableOpacity key={star} onPress={() => setCalificacion(star)}>
+            <Text style={styles.estrella}>{calificacion >= star ? '⭐' : '☆'}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Campo de comentario */}
+      <TextInput
+        style={styles.input}
+        placeholder="Escribe un comentario..."
+        value={comentario}
+        onChangeText={setComentario}
+        multiline
+      />
+
+      {/* Botones */}
+      <TouchableOpacity
+        style={styles.botonGuardar}
+        onPress={() => {
+          // Lógica para guardar la calificación
+          guardarCalificacion(solicitud?.id??0);
+        }}
+      >
+        <Text style={styles.textoBoton}>Guardar Calificación</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.botonCerrarModal}
+        onPress={() => setModalCalificacionVisible(false)}
+      >
+        <Text style={styles.textoBoton}>Cerrar</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
     </View>
   );
 };

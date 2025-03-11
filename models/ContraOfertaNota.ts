@@ -4,4 +4,5 @@ export interface ContraOfertaNota {
     nota_client: string;
     nota_provider: string;
     created_at: string;
+    updated_at: string;
   }

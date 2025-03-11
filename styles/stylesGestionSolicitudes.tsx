@@ -276,17 +276,55 @@ icon: {
 },
 notasContainer: {
   marginTop: 10,
+  marginVertical: 10,
   padding: 5,
   backgroundColor: "#f9f9f9",
   borderRadius: 5,
 },
 tituloNotas: {
-  fontSize: 16,
-  fontWeight: "bold",
-  marginBottom: 5,
+  fontSize: 18,
+  fontWeight: 'bold',
+  marginBottom: 8,
+  color: '#333',
+},
+fechaNota: {
+  fontSize: 12,
+  color: '#999',
+  marginBottom: 2,
+},
+fechaCliente: {
+  alignSelf: 'flex-start',
+  textAlign: 'left',
+},
+fechaProveedor: {
+  alignSelf: 'flex-end',
+  textAlign: 'right',
+},
+burbujaCliente: {
+  backgroundColor: '#e1f5fe',
+  padding: 10,
+  borderRadius: 15,
+  maxWidth: '75%',
+  alignSelf: 'flex-start',
+  borderTopLeftRadius: 0,
+},
+burbujaProveedor: {
+  backgroundColor: '#dcedc8',
+  padding: 10,
+  borderRadius: 15,
+  maxWidth: '75%',
+  alignSelf: 'flex-end',
+  borderTopRightRadius: 0,
 },
 notaItem: {
-  paddingVertical: 2,
+  padding: 10,
+    borderRadius: 8,
+    marginBottom: 8,
+    elevation: 2, // Sombra en Android
+    shadowColor: '#000', // Sombra en iOS
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
 },
 botonGuardar: {
   backgroundColor: "#28a745",
@@ -301,6 +339,26 @@ botonCerrarModal: {
   paddingHorizontal: 20,
   borderRadius: 5,
   marginTop: 10,
+},
+notaCliente: {
+  backgroundColor: '#e1f5fe', // Azul claro para cliente
+  borderLeftWidth: 5,
+  borderLeftColor: '#0288d1',
+},
+notaProveedor: {
+  backgroundColor: '#f1f8e9', // Verde claro para proveedor
+  borderLeftWidth: 5,
+  borderLeftColor: '#43a047',
+},
+notaTextoCliente: {
+  fontSize: 16,
+  color: '#0277bd',
+  marginBottom: 4,
+},
+notaTextoProveedor: {
+  fontSize: 16,
+  color: '#388e3c',
+  marginBottom: 4,
 },
 });
 

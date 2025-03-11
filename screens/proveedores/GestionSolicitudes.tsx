@@ -36,6 +36,7 @@ const PantallaGestionSolicitudes = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [respuestaNota, setRespuestaNota] = useState("");
   const [nuevaNota, setNuevaNota] = useState("");
+  const [cotizacionesNotas, setCotizacionesNotas] = useState({});
 
   const [nuevaNotaSolicitud, setNuevaNotaSolicitud] = useState("");
 
@@ -63,7 +64,11 @@ const PantallaGestionSolicitudes = () => {
   /** 📌 Aceptar/Rechazar Solicitud */
   const manejarSolicitud = async (idSolicitud: number, estado: string) => {
     try {
-      await SolicitudService.actualizarEstadoSolicitud(idSolicitud, estado,true);
+      await SolicitudService.actualizarEstadoSolicitud(
+        idSolicitud,
+        estado,
+        true
+      );
       Alert.alert("Éxito", `Solicitud ${estado} con éxito`);
 
       setSolicitudes((prevSolicitudes) =>
@@ -107,31 +112,34 @@ const PantallaGestionSolicitudes = () => {
       descripcion
     );
     const nuevoItemCotizacion = {
-      id: obtenerUltimoIdCotizacion(request)??0 + 1, // Incrementar el id de la cotización
+      id: obtenerUltimoIdCotizacion(request) ?? 0 + 1, // Incrementar el id de la cotización
       costo_mano_obra: costoManoObra, // Ejemplo de costo
       costo_materiales: costoMateriales, // Ejemplo de costo
       descripcion: descripcion, // Descripción
-  };
-  
-  setSolicitudes((prevSolicitudes) =>
-    prevSolicitudes.map((solicitud) =>
+    };
+
+    setSolicitudes((prevSolicitudes) =>
+      prevSolicitudes.map((solicitud) =>
         solicitud.id === request
-            ? { 
-                ...solicitud, 
-                cotizaciones: [...solicitud.cotizaciones, nuevoItemCotizacion]  
-              }
-            : solicitud
-    )
-);
+          ? {
+              ...solicitud,
+              cotizaciones: [...solicitud.cotizaciones, nuevoItemCotizacion],
+            }
+          : solicitud
+      )
+    );
     setModalVisible(false);
   };
-  const obtenerUltimoIdCotizacion = (idSolicitud:number) => {
+  const obtenerUltimoIdCotizacion = (idSolicitud: number) => {
     // Encuentra la solicitud correspondiente
-    const solicitud = solicitudes.find((solicitud) => solicitud.id === idSolicitud);
-    
+    const solicitud = solicitudes.find(
+      (solicitud) => solicitud.id === idSolicitud
+    );
+
     if (solicitud && solicitud.cotizaciones.length > 0) {
       // Obtener el último id de la cotización
-      const ultimoId = solicitud.cotizaciones[solicitud.cotizaciones.length - 1].id;
+      const ultimoId =
+        solicitud.cotizaciones[solicitud.cotizaciones.length - 1].id;
       return ultimoId;
     } else {
       // Si no hay cotizaciones, devuelve null o cualquier valor predeterminado
@@ -142,29 +150,34 @@ const PantallaGestionSolicitudes = () => {
     setRequest(request_id);
     setModalVisible(true);
   };
-  const handleGuardarRespuesta = (cotizacionId:number,nota:CotizacionNota, respuesta:string) => {
+  const handleGuardarRespuesta = (
+    notaCotizacionId: number,
+    nota: CotizacionNota
+  ) => {
     // Aquí se podría enviar la respuesta al backend si es necesario
-    CotizacionService.agregarNotaCotizacion(cotizacionId, respuesta,true);
-      // Actualizar la cotización correspondiente con la respuesta
-  setSolicitudes((prevSolicitudes) => 
-    prevSolicitudes.map((solicitud) => {
+    const respuesta = cotizacionesNotas[notaCotizacionId]?.texto;
+    CotizacionService.agregarNotaCotizacion(notaCotizacionId, respuesta, true);
+    // Actualizar la cotización correspondiente con la respuesta
+    setSolicitudes((prevSolicitudes) =>
+      prevSolicitudes.map((solicitud) => {
         // Actualizar la cotización específica dentro de la solicitud
         const updatedCotizaciones = solicitud.cotizaciones.map((cotizacion) => {
-          if (cotizacion.id === cotizacionId) {
-            // Actualizar el campo nota_provider con la respuesta
-            return {
-              ...cotizacion,
-              cotizacion_notas: cotizacion.cotizacion_notas.map((notaItem) => {
+          // Actualizar el campo nota_provider con la respuesta
+          return {
+            ...cotizacion,
+            cotizacion_notas: cotizacion.cotizacion_notas.map((notaItem) => {
+              if (notaItem.id === notaCotizacionId) {
                 if (!notaItem.nota_provider) {
                   return {
                     ...notaItem,
-                    nota_provider: respuesta,  // Actualiza la respuesta del proveedor
+                    nota_provider: respuesta, // Actualiza la respuesta del proveedor
                   };
                 }
-                return notaItem;
-              }),
-            };
-          }
+              }
+              return notaItem;
+            }),
+          };
+
           return cotizacion;
         });
 
@@ -172,49 +185,62 @@ const PantallaGestionSolicitudes = () => {
           ...solicitud,
           cotizaciones: updatedCotizaciones, // Actualiza el arreglo de cotizaciones
         };
-      
-      return solicitud;
-    })
-  );
+
+        return solicitud;
+      })
+    );
     // Limpiar el estado de la respuesta
+    cotizacionesNotas[notaCotizacionId] = { texto: " " };
     setRespuestaNota("");
   };
-  const handleCrearNota = (contraofertaId:number,respuesta:string) => {
-    // Aquí se podría enviar la respuesta al backend si es necesario   
-    ContraOfertaService.agregarNotaContraOferta(contraofertaId, respuesta, true);
+  const handleCrearNota = (contraofertaId: number, respuesta: string) => {
+    // Aquí se podría enviar la respuesta al backend si es necesario
+    ContraOfertaService.agregarNotaContraOferta(
+      contraofertaId,
+      respuesta,
+      true
+    );
     // Actualizar la cotización correspondiente con la respuesta
-    ContraOfertaService.agregarNotaContraOferta(contraofertaId, respuesta, true);
+    ContraOfertaService.agregarNotaContraOferta(
+      contraofertaId,
+      respuesta,
+      true
+    );
 
     // Actualizar la cotización correspondiente con la respuesta
-    setSolicitudes((prevSolicitudes) => 
+    setSolicitudes((prevSolicitudes) =>
       prevSolicitudes.map((solicitud) => {
         // Actualizar la cotización específica dentro de la solicitud
-        const updatedContraofertas = solicitud.contraofertas.map((contraoferta) => {
-          if (contraoferta.id === contraofertaId) {
-            // Verificar si ya existe una nota con la respuesta en contraoferta_notas
-            const updatedNotas = contraoferta.contraoferta_notas.some(notaItem => notaItem.nota_provider === respuesta)
-              ? contraoferta.contraoferta_notas.map((notaItem) => ({
-                  ...notaItem,
-                  nota_provider: notaItem.nota_provider || respuesta, // Solo actualiza si está vacío
-                }))
-              : [
-                  ...contraoferta.contraoferta_notas,
-                  {
-                    contraoferta_id: contraofertaId,
-                    nota_client: '',  // Si es una nota del proveedor, se puede dejar vacío o asignar un valor
-                    nota_provider: respuesta,
-                    created_at: new Date().toISOString(),  // Fecha actual
-                  }
-                ];
-    
-            return {
-              ...contraoferta,
-              contraoferta_notas: updatedNotas,
-            };
+        const updatedContraofertas = solicitud.contraofertas.map(
+          (contraoferta) => {
+            if (contraoferta.id === contraofertaId) {
+              // Verificar si ya existe una nota con la respuesta en contraoferta_notas
+              const updatedNotas = contraoferta.contraoferta_notas.some(
+                (notaItem) => notaItem.nota_provider === respuesta
+              )
+                ? contraoferta.contraoferta_notas.map((notaItem) => ({
+                    ...notaItem,
+                    nota_provider: notaItem.nota_provider || respuesta, // Solo actualiza si está vacío
+                  }))
+                : [
+                    ...contraoferta.contraoferta_notas,
+                    {
+                      contraoferta_id: contraofertaId,
+                      nota_client: "", // Si es una nota del proveedor, se puede dejar vacío o asignar un valor
+                      nota_provider: respuesta,
+                      created_at: new Date().toISOString(), // Fecha actual
+                    },
+                  ];
+
+              return {
+                ...contraoferta,
+                contraoferta_notas: updatedNotas,
+              };
+            }
+            return contraoferta;
           }
-          return contraoferta;
-        });
-    
+        );
+
         return {
           ...solicitud,
           contraofertas: updatedContraofertas,
@@ -223,38 +249,57 @@ const PantallaGestionSolicitudes = () => {
     );
     // Limpiar el estado de la respuesta
     setNuevaNota("");
-  }
-  const handleCrearNotaSolicitud =async (request_id:number,nota:string)=>{
+  };
+  const handleCrearNotaSolicitud = async (request_id: number, nota: string) => {
     const nuevoItemNotaSolicitud = {
-      id: obtenerUltimoIdNotaSolicitud(request_id)??0 + 1, // Incrementar el id de la cotización
+      id: obtenerUltimoIdNotaSolicitud(request_id) ?? 0 + 1, // Incrementar el id de la cotización
       nota_client: "",
       nota_provider: nota,
-  };
-await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
+    };
+    await SolicitudService.agregarNotaCotizacion(request_id, nota, true);
     setSolicitudes((prevSolicitudes) =>
       prevSolicitudes.map((solicitud) =>
-          solicitud.id === request_id
-              ? { 
-                  ...solicitud, 
-                  request_notas: [...solicitud.request_notas, nuevoItemNotaSolicitud]  
-                }
-              : solicitud
-      ));
-  }
-  const obtenerUltimoIdNotaSolicitud = (idSolicitud:number) => {
+        solicitud.id === request_id
+          ? {
+              ...solicitud,
+              request_notas: [
+                ...solicitud.request_notas,
+                nuevoItemNotaSolicitud,
+              ],
+            }
+          : solicitud
+      )
+    );
+  };
+  const obtenerUltimoIdNotaSolicitud = (idSolicitud: number) => {
     // Encuentra la solicitud correspondiente
-    const solicitud = solicitudes.find((solicitud) => solicitud.id === idSolicitud);
-    
+    const solicitud = solicitudes.find(
+      (solicitud) => solicitud.id === idSolicitud
+    );
+
     if (solicitud && solicitud.request_notas.length > 0) {
       // Obtener el último id de la cotización
-      const ultimoId = solicitud.request_notas[solicitud.request_notas.length - 1].id;
+      const ultimoId =
+        solicitud.request_notas[solicitud.request_notas.length - 1].id;
       return ultimoId;
     } else {
       // Si no hay cotizaciones, devuelve null o cualquier valor predeterminado
       return null;
     }
   };
-  
+  // 📌 Manejar cambio de texto en notas cotizacion
+  const handleCambioNotaCotizacion = (
+    notaCotizacionId: number,
+    texto: string
+  ) => {
+    setCotizacionesNotas((prevState) => ({
+      ...prevState,
+      [notaCotizacionId]: {
+        ...prevState[notaCotizacionId],
+        texto,
+      },
+    }));
+  };
   return (
     <View style={styles.container}>
       {/* 🔥 Menú de Navegación */}
@@ -272,7 +317,10 @@ await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
           >
             <Text style={styles.menuText}>⚙️ Gestionar Servicios</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("PantallaNotificacion")}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("PantallaNotificacion")}
+          >
             <Text style={styles.menuText}>🔔 Notificaciones</Text>
           </TouchableOpacity>
 
@@ -346,17 +394,22 @@ await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
 
                 {item.status !== "Rechazada" && (
                   <View style={styles.botonesContainer}>
-                    <TouchableOpacity
-                      style={styles.botonCotizar}
-                      onPress={() => mostarModalCotizacion(item.id)}
-                    >
-                      <Text style={styles.textoBoton}>
-                        🛒📝 Enviar Cotizacion
-                      </Text>
-                    </TouchableOpacity>
+                    {(item.status === "aceptada" ||
+                      item.status === "aceptada por proveedor") && (
+                      <TouchableOpacity
+                        style={styles.botonCotizar}
+                        onPress={() => mostarModalCotizacion(item.id)}
+                      >
+                        <Text style={styles.textoBoton}>
+                          🛒📝 Enviar Cotizacion
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                     <TouchableOpacity
                       style={styles.botonAceptar}
-                      onPress={() => manejarSolicitud(item.id, "aceptada por proveedor")}
+                      onPress={() =>
+                        manejarSolicitud(item.id, "aceptada por proveedor")
+                      }
                     >
                       <Text style={styles.textoBoton}>✅ Aceptar</Text>
                     </TouchableOpacity>
@@ -368,34 +421,89 @@ await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
                     </TouchableOpacity>
                   </View>
                 )}
-            {/* 🔥 Listado de Notas */}
-            {item.status !== "Rechazada" && (
-              <View style={styles.cardCotizacion}>
-                <Text style={styles.subTitulo}>Notas:</Text>
-                <FlatList
-                  data={item.request_notas}
-                  keyExtractor={(nota) => nota.id.toString()}
-                  renderItem={({ item: nota }) => (
-                    <View style={styles.notaItem}>
-                      <Text style={styles.descripcion}>- {nota.nota_client}</Text>
-                      <Text style={styles.descripcion}>- {nota.nota_provider}</Text>
-                    </View>
-                  )}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="Escribir nueva nota..."
-                  value={nuevaNotaSolicitud}
-                  onChangeText={setNuevaNotaSolicitud}
-                />
-                <TouchableOpacity
-                  style={styles.boton}
-                  onPress={() => handleCrearNotaSolicitud(item.id, nuevaNotaSolicitud)}
-                >
-                  <Text style={styles.textoBoton}>Agregar Nota</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+                {/* 🔥 Listado de Notas */}
+                {item.status !== "Rechazada" && (
+                  <View style={styles.cardCotizacion}>
+                    <Text style={styles.subTitulo}>Notas:</Text>
+                    <FlatList
+                      data={item.request_notas}
+                      keyExtractor={(nota) => nota.id.toString()}
+                      renderItem={({ item: nota }) => (
+                        <View style={styles.notaItem}>
+                          {/* Fecha para el Cliente (updated_at) */}
+                          {nota.nota_client && (
+                            <Text
+                              style={[styles.fechaNota, styles.fechaCliente]}
+                            >
+                              📅{" "}
+                              {new Date(nota.created_at).toLocaleDateString(
+                                "es-ES",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </Text>
+                          )}
+
+                          {/* Nota del Cliente */}
+                          {nota.nota_provider && (
+                            <View style={styles.burbujaCliente}>
+                              <Text style={styles.notaTextoCliente}>
+                                🏢 {nota.nota_provider}
+                              </Text>
+                            </View>
+                          )}
+
+                          {/* Nota del Proveedor */}
+                          {nota.nota_client && (
+                            <View style={styles.burbujaProveedor}>
+                              <Text style={styles.notaTextoProveedor}>
+                                🧑‍💼 {nota.nota_client}
+                              </Text>
+                            </View>
+                          )}
+
+                          {/* Fecha para el Proveedor (created_at) */}
+                          {nota.nota_client && (
+                            <Text
+                              style={[styles.fechaNota, styles.fechaProveedor]}
+                            >
+                              📅{" "}
+                              {new Date(nota.updated_at).toLocaleDateString(
+                                "es-ES",
+                                {
+                                  day: "2-digit",
+                                  month: "short",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </Text>
+                          )}
+                        </View>
+                      )}
+                    />
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Escribir nueva nota..."
+                      value={nuevaNotaSolicitud}
+                      onChangeText={setNuevaNotaSolicitud}
+                    />
+                    <TouchableOpacity
+                      style={styles.boton}
+                      onPress={() =>
+                        handleCrearNotaSolicitud(item.id, nuevaNotaSolicitud)
+                      }
+                    >
+                      <Text style={styles.textoBoton}>Agregar Nota</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
                 {/* 🔥 Listado de Cotizaciones */}
                 <FlatList
                   data={item.cotizaciones}
@@ -435,33 +543,95 @@ await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
                             keyExtractor={(nota, index) => index.toString()}
                             renderItem={({ item: nota }) => (
                               <View style={styles.notaItem}>
-                                <Text style={styles.descripcion}>
-                                  - {nota.nota_client}
-                                </Text>
-                                <Text style={styles.descripcion}>
-                                  - {nota.nota_provider}
-                                </Text>
-                                {/* Responder Nota */}
-                                {nota.nota_client && !nota.nota_provider && item.status !== "Rechazada" && (
-                                  <TextInput
-                                    style={styles.input}
-                                    placeholder="Responder a la nota..."
-                                    value={respuestaNota}
-                                    onChangeText={setRespuestaNota}
-                                  />
+                                {/* Fecha para el Cliente (updated_at) */}
+                                {nota.nota_client && (
+                                  <Text
+                                    style={[
+                                      styles.fechaNota,
+                                      styles.fechaCliente,
+                                    ]}
+                                  >
+                                    📅{" "}
+                                    {new Date(
+                                      nota.updated_at
+                                    ).toLocaleDateString("es-ES", {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </Text>
+                                )}
+                                {/* Nota del Cliente */}
+                                {nota.nota_client && (
+                                  <View style={styles.burbujaCliente}>
+                                    <Text style={styles.notaTextoCliente}>
+                                      🧑‍💼 {nota.nota_client}
+                                    </Text>
+                                  </View>
                                 )}
 
-                                {/* Guardar la respuesta */}
-                                {respuestaNota && (
-                                  <TouchableOpacity
-                                    style={styles.boton}
-                                    onPress={() =>
-                                      handleGuardarRespuesta(cotizacion.id, nota, respuestaNota)
-                                    }
-                                  >
-                                    <Text style={styles.textoBoton}>Responder</Text>
-                                  </TouchableOpacity>
+                                {/* Nota del Proveedor */}
+                                {nota.nota_provider && (
+                                  <View style={styles.burbujaProveedor}>
+                                    <Text style={styles.notaTextoProveedor}>
+                                      🏢 {nota.nota_provider}
+                                    </Text>
+                                  </View>
                                 )}
+                                {nota.nota_provider && (
+                                  <Text
+                                    style={[
+                                      styles.fechaNota,
+                                      styles.fechaProveedor,
+                                    ]}
+                                  >
+                                    📅{" "}
+                                    {new Date(
+                                      nota.created_at
+                                    ).toLocaleDateString("es-ES", {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </Text>
+                                )}
+
+                                {/* Responder Nota */}
+                                {nota.nota_client &&
+                                  !nota.nota_provider &&
+                                  item.status !== "Rechazada" && (
+                                    <>
+                                      <TextInput
+                                        style={styles.input}
+                                        placeholder="Responder a la nota..."
+                                        value={
+                                          cotizacionesNotas[nota.id]?.texto ||
+                                          ""
+                                        }
+                                        onChangeText={(texto) =>
+                                          handleCambioNotaCotizacion(
+                                            nota.id,
+                                            texto
+                                          )
+                                        }
+                                      />
+
+                                      <TouchableOpacity
+                                        style={styles.boton}
+                                        onPress={() =>
+                                          handleGuardarRespuesta(nota.id, nota)
+                                        }
+                                      >
+                                        <Text style={styles.textoBoton}>
+                                          Responder
+                                        </Text>
+                                      </TouchableOpacity>
+                                    </>
+                                  )}
                               </View>
                             )}
                           />
@@ -502,40 +672,100 @@ await SolicitudService.agregarNotaCotizacion(request_id,nota,true);
 
                       {/* 🔥 Notas de Cotización */}
                       <View style={styles.notasContainer}>
-                      <Text style={styles.tituloNotas}>🗒️ Notas:</Text>
-                      
-                      {/* Mostrar las notas existentes */}
-                      <FlatList
-                        data={contraoferta.contraoferta_notas}
-                        keyExtractor={(nota, index) => index.toString()}
-                        renderItem={({ item: nota }) => (
-                          <View style={styles.notaItem}>
-                            <Text style={styles.descripcion}>- {nota.nota_client}</Text>
-                            <Text style={styles.descripcion}>- {nota.nota_provider}</Text>
+                        <Text style={styles.tituloNotas}>🗒️ Notas:</Text>
+
+                        {/* Mostrar las notas existentes */}
+                        <FlatList
+                          data={contraoferta.contraoferta_notas}
+                          keyExtractor={(nota, index) => index.toString()}
+                          renderItem={({ item: nota }) => (
+                            <View style={styles.notaItem}>
+                              {/* Fecha para el Cliente (updated_at) */}
+                              {nota.nota_client && (
+                                <Text
+                                  style={[
+                                    styles.fechaNota,
+                                    styles.fechaCliente,
+                                  ]}
+                                >
+                                  📅{" "}
+                                  {new Date(nota.updated_at).toLocaleDateString(
+                                    "es-ES",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    }
+                                  )}
+                                </Text>
+                              )}
+                              {/* Nota del Cliente */}
+                              {nota.nota_provider && (
+                                <View style={styles.burbujaCliente}>
+                                  <Text style={styles.notaTextoCliente}>
+                                    🏢 {nota.nota_provider}
+                                  </Text>
+                                </View>
+                              )}
+
+                              {/* Nota del Proveedor */}
+                              {nota.nota_client && (
+                                <View style={styles.burbujaProveedor}>
+                                  <Text style={styles.notaTextoProveedor}>
+                                    🧑‍💼 {nota.nota_client}
+                                  </Text>
+                                </View>
+                              )}
+                              {/* Fecha para el Proveedor (created_at) */}
+                              {nota.nota_provider && (
+                                <Text
+                                  style={[
+                                    styles.fechaNota,
+                                    styles.fechaProveedor,
+                                  ]}
+                                >
+                                  📅{" "}
+                                  {new Date(nota.created_at).toLocaleDateString(
+                                    "es-ES",
+                                    {
+                                      day: "2-digit",
+                                      month: "short",
+                                      year: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    }
+                                  )}
+                                </Text>
+                              )}
+                            </View>
+                          )}
+                        />
+
+                        {/* Agregar una nueva nota */}
+                        {item.status !== "Rechazada" && (
+                          <View>
+                            <TextInput
+                              style={styles.input}
+                              placeholder="Escribir nueva nota..."
+                              value={nuevaNota}
+                              onChangeText={setNuevaNota}
+                            />
+
+                            <TouchableOpacity
+                              style={styles.boton}
+                              onPress={() =>
+                                handleCrearNota(contraoferta.id, nuevaNota)
+                              }
+                            >
+                              <Text style={styles.textoBoton}>
+                                Agregar Nota
+                              </Text>
+                            </TouchableOpacity>
                           </View>
                         )}
-                      />
-                    
-                      {/* Agregar una nueva nota */}
-                      {item.status !== "Rechazada" && (
-                        <View>
-                        <TextInput
-                        style={styles.input}
-                        placeholder="Escribir nueva nota..."
-                        value={nuevaNota}
-                        onChangeText={setNuevaNota}
-                      />
-                    
-                      <TouchableOpacity
-                        style={styles.boton}
-                        onPress={() => handleCrearNota(contraoferta.id, nuevaNota)}
-                      >
-                        <Text style={styles.textoBoton}>Agregar Nota</Text>
-                      </TouchableOpacity>
-                        </View>
-                      )}
-                    
-                    </View>
+                      </View>
                     </View>
                   )}
                 />

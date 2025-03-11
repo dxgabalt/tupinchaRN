@@ -151,6 +151,63 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+    /** 🔥 Modal de Selección de Ubicación */
+    modalContainer: {
+      flex: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    modalContenido: {
+      backgroundColor: "#FFFFFF",
+      width: "90%",
+      borderRadius: 10,
+      padding: 20,
+      alignItems: "center",
+      maxHeight: "80%",
+    },
+    modalTitulo: {
+      fontSize: 18,
+      fontWeight: "bold",
+      marginBottom: 10,
+      color: "#1E3A8A",
+    },
+    scrollView: {
+      width: "100%",
+      maxHeight: 200, // 🔥 Máximo alto para evitar overflow en pantallas pequeñas
+    },
+    opcion: {
+      paddingVertical: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: "#E5E7EB",
+      width: "100%",
+      alignItems: "center",
+    },
+    opcionActiva: {
+      backgroundColor: "#1E3A8A",
+    },
+    textoOpcion: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: "#374151",
+    },
+    botonCerrar: {
+      marginTop: 10,
+      backgroundColor: "#FF0314",
+      paddingVertical: 10,
+      borderRadius: 8,
+      alignItems: "center",
+      width: "80%",
+    },
+      /** 🌍 Botón de Filtro de Ubicación */
+      botonFiltro: {
+        backgroundColor: "#FF0314",
+        borderRadius: 10,
+        paddingVertical: 12,
+        width: '100%',
+        alignItems: "center",
+        marginBottom: 12,
+      },
 });
 
 export default styles;

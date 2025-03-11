@@ -62,12 +62,22 @@ export class SolicitudService {
   static async obtenerSolicitudPorId(id: number): Promise<Solicitud | null> {
     const solicituds = await SupabaseService.obtenerDatos<Solicitud>(
       this.TABLE_NAME,
-      "id, provider_id,request_notas(id,nota_client,nota_provider),contraofertas(id,costo_mano_obra,costo_materiales,descripcion,contraoferta_notas(id,nota_client,nota_provider)), cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at)),providers(id, phone, profile_id,is_premium, profiles(name, rating, profile_pic_url, phone,provincias(id,nombre),municipios(id,name)), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id",
+      "id, provider_id,request_notas(id,nota_client,nota_provider),contraofertas(id,costo_mano_obra,costo_materiales,descripcion,contraoferta_notas(id,nota_client,nota_provider)), cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at,updated_at)),providers(id, phone, profile_id,is_premium, profiles(name, rating, profile_pic_url, phone,provincias(id,nombre),municipios(id,name)), description, speciality, availability), service_id, services(id, category, tags), request_description, service_date, images, status, user_id",
       { id }
     );
     return solicituds[0] || null;
   }
-
+static async guardarCalificacion(id: number,calificacion:number,comentario:string){
+  const {data, error } = await supabase_client
+  .from(this.TABLE_NAME)
+  .update({ calificacion,comentario })
+  .eq("id", id)
+  .select();
+  
+if (error) {
+  throw new Error(`Error al actualizar el estado: ${error.message}`);
+}
+}
   static async obtenerCotizaciones(id: number): Promise<Cotizacion[]> {
     return await SupabaseService.obtenerDatos<Cotizacion>("cotizaciones", "*", {
       request_id: id,
@@ -177,7 +187,7 @@ export class SolicitudService {
       const { data: solicitudes, error: errorSolicitud } = await supabase_client
         .from(this.TABLE_NAME)
         .select(
-          `id, provider_id,request_notas(id,nota_client,nota_provider,created_at),contraofertas(id,costo_mano_obra,costo_materiales,descripcion,contraoferta_notas(id,nota_client,nota_provider,created_at)), cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at)),providers(id, phone, profile_id, profiles(id, name, rating, profile_pic_url, phone)), 
+          `id, provider_id,request_notas(id,nota_client,nota_provider,created_at,updated_at),contraofertas(id,costo_mano_obra,costo_materiales,descripcion,contraoferta_notas(id,nota_client,nota_provider,created_at,updated_at)), cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at,updated_at)),providers(id, phone, profile_id, profiles(id, name, rating, profile_pic_url, phone)), 
            service_id, services(id, category, tags), request_description, service_date, images,price, status, user_id`
         )
         .match(filtro);
@@ -232,7 +242,7 @@ export class SolicitudService {
     } else {
       return await SupabaseService.actualizarRegistro<RequestNota>(
         "request_notas",
-        { nota_client: nota },
+        { nota_client: nota,updated_at:new Date().toISOString() },
         "id",
         request_id
       );

@@ -499,7 +499,14 @@ botonCerrarModal: {
   borderRadius: 5,
   marginTop: 10,
 },
-
+calificacionContainer: {
+  flexDirection: 'row',
+  justifyContent: 'space-around',
+  marginBottom: 20,
+},
+estrella: {
+  fontSize: 30,
+},
 });
 
 export default styles;
