@@ -9,7 +9,8 @@ const Sidebar = () => {
       <ul>
         <li><Link to="/dashboard">📊 Dashboard</Link></li>
         <li><Link to="/users">👤 Gestión de Usuarios</Link></li>
-        <li><Link to="/services">🛠️ Gestión de Servicios</Link></li>
+        <li><Link to="/services-managment">🛠️ Gestión de Servicios</Link></li>
+        <li><Link to="/services">🔧 Gestión de Solicitudes</Link></li>
         <li><Link to="/planes">🎫 Gestión de Planes</Link></li>
         <li><Link to="/commissions">💰 Comisiones</Link></li>
         <li><Link to="/payments">💳 Pagos</Link></li>

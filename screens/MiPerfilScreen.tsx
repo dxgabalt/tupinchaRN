@@ -267,7 +267,7 @@ const MiPerfilScreen = () => {
       </TouchableOpacity>
 
       {/* ✅ MODAL */}
-      <Modal visible={modalVisible} animationType="slide" transparent>
+      <Modal visible={modalVisible && editando} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={styles.modalContenido}>
             {!mostrarMunicipios ? (

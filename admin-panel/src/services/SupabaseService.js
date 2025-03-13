@@ -5,12 +5,18 @@ const SupabaseService = {
         tabla,
         columnas = '*',
         filtro = {},
+        orderBy = { campo: "", ascendente: false } 
     ) {
-        const query = supabase_client.from(tabla).select(columnas);
+        let query = supabase_client.from(tabla).select(columnas);
 
         // Aplicar filtros dinámicamente
         for (const [campo, valor] of Object.entries(filtro)) {
-            query.eq(campo, valor);
+            query = query.eq(campo, valor);
+        }
+
+        // Aplicar ordenamiento si se proporciona un campo válido
+        if (orderBy.campo) {
+            query = query.order(orderBy.campo, { ascending: orderBy.ascendente });
         }
 
         const { data, error } = await query;
@@ -22,7 +28,7 @@ const SupabaseService = {
 
         return data;
     },
-    async crearRegistro(tabla, datos) {
+   async crearRegistro(tabla, datos) {
         const { error } = await supabase_client.from(tabla).insert(datos);
 
         if (error) {

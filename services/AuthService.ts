@@ -5,22 +5,8 @@ import { supabase_client } from "./supabaseClient";
 import { ProviderServiceService } from "./ProviderServiceService";
 import { UserRequest } from "../models/UserRequest";
 import { ConfiguracionService } from "./ConfiguracionService";
+import { supabase_admin } from "../admin-panel/src/services/supabaseAdmin";
 export class AuthService {
-  private static SUPABASE_URL = "https://idngwsekicptfluqumys.supabase.co";
-  private static SUPABASE_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbmd3c2VraWNwdGZsdXF1bXlzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzg1OTcyMDcsImV4cCI6MjA1NDE3MzIwN30.sBCVdh7CxLpbtJkhtKyGeQ-mWZXZrVxWWiINhtBxhso";
-  private static SUPABASE_ADMIN_KEY =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlkbmd3c2VraWNwdGZsdXF1bXlzIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczODU5NzIwNywiZXhwIjoyMDU0MTczMjA3fQ.Q75g9bfHTCvtWT-z01IJZUHFhUHg3gclC0MRK0WE46g";
-
-  private static supabase: SupabaseClient = createClient(
-    AuthService.SUPABASE_URL,
-    AuthService.SUPABASE_KEY
-  );
-  private static supabaseAdmin: SupabaseClient = createClient(
-    AuthService.SUPABASE_URL,
-    AuthService.SUPABASE_ADMIN_KEY
-  );
-
   static async crearUsuarioAuth(
     correo: string,
     contrasena: string
@@ -33,7 +19,7 @@ export class AuthService {
     while (retries < maxRetries) {
       try {
         // Registrar al usuario
-        const { data, error } = await AuthService.supabase.auth.signUp({
+        const { data, error } = await supabase_client.auth.signUp({
           email: correo,
           password: contrasena,
         });
@@ -55,7 +41,7 @@ export class AuthService {
 
         // Autoconfirmar el usuario
         const { error: updateError } =
-          await AuthService.supabaseAdmin.auth.admin.updateUserById(
+          await supabase_admin.auth.admin.updateUserById(
             data.user.id,
             {
               email_confirm: true,
@@ -69,7 +55,7 @@ export class AuthService {
 
         // Iniciar sesión automáticamente después del registro
         const { error: errorLogin } =
-          await AuthService.supabase.auth.signInWithPassword({
+          await supabase_client.auth.signInWithPassword({
             email: correo,
             password: contrasena,
           });
@@ -119,12 +105,12 @@ export class AuthService {
     profile_pic_url: string = " "
   ): Promise<void> {
     const { data: user, error: authError } =
-      await AuthService.supabase.auth.getUser();
+      await supabase_client.auth.getUser();
     if (authError || !user) {
       throw new Error("Usuario no autenticado");
     }
 
-    const { error } = await AuthService.supabase
+    const { error } = await supabase_client
       .from("profiles")
       .update({
         name: nombre,
@@ -142,7 +128,7 @@ export class AuthService {
     }
   }
   static async recuperarContrasena(email: string) {
-    const { error } = await AuthService.supabase.auth.resetPasswordForEmail(
+    const { error } = await supabase_client.auth.resetPasswordForEmail(
       email,
       {
         redirectTo: "https://admin.tupincha.com/reset-password",
@@ -161,7 +147,7 @@ export class AuthService {
 
   static async logout() {
     try {
-      const { error } = await AuthService.supabase.auth.signOut();
+      const { error } = await supabase_client.auth.signOut();
       if (error) {
         console.error("Error al cerrar sesión:", error.message);
         return false;
@@ -176,13 +162,13 @@ export class AuthService {
   static async guardarPerfil(userRequest: UserRequest): Promise<void> {
     // Obtener usuario autenticado
     const { data: userData, error: authError } =
-      await AuthService.supabase.auth.getUser();
+      await supabase_client.auth.getUser();
     if (authError || !userData?.user) {
       throw new Error("Usuario no autenticado");
     }
 
     // Insertar perfil en "profiles"
-    const { data: profile, error: profileError } = await AuthService.supabase
+    const { data: profile, error: profileError } = await supabase_client
       .from("profiles")
       .insert({
         user_id: userRequest.usuario_id,
@@ -206,7 +192,7 @@ export class AuthService {
 
       // Insertar en "providers"
       const { data: provider, error: providerError } =
-        await AuthService.supabase
+        await supabase_client
           .from("providers")
           .insert({
             profile_id: profile_id, // Relacionar con el perfil
@@ -259,11 +245,11 @@ export class AuthService {
   }
 
   static async autenticarUsuario(correo: string, contrasena: string) {
-    const { data, error } = await AuthService.supabase.auth.signInWithPassword({
+    const { data, error } = await supabase_client.auth.signInWithPassword({
       email: correo,
       password: contrasena,
     });
-    const { data: profiles } = await AuthService.supabase
+    const { data: profiles } = await supabase_client
       .from("profiles")
       .select("*")
       .eq("user_id", data.user?.id)
@@ -276,7 +262,7 @@ export class AuthService {
     return { success: true, data, role: profiles?.role_id };
   }
   static async obtenerUsuarioActual() {
-    const { data, error } = await AuthService.supabase.auth.getUser();
+    const { data, error } = await supabase_client.auth.getUser();
 
     if (error || !data.user) {
       console.error("No hay sesión activa.");
@@ -287,7 +273,7 @@ export class AuthService {
   }
   static async  esAutenticado():Promise<boolean>{
     let isauthenticated = false;
-    const { data, error } = await AuthService.supabase.auth.getUser();
+    const { data, error } = await supabase_client.auth.getUser();
     if (error || !data.user) {
       isauthenticated = false;
     }else{
@@ -296,7 +282,7 @@ export class AuthService {
     return isauthenticated;
   }
   static async obtenerPerfil() {
-    const { data, error } = await AuthService.supabase.auth.getUser();
+    const { data, error } = await supabase_client.auth.getUser();
 
     if (error || !data.user) {
       console.error("No hay sesión activa.", error);
@@ -304,7 +290,7 @@ export class AuthService {
     }
 
     // Obtener el perfil del usuario
-    const { data: profile, error: profileError } = await AuthService.supabase
+    const { data: profile, error: profileError } = await supabase_client
       .from("profiles")
       .select("*,provincias(id,nombre),municipios(id,name)")
       .eq("user_id", data.user.id)
@@ -319,7 +305,7 @@ export class AuthService {
     // Si el rol es 3, obtener datos adicionales
     if (profile.role_id === 3) {
       const { data: providerData, error: providerError } =
-        await AuthService.supabase
+        await supabase_client
           .from("providers")
           .select("*,planes(id,nombre)")
           .eq("profile_id", profile.id);
@@ -329,7 +315,7 @@ export class AuthService {
         providers = providerData[0];
       }
       const { data: portafolioData, error: portafolioError } =
-        await AuthService.supabase
+        await supabase_client
           .from("portafolio_provider")
           .select("*")
           .eq("provider_id", providers ? providers.id : -1); // Evitar error si providers es null
@@ -353,7 +339,7 @@ export class AuthService {
     idUsuario: string,
     nuevoNombre: string
   ): Promise<void> {
-    const { error } = await AuthService.supabase
+    const { error } = await supabase_client
       .from("profiles")
       .update({ name: nuevoNombre })
       .eq("user_id", idUsuario);

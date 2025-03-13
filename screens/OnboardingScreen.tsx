@@ -37,28 +37,34 @@ const OnboardingScreen = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollX = useRef(new Animated.Value(0)).current;
   const scrollRef = useRef<ScrollView | null>(null);
+  const checkAuth = async () => {
+    const isAuth = await AuthService.esAutenticado();
+    const user = await AuthService.obtenerPerfil();
+    if (isAuth) {
+      if(user?.role_id===3){
+        navigation.replace('GestionSolicitudes');
+      }else{
+        navigation.replace('PantallaNegocios'); // 🔥 Redirige a la pantalla principal
+      }
+    }
+  };
   // ✅ Verifica autenticación al montar el componente
-  useFocusEffect(
-    React.useCallback(() => {
-      const checkAuth = async () => {
-        const isAuth = await AuthService.esAutenticado();
-        const user = await AuthService.obtenerPerfil();
-        if (isAuth) {
-          if(user?.role_id===3){
-            navigation.replace('GestionSolicitudes');
-          }else{
-            navigation.replace('PantallaNegocios'); // 🔥 Redirige a la pantalla principal
-          }
-        }
-      };
-      checkAuth();
-    }, [navigation])
-  );
-  // 📌 Manejo del scroll para actualizar el índice
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+
+  // �� Manejo del scroll para actualizar el índice
   const handleScroll = (event: any) => {
     const index = Math.round(event.nativeEvent.contentOffset.x / width);
     setCurrentIndex(index);
   };
+  useFocusEffect(
+    React.useCallback(() => {
+      checkAuth();
+    }, [navigation])
+  );
+
 
   return (
     <View style={styles.container}>

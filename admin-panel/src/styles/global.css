@@ -873,6 +873,10 @@ h1 {
   max-width: 400px;
   text-align: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  max-height: 80vh; /* Altura máxima del modal */
+  overflow-y: auto; /* Permitir desplazamiento vertical */
+  overflow-x: hidden; /* Ocultar el desplazamiento horizontal */
+
 }
 
 .modal-content h2 {
@@ -1046,4 +1050,30 @@ h1 {
   background-color: #f0f0f0;
   color: #757575;
   text-align: center;
+}
+
+/* Estilo de las flechas */
+.btn-flecha {
+  background-color: #1E3A8A; /* Azul oscuro */
+  color: #ffffff; /* Texto blanco */
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 18px;
+  margin: 0 5px;
+  border-radius: 8px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Sombra suave */
+}
+
+/* Efecto hover */
+.btn-flecha:hover {
+  background-color: #3B82F6; /* Azul medio */
+  transform: translateY(-2px); /* Efecto de levantamiento */
+}
+
+/* Efecto cuando se presiona */
+.btn-flecha:active {
+  background-color: #60A5FA; /* Azul claro */
+  transform: translateY(1px);
 }

@@ -10,6 +10,7 @@ import PaymentManagementPage from "./pages/PaymentManagementPage";
 import SupportManagementPage from "./pages/SupportManagementPage";
 import SettingsPage from "./pages/SettingsPage";
 import PlanesManagmentPage from "./pages/PlanesManagmentPage";
+import ServicesManagementPage from "./pages/ServicesmanagemenPage";
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/users" element={<UserManagementPage />} />
         <Route path="/user-profile/:id" element={<UserProfilePage />} />
+        <Route path="/services-managment" element={<ServicesManagementPage />} />
         <Route path="/services" element={<ServiceManagementPage />} />
         <Route path="/planes" element={<PlanesManagmentPage />} />
         <Route path="/commissions" element={<CommissionPage />} />

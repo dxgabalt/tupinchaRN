@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,64 +6,92 @@ import {
   Alert,
   ScrollView,
   Platform,
-} from 'react-native';
-import { useNavigation, useRoute } from '@react-navigation/native';
-import styles from '../styles/stylesConfirmacionPago';
-import SolicitudService from '../services/SolicitudService';
-import SupabaseService from '../services/SupabaseService';
-import { AuthService } from '../services/AuthService';
+} from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import styles from "../styles/stylesConfirmacionPago";
+import SolicitudService from "../services/SolicitudService";
+import SupabaseService from "../services/SupabaseService";
+import { AuthService } from "../services/AuthService";
 
 const PantallaConfirmacionPago = () => {
   const navigation = useNavigation();
   const route = useRoute();
 
   // 📌 Recibe datos de la Pantalla de Solicitud
-  const {service_id,servicio,id_proveedor,proveedor,descripcion,url_imagen,fecha,fechaFormateada,precio  } = route.params || {};
+  const {
+    service_id,
+    servicio,
+    id_proveedor,
+    proveedor,
+    descripcion,
+    url_imagen,
+    fecha,
+    fechaFormateada,
+    precio,
+  } =
+    (route.params as {
+      service_id: number;
+      servicio: string;
+      id_proveedor: number;
+      proveedor: string;
+      descripcion: string;
+      url_imagen: string;
+      fecha: Date;
+      fechaFormateada: string;
+      precio: number;
+    }) || {};
 
   // 📌 Estado para el método de pago
-  const [metodoPago, setMetodoPago] = useState('');
+  const [metodoPago, setMetodoPago] = useState("");
+  const [isConfirming, setIsConfirming] = useState(false); // ✅ Estado para deshabilitar el botón
 
   // 📌 Función para confirmar pago y solicitud
   const confirmarPago = () => {
     if (!metodoPago) {
-      Alert.alert('Error', 'Por favor, selecciona un método de pago.');
+      Alert.alert("Error", "Por favor, selecciona un método de pago.");
       return;
     }
+    setIsConfirming(true); // 🔥 Deshabilitar el botón al iniciar
     enviarSolicitud();
     Alert.alert(
-      '✅ Pago Confirmado',
+      "✅ Pago Confirmado",
       `Se ha confirmado la solicitud de servicio con el método de pago: ${metodoPago}.`,
-      [{ text: 'OK', onPress: () => navigation.navigate('PantallaPagoExitoso') }]
+      [
+        {
+          text: "OK",
+          onPress: () => navigation.navigate("PantallaPagoExitoso"),
+        },
+      ]
     );
-     if (Platform.OS === "web") {
-      navigation.navigate('PantallaPagoExitoso') 
-     }
+    if (Platform.OS === "web") {
+      navigation.navigate("PantallaPagoExitoso");
+    }
   };
   // 📌 Enviar solicitud con validación
   const enviarSolicitud = async () => {
-    if (!descripcion.trim() || !precio.trim()) {
-      Alert.alert('Error', 'Por favor, completa todos los campos.');
+    if (!descripcion.trim() || !precio) {
+      Alert.alert("Error", "Por favor, completa todos los campos.");
       return;
     }
 
     try {
-    const profile = await AuthService.obtenerPerfil();
-    const userId =profile.user_id || '';
-    const id=  await SolicitudService.crearSolicitudDeServicio(
-      id_proveedor,
+      const profile = await AuthService.obtenerPerfil();
+      const userId = profile.user_id || "";
+      const id = await SolicitudService.crearSolicitudDeServicio(
+        id_proveedor,
         service_id,
         descripcion,
-        fecha.toISOString().split('T')[0],
-        Number.parseFloat(precio),
+        fecha.toISOString().split("T")[0],
+        precio,
         userId,
         url_imagen
       );
       if (id == 0) {
-        Alert.alert('Error', 'No se pudo crear la solicitud.');
-        throw new Error('No se pudo crear la solicitud.');
+        Alert.alert("Error", "No se pudo crear la solicitud.");
+        throw new Error("No se pudo crear la solicitud.");
       }
-    } catch (error:any) {
-      Alert.alert('Error', 'No se pudo enviar la solicitud.');
+    } catch (error: any) {
+      Alert.alert("Error", "No se pudo enviar la solicitud.");
     }
   };
   return (
@@ -91,9 +119,9 @@ const PantallaConfirmacionPago = () => {
       <TouchableOpacity
         style={[
           styles.botonMetodo,
-          metodoPago === 'Tarjeta de Crédito' && styles.metodoSeleccionado,
+          metodoPago === "Tarjeta de Crédito" && styles.metodoSeleccionado,
         ]}
-        onPress={() => setMetodoPago('Tarjeta de Crédito')}
+        onPress={() => setMetodoPago("Tarjeta de Crédito")}
       >
         <Text style={styles.textoMetodo}>💳 Tarjeta de Crédito</Text>
       </TouchableOpacity>
@@ -101,9 +129,9 @@ const PantallaConfirmacionPago = () => {
       <TouchableOpacity
         style={[
           styles.botonMetodo,
-          metodoPago === 'Transferencia Bancaria' && styles.metodoSeleccionado,
+          metodoPago === "Transferencia Bancaria" && styles.metodoSeleccionado,
         ]}
-        onPress={() => setMetodoPago('Transferencia Bancaria')}
+        onPress={() => setMetodoPago("Transferencia Bancaria")}
       >
         <Text style={styles.textoMetodo}>🏦 Transferencia Bancaria</Text>
       </TouchableOpacity>
@@ -111,15 +139,19 @@ const PantallaConfirmacionPago = () => {
       <TouchableOpacity
         style={[
           styles.botonMetodo,
-          metodoPago === 'Pago en Efectivo' && styles.metodoSeleccionado,
+          metodoPago === "Pago en Efectivo" && styles.metodoSeleccionado,
         ]}
-        onPress={() => setMetodoPago('Pago en Efectivo')}
+        onPress={() => setMetodoPago("Pago en Efectivo")}
       >
         <Text style={styles.textoMetodo}>💵 Pago en Efectivo</Text>
       </TouchableOpacity>
 
       {/* 📌 Botón Confirmar */}
-      <TouchableOpacity style={styles.botonConfirmar} onPress={confirmarPago}>
+      <TouchableOpacity
+        style={styles.botonConfirmar}
+        onPress={confirmarPago}
+        disabled={isConfirming} // ✅ Deshabilitar el botón
+      >
         <Text style={styles.textoBoton}>✅ Confirmar Pago</Text>
       </TouchableOpacity>
     </ScrollView>
