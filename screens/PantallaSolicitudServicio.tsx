@@ -14,17 +14,19 @@ import * as ImagePicker from 'expo-image-picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import styles from '../styles/stylesSolicitudServicio';
-import SolicitudService from '../services/SolicitudService';
-import SupabaseService from '../services/SupabaseService';
 import { ImageService } from '../services/ImageService';
 import { ProviderService } from '../models/ProviderService';
 
 const PantallaSolicitudServicio = () => {
   const route = useRoute();
   const navigation = useNavigation();
-  const { idProveedor, service_id, proveedor } = route.params ?? {};
+  const { idProveedor, service_id, proveedor } = 
+  (route.params as {
+    idProveedor: number;
+    service_id: number;
+    proveedor: ProviderService
+  }) || {};
   const dataProveedor = proveedor as ProviderService;
-
   if (!idProveedor) {
     return (
       <View style={styles.container}>
@@ -43,7 +45,8 @@ const PantallaSolicitudServicio = () => {
   const [imagenes, setImagenes] = useState<string[]>([]);
   const [url_imagen, setUrlImagenes] = useState<string>('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
-  const [providerServiceId, setProviderServiceId] = useState(0);
+  const [direccion,setDireccion] = useState("")
+
 
   const menuAnim = useRef(new Animated.Value(-300)).current;
   const [menuVisible, setMenuVisible] = useState(false);
@@ -149,7 +152,6 @@ const PantallaSolicitudServicio = () => {
             onChange={(e) => setFecha(new Date(e.target.value))}
             style={{
               padding: 10,
-              marginVertical: 10,
               borderWidth: 1,
               borderColor: '#ccc',
               borderRadius: 5,
@@ -174,13 +176,21 @@ const PantallaSolicitudServicio = () => {
           </>
         )}
 
-        <Text style={styles.label}>Precio Ofrecido</Text>
+        <Text style={styles.label}>Precio Ofrecido (Opcional)</Text>
         <TextInput
-          placeholder="Ejemplo: 50.00"
+          placeholder="Es opcional Ejemplo: 50.00"
           style={styles.input}
           value={precioOfrecido}
           keyboardType="numeric"
           onChangeText={setPrecioOfrecido}
+        />       
+        <Text style={styles.label}>Direccion</Text>
+        <TextInput
+          placeholder="Dirreccion donde se va a realizar lo solicitado"
+          style={styles.input}
+          value={direccion}
+          keyboardType="numeric"
+          onChangeText={setDireccion}
         />
 
         <Text style={styles.label}>Subir Imágenes</Text>
@@ -211,7 +221,8 @@ const PantallaSolicitudServicio = () => {
               url_imagen,
               fecha: fecha,
               fechaFormateada: fecha.toDateString(),
-              precio: precioOfrecido,
+              precio: precioOfrecido=== ''?0: precioOfrecido,
+              direccion: direccion,
             })
           }
         >

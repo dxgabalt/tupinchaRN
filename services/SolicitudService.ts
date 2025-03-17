@@ -8,6 +8,7 @@ import { ProviderService } from "../models/ProviderService";
 import { Alert } from "react-native";
 import { Cotizacion } from "../models/Cotizacion";
 import { RequestNota } from "../models/RequestNota";
+import { SolicitudData } from "../models/SolicitudData";
 
 export class SolicitudService {
   private static readonly TABLE_NAME = "requests";
@@ -92,26 +93,22 @@ if (error) {
     });
   }
 
-  static async crearSolicitudDeServicio(
-    providerId: number,
-    serviceId: number,
-    descripcion: string,
-    fechaServicio: string,
-    precioOfrecido: number,
-    userId: string,
-    imagenesUrl?: string
-  ): Promise<number> {
+  static async crearSolicitudDeServicio(solicitud: SolicitudData): Promise<number> {
+    console.log('crear solicitud');
+    
     const { data, error } = await SolicitudService.supabase
     .from(SolicitudService.TABLE_NAME)
     .insert({
-      provider_id: providerId,
-      service_id: serviceId,
-      request_description: descripcion,
-      service_date: fechaServicio,
-      images: imagenesUrl || "",
-      user_id: userId,
-      price: precioOfrecido,
+      provider_id: solicitud.provider_id,
+      service_id: solicitud.service_id,
+      request_description: solicitud.descripcion,
+      service_date: solicitud.fecha,
+      images: solicitud.url_imagen || "",
+      user_id: solicitud.userId,
+      price: solicitud.precio,
       status: "Pendiente",
+      direccion: solicitud.direccion,
+      metodo_pago: solicitud.metodoPago,
     })
     .select(`
       provider_id,
@@ -187,7 +184,7 @@ if (error) {
       const { data: solicitudes, error: errorSolicitud } = await supabase_client
         .from(this.TABLE_NAME)
         .select(
-          `id, provider_id,request_notas(id,nota_client,nota_provider,created_at,updated_at),contraofertas(id,costo_mano_obra,costo_materiales,descripcion,contraoferta_notas(id,nota_client,nota_provider,created_at,updated_at)), cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at,updated_at)),providers(id, phone, profile_id, profiles(id, name, rating, profile_pic_url, phone)), 
+          `id, provider_id,direccion,request_notas(id,nota_client,nota_provider,created_at,updated_at),contraofertas(id,costo_mano_obra,costo_materiales,descripcion,contraoferta_notas(id,nota_client,nota_provider,created_at,updated_at)), cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at,updated_at)),providers(id, phone, profile_id, profiles(id, name, rating, profile_pic_url, phone)), 
            service_id, services(id, category, tags), request_description, service_date, images,price, status, user_id`
         )
         .match(filtro);
@@ -292,6 +289,17 @@ if (error) {
     if (error) {
       throw new Error(`Error al actualizar el estado: ${error.message}`);
     }
+  }
+  static async actualizarPrecio(
+    id: number,
+    precio: number,
+  ): Promise<void> {
+    const {data, error } = await supabase_client
+      .from(this.TABLE_NAME)
+      .update({ price:precio })
+      .eq("id", id)
+      .select();
+      
   }
   static async actualizarSolicitud(
     id: number,

@@ -7,6 +7,7 @@ export interface Solicitud {
   id?: number;
   provider_id: number;
   service_id: number;
+  direccion: string;
   services: {
     id?: number;
     category: string;
@@ -22,6 +23,7 @@ export interface Solicitud {
     speciality: string;
     ubicacion: string;
     is_premium: boolean;
+
     profiles: {
       id?: number;
       name: string;

@@ -236,10 +236,6 @@ export class AuthService {
           userRequest.servicio_id || 0,
           ""
         );
-        await ProviderServiceService.agregarServicioProveedor(
-          provider_id,
-          userRequest.servicio_id || 0
-        );
       }
     }
   }
@@ -302,6 +298,7 @@ export class AuthService {
     }
     let providers = null;
     let portafolioProvider = null;
+    let ubicacionProviders = null; 
     // Si el rol es 3, obtener datos adicionales
     if (profile.role_id === 3) {
       const { data: providerData, error: providerError } =
@@ -324,6 +321,17 @@ export class AuthService {
         console.error("Error al obtener el portafolio:", portafolioError);
       } else {
         portafolioProvider = portafolioData;
+      } 
+      const { data: ubicacionData, error: ubicacionError } =
+        await supabase_client
+          .from("provider_locations")
+          .select("*,provincias(id,nombre),municipios(id,name)")
+          .eq("provider_id", providers ? providers.id : -1); // Evitar error si providers es null
+
+      if (ubicacionError) {
+        console.error("Error al obtener el portafolio:", ubicacionError);
+      } else {
+        ubicacionProviders = ubicacionData;
       }
     }
 
@@ -331,6 +339,7 @@ export class AuthService {
       ...profile, // Datos obtenidos de "profiles"
       provider: providers,
       portafolio: portafolioProvider,
+      provider_locations: ubicacionProviders,
       email: data.user.email, // Email del usuario autenticado
     };
   }

@@ -141,26 +141,78 @@ export class AuthService {
   }
   static async eliminarPerfil(id) {
     try {
-      // Eliminar perfil de la tabla de usuarios
-      const { error: profileError } = await supabase_client
-        .from("profiles")
-        .delete()
-        .eq("user_id", id);
-
+      // Obtener el id_profile de la tabla profiles
+      const { data: profileData, error: profileError } = await supabase_client
+        .from('profiles')
+        .select('id')
+        .eq('user_id', id)
+        .single();
+  
       if (profileError) throw new Error(profileError.message);
-
+      if (!profileData) throw new Error("Perfil no encontrado");
+  
+      const profileId = profileData.id;
+  
+      // Obtener ids de providers asociados al perfil
+      const { data: providerData, error: providerFetchError } = await supabase_client
+        .from('providers')
+        .select('id')
+        .eq('profile_id', profileId);
+  
+      if (providerFetchError) throw new Error(providerFetchError.message);
+  
+      const providerIds = providerData.map(provider => provider.id);
+  
+      if (providerIds.length > 0) {
+        // Eliminar de provider_services usando los ids de providers
+        const { error: serviceError } = await supabase_client
+          .from('provider_services')
+          .delete()
+          .in('provider_id', providerIds);
+        if (serviceError) throw new Error(serviceError.message);  
+             // Eliminar de comisiones usando los ids de providers
+        const { error: comisionError } = await supabase_client
+          .from('comisiones')
+          .delete()
+          .in('proveedor_id', providerIds);
+        if (comisionError) throw new Error(comisionError.message);
+  
+        // Eliminar de portafolio_provider usando los ids de providers
+        const { error: portafolioError } = await supabase_client
+          .from('portafolio_provider')
+          .delete()
+          .in('provider_id', providerIds);
+        if (portafolioError) throw new Error(portafolioError.message);
+  
+        // Eliminar registros de providers
+        const { error: providerError } = await supabase_client
+          .from('providers')
+          .delete()
+          .in('id', providerIds);
+        if (providerError) throw new Error(providerError.message);
+      }
+  
+      // Eliminar el perfil usando el profileId
+      const { error: profileDeleteError } = await supabase_client
+        .from('profiles')
+        .delete()
+        .eq('id', profileId);
+      if (profileDeleteError) throw new Error(profileDeleteError.message);
+  
       // Eliminar usuario de autenticación en Supabase
-      const { error: authError } = await supabase_admin.auth.admin.deleteUser(
-        id
-      );
+      const { error: authError } = await supabase_admin.auth.admin.deleteUser(id);
       if (authError) throw new Error(authError.message);
-
-      return { success: true, message: "Se ha eliminado exitosamente" };
+  
+      return { success: true, message: 'Se ha eliminado exitosamente' };
     } catch (error) {
-      console.error("Error al eliminar usuario:", error);
+      console.error('Error al eliminar usuario:', error);
       return { success: false, message: error.message };
     }
   }
+  
+  
+  
+  
   static async crearUsuarioAuth(
     correo,
     contrasena

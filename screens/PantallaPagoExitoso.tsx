@@ -10,7 +10,7 @@ const PantallaPagoExitoso = () => {
       <Text style={styles.emoji}>🎉</Text>
       <Text style={styles.titulo}>¡Solicitud Exitosa!</Text>
       <Text style={styles.descripcion}>
-        Tu pago ha sido procesado correctamente. Puedes revisar los detalles en
+        Tu solicitud ha sido procesado correctamente. Puedes revisar los detalles en
         tu historial de pagos.
       </Text>
 

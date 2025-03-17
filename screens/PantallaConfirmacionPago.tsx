@@ -28,6 +28,7 @@ const PantallaConfirmacionPago = () => {
     fecha,
     fechaFormateada,
     precio,
+    direccion,
   } =
     (route.params as {
       service_id: number;
@@ -39,6 +40,7 @@ const PantallaConfirmacionPago = () => {
       fecha: Date;
       fechaFormateada: string;
       precio: number;
+      direccion: string;
     }) || {};
 
   // 📌 Estado para el método de pago
@@ -69,7 +71,7 @@ const PantallaConfirmacionPago = () => {
   };
   // 📌 Enviar solicitud con validación
   const enviarSolicitud = async () => {
-    if (!descripcion.trim() || !precio) {
+    if (!descripcion.trim()) {
       Alert.alert("Error", "Por favor, completa todos los campos.");
       return;
     }
@@ -77,15 +79,17 @@ const PantallaConfirmacionPago = () => {
     try {
       const profile = await AuthService.obtenerPerfil();
       const userId = profile.user_id || "";
-      const id = await SolicitudService.crearSolicitudDeServicio(
-        id_proveedor,
+      const id = await SolicitudService.crearSolicitudDeServicio({
+        provider_id: id_proveedor,
         service_id,
         descripcion,
-        fecha.toISOString().split("T")[0],
+        fecha: fecha.toISOString().split("T")[0],
         precio,
         userId,
-        url_imagen
-      );
+        url_imagen,
+        direccion,
+        metodoPago
+      });
       if (id == 0) {
         Alert.alert("Error", "No se pudo crear la solicitud.");
         throw new Error("No se pudo crear la solicitud.");

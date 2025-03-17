@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   FlatList,
   Platform,
+  Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
@@ -22,6 +23,10 @@ import { PortafolioService } from "../../services/Portafolio";
 import { ServiceService } from "../../services/ServiceService";
 import { Picker } from "@react-native-picker/picker";
 import { PlanService } from "../../services/PlanService";
+import { Portafolio } from "../../models/Portafolio";
+import { MunicipioService } from "../../services/MunicipoService";
+import { ProvinciaService } from "../../services/ProvinciaService";
+import { ProviderLocationsService } from "../../services/ProviderLocationService";
 
 const PantallaGestionServicios = () => {
   const navigation = useNavigation();
@@ -30,6 +35,7 @@ const PantallaGestionServicios = () => {
   const [nuevaDescripcion, setNuevaDescripcion] = useState("");
   const [portafolio, setPortafolio] = useState<string[]>([]);
   const [portafolios, setPortafolios] = useState([]);
+  const [ubicaciones, setUbicaciones] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [editando, setEditando] = useState(false);
   const menuAnim = useRef(new Animated.Value(-300)).current;
@@ -40,6 +46,14 @@ const PantallaGestionServicios = () => {
   const [servicio, setServicio] = useState(0);
   const [plan, setPlan] = useState(0);
   const [planes, setPlanes] = useState<Plan[]>([]);
+  const [provincias, setProvincias] = useState([]);
+  const [municipios, setMunicipios] = useState([]);
+  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(null);
+  const [municipioSeleccionado, setMunicipioSeleccionado] = useState(0);
+  const [mostrarMunicipios, setMostrarMunicipios] = useState(false); // Nuevo estado
+  const [modalVisible, setModalVisible] = useState(false);
+  const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] = useState(null)
+  const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] =useState(null);
   /** 🔥 Cargar Perfil */
   useEffect(() => {
     const cargarPerfil = async () => {
@@ -50,10 +64,12 @@ const PantallaGestionServicios = () => {
           perfilData?.portafolio?.map((item) => item.especialidad).join(", ") ||
           "";
         const portafolios = perfilData?.portafolio;
+        const ubicaciones = perfilData?.provider_locations;
         setEspecialidad(especialidades);
         setPortafolio(perfilData.portafolio || []);
         setPortafolios(portafolios);
-        setPlan(perfilData?.provider?.planes?.id)
+        setUbicaciones(ubicaciones);
+        setPlan(perfilData?.provider?.planes?.id);
       } catch (error) {
         Alert.alert("Error", "No se pudo cargar el perfil.");
       } finally {
@@ -62,15 +78,17 @@ const PantallaGestionServicios = () => {
     };
     cargarPerfil();
   }, []);
- const obtenerServicios = async () => {
+  const obtenerServicios = async () => {
     try {
       const servicios = await ServiceService.obtenerTodos();
-      setServicios(servicios.map(servicio => ({
-        id: servicio.id,
-        category: servicio.category,
-        icono: servicio.icono,
-        tags: servicio.tags,
-      })));
+      setServicios(
+        servicios.map((servicio) => ({
+          id: servicio.id,
+          category: servicio.category,
+          icono: servicio.icono,
+          tags: servicio.tags,
+        }))
+      );
     } catch (error) {
       console.error("Error obteniendo servicios:", error);
     }
@@ -89,6 +107,36 @@ const PantallaGestionServicios = () => {
   useEffect(() => {
     obtenerServicios();
   }, []);
+
+  // Obtener las provincias
+  useEffect(() => {
+    const obtenerProvincias = async () => {
+      try {
+        const provincias = await ProvinciaService.obtenerTodos();
+        setProvincias(provincias);
+      } catch (error) {
+        console.error("Error obteniendo provincias:", error);
+      }
+    };
+    obtenerProvincias();
+  }, []);
+
+  // Obtener municipios cuando una provincia es seleccionada
+  useEffect(() => {
+    if (provinciaSeleccionada) {
+      const obtenerMunicipios = async () => {
+        try {
+          const municipios = await MunicipioService.obtenerTodos({
+            provincia_id: provinciaSeleccionada,
+          });
+          setMunicipios(municipios);
+        } catch (error) {
+          console.error("Error obteniendo municipios:", error);
+        }
+      };
+      obtenerMunicipios();
+    }
+  }, [provinciaSeleccionada]);
   /** 📌 Guardar Cambios en Perfil */
   const guardarPerfil = async () => {
     if (
@@ -131,28 +179,78 @@ const PantallaGestionServicios = () => {
         servicio,
         url_imagen
       );
-      const nuevo_item ={
-        id: obtenerUltimoIdPortafolio(1) + 1,  // Obtener el último id de la solicitud
+      const nuevo_item = {
+        id: obtenerUltimoIdPortafolio(1) + 1, // Obtener el último id de la solicitud
         especialidad: nuevaEspecialidad,
         provider_id: perfil.provider.id,
         descripcion: nuevaDescripcion,
         imagen: url_imagen,
-      }
+      };
       portafolios.push(nuevo_item);
       Alert.alert("Éxito", "Servicio agregado correctamente.");
       const especialidad_nueva = especialidad + ", " + nuevaEspecialidad;
       setEspecialidad(especialidad_nueva);
       setNuevaEspecialidad("");
       setNuevaDescripcion("");
-      setFoto("")
+      setFoto("");
       setPortafolio([...portafolio, url_imagen]);
     } catch (error) {
       Alert.alert("Error", "No se pudo agregar el servicio.");
     }
+  };  /** 📌 Agregar Nueva Ubicacion */
+  const agregarUbicacion = async () => {
+    if (!provinciaSeleccionada || !municipioSeleccionado) {
+      Alert.alert("Error", "Todos los campos son obligatorios.");
+      return;
+    }
+    try {
+     
+      await ProviderLocationsService.crear({
+        provider_id: perfil.provider.id,
+        provincia_id: provinciaSeleccionada,
+        municipio_id: municipioSeleccionado
+      });
+      const nuevo_item = {
+        id: obtenerUltimoIdUbicacion(1) + 1, // Obtener el último id de la solicitud
+        municipios: {
+          id: municipioSeleccionado,
+          name: nombreMunicipioSeleccionado,
+        },
+        provincias: {
+          id: provinciaSeleccionada,
+          nombre: nombreProvinciaSeleccionada,
+        },
+        provider_id: perfil.provider.id,
+        provincia_id:provinciaSeleccionada,
+        municipio_id: municipioSeleccionado
+      };
+      console.log(nuevo_item);
+      
+      ubicaciones.push(nuevo_item);
+      Alert.alert("Éxito", "Servicio agregado correctamente.");
+      setProvinciaSeleccionada(null);
+      setMunicipioSeleccionado(null);
+      setNombreMunicipioSeleccionado("");
+      setNombreProvinciaSeleccionada("");
+    } catch (error) {
+      Alert.alert("Error", "No se pudo agregar el servicio.");
+    }
   };
-  const obtenerUltimoIdPortafolio= (idPortafolio:number) => {
+  const obtenerUltimoIdUbicacion = (idPortafolio: number) => {
     // Encuentra la solicitud correspondiente
-    
+
+    if (ubicaciones && ubicaciones.length > 0) {
+      // Obtener el último id de la cotización
+      const ultimoId = ubicaciones[ubicaciones.length - 1].id;
+      return ultimoId;
+    } else {
+      // Si no hay cotizaciones, devuelve null o cualquier valor predeterminado
+      return null;
+    }
+  };  
+  const obtenerUltimoIdPortafolio = (idPortafolio: number) => {
+    // Encuentra la solicitud correspondiente
+
     if (portafolios && portafolios.length > 0) {
       // Obtener el último id de la cotización
       const ultimoId = portafolios[portafolios.length - 1].id;
@@ -213,15 +311,14 @@ const PantallaGestionServicios = () => {
         );
         if (confirmation) {
           await PortafolioService.eliminar(id);
-          const nuevosServicios = portafolios.filter(item => item.id !== id);
+          const nuevosServicios = portafolios.filter((item) => item.id !== id);
           setPortafolios(nuevosServicios);
           const especialidades =
-          nuevosServicios.map((item) => item.especialidad).join(", ") ||
-          "";
-        setEspecialidad(especialidades);
+            nuevosServicios.map((item) => item.especialidad).join(", ") || "";
+          setEspecialidad(especialidades);
           window.alert("Servicio eliminado correctamente.");
         }
-      }else{
+      } else {
         // Confirmación antes de eliminar
         Alert.alert(
           "Confirmar eliminación",
@@ -233,20 +330,61 @@ const PantallaGestionServicios = () => {
               style: "destructive",
               onPress: async () => {
                 await PortafolioService.eliminar(parseInt(id));
-  
+
                 // Actualizar el estado eliminando el servicio
                 const nuevosServicios = portafolio.filter(
                   (item) => item.id !== id
                 );
                 setPortafolio(nuevosServicios);
-  
+
                 // Actualizar la lista de especialidades
                 const nuevasEspecialidades = nuevosServicios
                   .map((item) => item.especialidad)
                   .join(", ");
                 setEspecialidad(nuevasEspecialidades);
-  
+
                 Alert.alert("Éxito", "Servicio eliminado correctamente.");
+              },
+            },
+          ]
+        );
+      }
+    } catch (error) {
+      Alert.alert("Error", "No se pudo eliminar el servicio.");
+    }
+  };
+  /** 📌 Eliminar Ubicacion */
+  const eliminarUbicacion = async (id: number) => {
+    try {
+      if (Platform.OS === "web") {
+        const confirmation = window.confirm(
+          "¿Estás seguro de que deseas eliminar este servicio?"
+        );
+        if (confirmation) {
+          await ProviderLocationsService.eliminar(id);
+          const nuevasUbicaciones = ubicaciones.filter((item) => item.id !== id);
+          setUbicaciones(nuevasUbicaciones);
+         
+          window.alert("Servicio eliminado correctamente.");
+        }
+      } else {
+        // Confirmación antes de eliminar
+        Alert.alert(
+          "Confirmar eliminación",
+          "¿Estás seguro de que deseas eliminar este servicio?",
+          [
+            { text: "Cancelar", style: "cancel" },
+            {
+              text: "Eliminar",
+              style: "destructive",
+              onPress: async () => {
+                await ProviderLocationsService.eliminar(parseInt(id));
+                // Actualizar el estado eliminando el servicio
+                const nuevasUbicaciones = ubicaciones.filter(
+                  (item) => item.id !== id
+                );
+                setUbicaciones(nuevasUbicaciones);
+                Alert.alert("Éxito", "Ubicacion eliminado correctamente.");
               },
             },
           ]
@@ -258,7 +396,7 @@ const PantallaGestionServicios = () => {
   };
 
   /** 📌 Renderizar Item del Portafolio */
-  const renderPortfolioItem = ({ item }: { item: PortfolioItem }) => (
+  const renderPortfolioItem = ({ item }: { item: Portafolio }) => (
     <View style={styles.portfolioItem}>
       <View style={styles.portfolioContent}>
         {item.imagen ? (
@@ -285,7 +423,25 @@ const PantallaGestionServicios = () => {
       </TouchableOpacity>
     </View>
   );
-
+  /** 📌 Renderizar Item de Ubicaciones */
+  const renderUbicacionItem = ({ item }: { item: any }) => (
+    <View style={styles.portfolioItem}>
+      <View style={styles.portfolioContent}>
+        <View style={styles.portfolioInfo}>
+          <Text style={styles.portfolioTitle}>{item.provincias.nombre}</Text>
+          <Text style={styles.portfolioDescription}>
+            {item.municipios.name}
+          </Text>
+        </View>
+      </View>
+      <TouchableOpacity
+        style={styles.deleteButton}
+        onPress={() => eliminarUbicacion(item.id)}
+      >
+        <Text style={styles.deleteButtonText}>🗑️</Text>
+      </TouchableOpacity>
+    </View>
+  );
   return (
     <View style={styles.container}>
       {/* 🔥 Menú Lateral */}
@@ -303,9 +459,12 @@ const PantallaGestionServicios = () => {
           >
             <Text style={styles.menuText}>📋 Ver Solicitudes</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("PantallaNotificacion")}>
-          <Text style={styles.menuText}>🔔 Notificaciones</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => navigation.navigate("PantallaNotificacion")}
+          >
+            <Text style={styles.menuText}>🔔 Notificaciones</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.menuCerrar}
             onPress={async () => {
@@ -354,7 +513,7 @@ const PantallaGestionServicios = () => {
             <Text style={styles.label}>🛠 Especialidad:</Text>
             <TextInput
               style={styles.input}
-              value={perfil?.provider?.speciality??" " + "," + especialidad}
+              value={perfil?.provider?.speciality ?? " " + "," + especialidad}
               editable={editando}
               onChangeText={(text) =>
                 setPerfil({ ...perfil, speciality: text })
@@ -369,21 +528,21 @@ const PantallaGestionServicios = () => {
               onChangeText={(text) => actualizarCampo("availability", text)}
             />
             <View style={styles.switchContainer}>
-            <Text style={styles.label}>Plan {plan}</Text>
-            <Picker
-              style={styles.input}
-              selectedValue={plan}
-              onValueChange={(itemValue) => setPlan(itemValue)}
-            >
-              {planes.map((plan) => (
-                <Picker.Item
-                  key={plan.id}
-                  label={plan.nombre}
-                  value={plan.id}
-                />
-              ))}
-            </Picker>
-          </View>
+              <Text style={styles.label}>Plan {plan}</Text>
+              <Picker
+                style={styles.input}
+                selectedValue={plan}
+                onValueChange={(itemValue) => setPlan(itemValue)}
+              >
+                {planes.map((plan) => (
+                  <Picker.Item
+                    key={plan.id}
+                    label={plan.nombre}
+                    value={plan.id}
+                  />
+                ))}
+              </Picker>
+            </View>
             {editando ? (
               <TouchableOpacity
                 style={styles.botonGuardar}
@@ -409,21 +568,21 @@ const PantallaGestionServicios = () => {
               onChangeText={setNuevaEspecialidad}
             />
             <View style={styles.switchContainer}>
-            <Text style={styles.label}>Categoria</Text>
-            <Picker
-              style={styles.input}
-              selectedValue={servicio}
-              onValueChange={(itemValue) => setServicio(itemValue)}
-            >
-              {servicios.map((servicio_data) => (
-                <Picker.Item
-                  key={servicio_data.id}
-                  label={servicio_data.category}
-                  value={servicio_data.id}
-                />
-              ))}
-            </Picker>
-          </View>
+              <Text style={styles.label}>Categoria</Text>
+              <Picker
+                style={styles.input}
+                selectedValue={servicio}
+                onValueChange={(itemValue) => setServicio(itemValue)}
+              >
+                {servicios.map((servicio_data) => (
+                  <Picker.Item
+                    key={servicio_data.id}
+                    label={servicio_data.category}
+                    value={servicio_data.id}
+                  />
+                ))}
+              </Picker>
+            </View>
             <Text style={styles.label}>📝 Descripción</Text>
             <TextInput
               style={styles.input}
@@ -485,9 +644,113 @@ const PantallaGestionServicios = () => {
                 No hay servicios en tu portafolio. Agrega uno nuevo.
               </Text>
             )}
+            {/* 📌 Lista de Ubicaciones */}
+            {/* 🌍 Botón para seleccionar ubicación */}
+            <TouchableOpacity
+              style={styles.botonFiltro}
+              onPress={() => setModalVisible(true)}
+            >
+              <Text style={styles.textoBoton}>
+                {provinciaSeleccionada
+                  ? `${nombreProvinciaSeleccionada} - ${
+                      nombreMunicipioSeleccionado || "Selecciona municipio"
+                    }`
+                  : "Seleccionar Ubicación"}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.sectionTitle}>Ubicaciones</Text>
+            <TouchableOpacity
+            style={styles.botonAgregar}
+            onPress={agregarUbicacion}
+          >
+            <Text style={styles.textoBoton}>✅ Agregar Ubicacion</Text>
+          </TouchableOpacity>
+
+            {ubicaciones.length > 0 ? (
+              <FlatList
+                data={ubicaciones}
+                renderItem={renderUbicacionItem}
+                keyExtractor={(item) => item.id}
+                scrollEnabled={false}
+              />
+            ) : (
+              <Text style={styles.emptyMessage}>
+                No hay servicios en tu portafolio. Agrega uno nuevo.
+              </Text>
+            )}
           </>
         )}
       </ScrollView>
+      <Modal visible={modalVisible} animationType="slide" transparent>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalContenido}>
+          {!mostrarMunicipios ? (
+            <>
+              <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
+              <ScrollView style={styles.scrollView}>
+                {provincias.map((item) => (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={[
+                      styles.opcion,
+                      provinciaSeleccionada === item.id &&
+                        styles.opcionActiva,
+                    ]}
+                    onPress={() => {
+                      setProvinciaSeleccionada(item.id);
+                      setNombreProvinciaSeleccionada(item.nombre);
+                      setMunicipioSeleccionado(null);
+                      setMunicipios([]);
+                      setMostrarMunicipios(true); // Cambia a mostrar municipios
+                    }}
+                  >
+                    <Text style={styles.textoOpcion}>{item.nombre}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity
+                onPress={() => setMostrarMunicipios(false)}
+                style={styles.botonVolver}
+              >
+                <Text style={styles.textoBoton}>← Volver</Text>
+              </TouchableOpacity>
+              <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
+              <FlatList
+                data={municipios}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={[
+                      styles.opcion,
+                      municipioSeleccionado === item.id &&
+                        styles.opcionActiva,
+                    ]}
+                    onPress={() => {
+                      setMunicipioSeleccionado(item.id);
+                      setNombreMunicipioSeleccionado(item.name);
+                      setModalVisible(false);
+                    }}
+                  >
+                    <Text style={styles.textoOpcion}>{item.name}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+            </>
+          )}
+
+          <TouchableOpacity
+            style={styles.botonCerrar}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.textoBoton}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+
     </View>
   );
 };

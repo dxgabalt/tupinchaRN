@@ -1,8 +1,8 @@
 import {ProviderLocation} from '../models/ProviderLocation';
 import SupabaseService from './SupabaseService';
 
-export class CitiesService {
-  private static readonly TABLE_NAME = 'providerlocations';
+export class ProviderLocationsService {
+  private static readonly TABLE_NAME = 'provider_locations';
 
   // Obtener todos los Cities
   static async obtenerTodos(): Promise<ProviderLocation[]> {

@@ -360,6 +360,36 @@ notaTextoProveedor: {
   color: '#388e3c',
   marginBottom: 4,
 },
+contenedorFila: {
+  flexDirection: 'row', // Alineación horizontal
+  alignItems: 'center', // Alineación vertical
+  gap: 10, // Espacio entre el input y el botón
+},
+estiloInput: {
+  width: 60, // Tamaño suficiente para 4 dígitos
+  borderWidth: 1,
+  borderColor: '#ccc',
+  backgroundColor: "#f9f9f9",
+  padding: 8,
+  borderRadius: 5,
+},
+estiloBoton: {
+  backgroundColor: '#007bff',
+  paddingVertical: 10,
+  paddingHorizontal: 15,
+  borderRadius: 5,
+},
+estiloTextoBoton: {
+  color: '#fff',
+  fontSize: 14,
+  fontWeight: 'bold',
+},
+estiloPrecio: {
+  fontSize: 16,
+  fontWeight: 'bold',
+  color: '#333',
+},
+
 });
 
 export default styles;

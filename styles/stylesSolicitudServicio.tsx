@@ -6,6 +6,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FA',
   },
+  errorText:{
+    fontSize: 18,
+    color: '#FF0314',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  
 
   menuContainer: {
     position: 'absolute',

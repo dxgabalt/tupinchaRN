@@ -36,8 +36,8 @@ const PantallaGestionSolicitudes = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [respuestaNota, setRespuestaNota] = useState("");
   const [nuevaNota, setNuevaNota] = useState("");
+  const [precio, setPrecio] = useState({});
   const [cotizacionesNotas, setCotizacionesNotas] = useState({});
-
   const [nuevaNotaSolicitud, setNuevaNotaSolicitud] = useState("");
 
   /** 🔥 Cargar Solicitudes del Proveedor */
@@ -299,6 +299,30 @@ const PantallaGestionSolicitudes = () => {
         texto,
       },
     }));
+  };  
+  const handleCambioPrecio = (
+    id: number,
+    precio: number
+  ) => {
+    setPrecio((prevState) => ({
+      ...prevState,
+      [id]: {
+        ...prevState[id],
+        precio,
+      },
+    }));
+  };
+  const establecerPrecio = async(id) => {
+    const precio_input = precio[id].precio;
+    await SolicitudService.actualizarPrecio(id,precio_input);
+    setSolicitudes((prevSolicitudes) =>
+      prevSolicitudes.map((solicitud) =>
+        solicitud.id === id
+          ? { ...solicitud, price: precio_input }
+          : solicitud
+      )
+    );
+    precio[id]={precio:''}
   };
   return (
     <View style={styles.container}>
@@ -378,7 +402,24 @@ const PantallaGestionSolicitudes = () => {
                   📝 {item.request_description}
                 </Text>
                 <Text style={styles.fecha}>📅 {item.service_date}</Text>
-                <Text style={styles.precio}>💰 {item.price} USD</Text>
+                {item.price > 0 ? (
+                  <Text style={styles.estiloPrecio}>💰 {item.price} USD</Text>
+                ) : (
+                  <View style={styles.contenedorFila}>
+                    <TextInput
+                      style={styles.estiloInput}
+                      placeholder=""
+                      maxLength={4}
+                      keyboardType="numeric"
+                      value={precio[item.id]?.precio?.toString() || ''}
+                      onChangeText={(valor) => handleCambioPrecio(item.id, parseFloat(valor) || 0)}
+                    />
+                    <TouchableOpacity style={styles.estiloBoton} onPress={() => establecerPrecio(item.id)}>
+                      <Text style={styles.estiloTextoBoton}>Establecer precio</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                <Text style={styles.descripcion}>📍direccion: {item.direccion} </Text>
 
                 {/* Estado de la solicitud */}
                 <Text

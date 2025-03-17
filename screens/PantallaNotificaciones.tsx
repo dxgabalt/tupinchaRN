@@ -25,6 +25,7 @@ const PantallaNotificaciones = () => {
   const [municipioSeleccionado, setMunicipioSeleccionado] = useState(null);
   const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] =
     useState(null);
+    const [rol,setRol] = useState(0)
   const [menuVisible, setMenuVisible] = useState(false);
   const [usuario, setUsuario] = useState({
     id: "",
@@ -57,6 +58,7 @@ const PantallaNotificaciones = () => {
         setNombreProvinciaSeleccionada(profile?.provincias.nombre);
         setMunicipioSeleccionado(profile?.municipios.id);
         setNombreMunicipioSeleccionado(profile?.municipios.name);
+        setRol(profile?.role_id)
       } catch (error) {
         console.error("Error obteniendo usuario:", error);
       }
@@ -181,36 +183,55 @@ const PantallaNotificaciones = () => {
         ]}
       >
         <ScrollView>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate("PantallaNegocios")}
-          >
-            <Text style={styles.menuText}>🔎 Buscar Proveedores</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate("PantallaHistorialUsuario")}
-          >
-            <Text style={styles.menuText}>🕒 Historial</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate("PantallaSoporteFAQ")}
-          >
-            <Text style={styles.menuText}>❓ Soporte</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate("PantallaNotificacion")}>
-          <Text style={styles.menuText}>🔔 Notificaciones</Text>
-        </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate("MiPerfil")}
-          >
-            <Text style={styles.menuText}>👤 Mi Perfil</Text>
-          </TouchableOpacity>
-
+          {rol !== 3 ? (
+            <>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => navigation.navigate("PantallaNegocios")}
+              >
+                <Text style={styles.menuText}>🔎 Buscar Proveedores</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => navigation.navigate("PantallaHistorialUsuario")}
+              >
+                <Text style={styles.menuText}>🕒 Historial</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => navigation.navigate("PantallaSoporteFAQ")}
+              >
+                <Text style={styles.menuText}>❓ Soporte</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => navigation.navigate("PantallaNotificacion")}
+              >
+                <Text style={styles.menuText}>🔔 Notificaciones</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => navigation.navigate("MiPerfil")}
+              >
+                <Text style={styles.menuText}>👤 Mi Perfil</Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => navigation.navigate("GestionSolicitudes")}
+              >
+                <Text style={styles.menuText}>📋 Ver Solicitudes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.menuItem}
+                onPress={() => navigation.navigate("PantallaNotificacion")}
+              >
+                <Text style={styles.menuText}>🔔 Notificaciones</Text>
+              </TouchableOpacity>
+            </>
+          )}
           <TouchableOpacity
             style={styles.menuCerrar}
             onPress={async () => {
@@ -224,14 +245,14 @@ const PantallaNotificaciones = () => {
           >
             <Text style={styles.menuCerrarTexto}>🚪 Cerrar Sesión</Text>
           </TouchableOpacity>
-
           <TouchableOpacity style={styles.menuCerrar} onPress={toggleMenu}>
             <Text style={styles.menuCerrarTexto}>Cerrar</Text>
           </TouchableOpacity>
         </ScrollView>
       </Animated.View>
+      
 
-      {/* 🔥 Encabezado */}
+     {/* 🔥 Encabezado */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
           <Text style={styles.menuIcon}>☰</Text>

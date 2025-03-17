@@ -15,6 +15,7 @@ export interface ProviderService {
     speciality: string;
     ubicacion: string;
     is_premium: boolean;
+    position: number;
     portafolio_provider: Portafolio[]
     profiles: {
       id?: number;
@@ -25,6 +26,7 @@ export interface ProviderService {
       municipio_id:number;
       municipios:Municipio;
       provincia_id:number;
+      is_verified:boolean;
       provincias:{
         id?: number;
         nombre: string;
@@ -37,4 +39,5 @@ export interface ProviderService {
     tags: JSON;
     icono?: string;
   }
+}
 }

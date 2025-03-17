@@ -32,8 +32,6 @@ const PantallaResultadosBusqueda = () => {
   const handleLayout = (event, id) => {
     const { height } = event.nativeEvent.layout;
     setHeights((prevHeights) => ({ ...prevHeights, [id]: height }));
-    console.log(id,height);
-    
   };
 
   // 🔥 Animación de entrada
@@ -85,7 +83,7 @@ const PantallaResultadosBusqueda = () => {
 
   // 🔥 Filtrar negocios según la búsqueda
   const negociosFiltrados = negocios.filter(negocio => {
-    return negocio.nombre.toLowerCase().includes(busqueda.toLowerCase()) || negocio.categoria.toLowerCase().includes(busqueda.toLowerCase());
+    return negocio.nombre.toLowerCase().includes(busqueda.toLowerCase()) || negocio.categoria.toLowerCase().includes(busqueda.toLowerCase())||negocio.descripcion.toLowerCase().includes(busqueda.toLowerCase())||negocio.ubicacion.toLowerCase().includes(busqueda.toLowerCase())//descripcion;
   });
 
   // 🔥 Animación del Menú Hamburguesa

@@ -189,17 +189,13 @@ const RegistroScreen = () => {
       const perfil = await AuthService.obtenerPerfil();
 
       if (perfil?.role_id !== 3) {
-        Alert.alert(
-          "Registro exitoso",
-          "Tu cuenta ha sido creada y será validada en 24 horas."
-        );
         navigation.navigate("PantallaNegocios");
       } else {
         Alert.alert(
           "Registro exitoso",
           "Tu cuenta ha sido creada y será validada en 24 horas."
         );
-        navigation.navigate("Login");
+        navigation.navigate("GestionSolicitudes");
       }
     } catch (error) {
       setLoading(false);
@@ -413,13 +409,13 @@ const RegistroScreen = () => {
           {/* 📌 Toggle para comision */}
           <View style={styles.switchContainer}>
             <Text style={styles.labelSwitch}>
-              ¿Deseeas suscripcion por porcentaje?
+              ¿Deseas suscripcion por porcentaje?
             </Text>
             <Switch value={esComision} onValueChange={setEsComision} />
           </View>
           {esComision && (
             <Text style={styles.labelSwitch}>
-            Porcentaje Comision: {configuracion?.porcentaje_comision}%
+            Porcentaje Comision (%)
             </Text>
           )}
           {!esComision && (
