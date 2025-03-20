@@ -304,7 +304,7 @@ export class AuthService {
       const { data: providerData, error: providerError } =
         await supabase_client
           .from("providers")
-          .select("*,planes(id,nombre)")
+          .select("*,created_at,planes(id,nombre,duracion)")
           .eq("profile_id", profile.id);
       if (providerError) {
         console.error("Error al obtener el proveedor:", providerError);

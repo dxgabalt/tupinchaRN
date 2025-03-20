@@ -53,7 +53,7 @@ const ServiceManagementPage = () => {
     <div className="dashboard">
       <Sidebar />
       <main className="content">
-        <h1>🛠️ Gestión de Servicios</h1>
+        <h1>🔧 Gestión de Solicitudes</h1>
 
         {/* 🔍 Barra de Búsqueda y Filtros */}
         <div className="filters">

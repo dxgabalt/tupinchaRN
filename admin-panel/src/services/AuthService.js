@@ -1,5 +1,4 @@
 import { PortafolioService } from "./PortafolioService";
-import { ProviderServiceService } from "./ProviderServiceService";
 import { supabase_admin } from "./supabaseAdmin";
 import { supabase_client } from "./supabaseClient";
 import SupabaseService from "./SupabaseService";
@@ -29,7 +28,9 @@ export class AuthService {
       // Obtener perfiles desde la tabla profiles
       const { data: perfiles, error: errorPerfil } = await supabase_client
         .from("profiles")
-        .select("id, name, role_id, roles(id, name),municipio_id,municipios(id,name,provincia_id), phone, rating, is_verified,profile_pic_url, user_id");
+        .select("id, name, role_id, roles(id, name),municipio_id,municipios(id,name,provincia_id), phone, rating, is_verified,profile_pic_url, user_id,created_at")
+        .order("created_at", { ascending: false }); // Cambia a true si deseas ordenar de manera ascendente
+        ;
   
       if (errorPerfil || !perfiles) {
         console.error("Error obteniendo perfiles:", errorPerfil);
@@ -55,18 +56,28 @@ export class AuthService {
   
       // Obtener portafolios de proveedores
       let portafolios = [];
+      let ubicaciones = [];
       if (proveedores.length > 0) {
         const providerIds = proveedores.map(p => p.id);
         const { data: portafolioData, error: errorPortafolio } = await supabase_client
           .from("portafolio_provider")
-          .select("*")
+          .select("*,services(id,category)")
           .in("provider_id", providerIds);
-  
-        if (errorPortafolio) {
-          console.error("Error obteniendo portafolios:", errorPortafolio);
-        } else {
-          portafolios = portafolioData || [];
-        }
+          if (errorPortafolio) {
+            console.error("Error obteniendo portafolios:", errorPortafolio);
+          } else {
+            portafolios = portafolioData || [];
+          }
+          const { data: ubicacionData, error: errorUbicacion } = await supabase_client
+          .from("provider_locations")
+          .select("*,municipios(id,name),provincias(id,nombre)")
+          .in("provider_id", providerIds);
+          if (errorPortafolio) {
+            console.error("Error obteniendo ubicaciones:", errorUbicacion);
+          } else {
+            ubicaciones = ubicacionData || [];
+          }
+       
       }
   
       // Mapear y combinar los datos
@@ -77,6 +88,7 @@ export class AuthService {
          return {
           id: usuario.id,
           id_profile: perfil?.id,
+          created_at: perfil?.created_at,
           nombre: perfil?.name ?? usuario.email, // Usa el nombre o el email como fallback
           tipo: perfil?.roles?.name ?? "Desconocido", // Si no hay rol, asigna "Desconocido"
           categoria: perfil?.role_id === 3 ? "Pendiente" : "No aplica", // Categoría si es proveedor
@@ -86,6 +98,7 @@ export class AuthService {
           estado: perfil?.is_verified ? "Activo" : "Inactivo",
           especialidad: provider?.speciality,
           descripcion: provider?.description,
+          position: provider?.position,
           provincia_id: perfil?.municipios?.provincia_id,
           municipio_id: perfil?.municipio_id,
           provider_id: provider?.id,
@@ -93,6 +106,7 @@ export class AuthService {
           service_id: provider?.provider_services[0]?.service_id,
           imagen: perfil?.profile_pic_url,
           portafolio, 
+          ubicaciones,
           orden: index + 1,
         };
       });
@@ -313,10 +327,9 @@ export class AuthService {
           provider_id,
           speciality,
           description,
-          ""
-        );
-                await ProviderServiceService.agregarServicioProveedor(provider_id,parseInt(servicio_id))
-        
+          "",
+          servicio_id
+        );        
       }
     }
   }

@@ -20,12 +20,13 @@ export class PortafolioService {
     return await SupabaseService.crearRegistro(this.TABLE_NAME, datos);
   }
 
-  static async agregarServicio(provider_id, nuevaEspecialidad, nuevaDescripcion, imagen) {
+  static async agregarServicio(provider_id, nuevaEspecialidad, nuevaDescripcion, imagen,servicio_id) {
     await supabase_client.from(this.TABLE_NAME).insert({
       especialidad: nuevaEspecialidad,
       provider_id: provider_id,
       descripcion: nuevaDescripcion,
       imagen: imagen,
+      servicio_id: servicio_id
     });
   }
 

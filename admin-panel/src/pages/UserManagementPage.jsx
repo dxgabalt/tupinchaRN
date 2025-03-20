@@ -35,6 +35,8 @@ const UserManagementPage = () => {
     const cargarUsuarios = async () => {
       try {
         const usuariosObtenidos = await AuthService.obtenerUsuarios();
+        console.log(usuariosObtenidos);
+
         setUsuarios(usuariosObtenidos || []);
       } catch (error) {
         console.error("Error obteniendo usuarios:", error);
@@ -87,7 +89,7 @@ const UserManagementPage = () => {
   const guardarEdicion = () => {
     setUsuarios((prev) =>
       prev.map((user) =>
-        user.id === nuevoUsuario.id 
+        user.id === nuevoUsuario.id
           ? {
               ...user,
               nombre: nuevoUsuario.nombre,
@@ -101,7 +103,7 @@ const UserManagementPage = () => {
       )
     );
     setModalAbierto(false);
-  }
+  };
   const togglePremium = async (id, esPremium) => {
     try {
       const nuevoEstado = !esPremium;
@@ -115,6 +117,26 @@ const UserManagementPage = () => {
       console.error("Error actualizando estado premium:", error);
     }
   };
+  const moverPosicion = (index, direccion) => {
+    const nuevosUsuarios = [...usuariosFiltrados]; // Copiar el array de usuarios filtrados
+
+    if (direccion === "subir" && index > 0) {
+      // Intercambiar con el usuario anterior
+      [nuevosUsuarios[index], nuevosUsuarios[index - 1]] = [
+        nuevosUsuarios[index - 1],
+        nuevosUsuarios[index],
+      ];
+    } else if (direccion === "bajar" && index < nuevosUsuarios.length - 1) {
+      // Intercambiar con el siguiente usuario
+      [nuevosUsuarios[index], nuevosUsuarios[index + 1]] = [
+        nuevosUsuarios[index + 1],
+        nuevosUsuarios[index],
+      ];
+    }
+
+    // Actualizar el estado de los usuarios con la nueva lista
+    setUsuarios(nuevosUsuarios);
+  };
   const editarProveedor = async (usuario) => {
     setModalAbierto(true);
     setNuevoUsuario({
@@ -126,17 +148,20 @@ const UserManagementPage = () => {
       password: "",
       imagen: usuario.imagen,
     });
-    setServicioSeleccionado(usuario.service_id)
-    setProvinciaSeleccionada(usuario.provincia_id)
+    setServicioSeleccionado(usuario.service_id);
+    setProvinciaSeleccionada(usuario.provincia_id);
     setMunicipioSeleccionado(usuario.municipio_id);
     setIsEditable(true);
-  }
+  };
   const agregarUsuario = async () => {
     try {
-      if(isEditable){
-        guardarEdicion()
-      }else{
-       const url_imagen = await ImageService.uploadBase64Image(nuevoUsuario.imagen, "imagenes-perfil");
+      if (isEditable) {
+        guardarEdicion();
+      } else {
+        const url_imagen = await ImageService.uploadBase64Image(
+          nuevoUsuario.imagen,
+          "imagenes-perfil"
+        );
         const user_id = await AuthService.crearUsuarioAuth(
           nuevoUsuario.correo,
           nuevoUsuario.password
@@ -198,14 +223,16 @@ const UserManagementPage = () => {
       especialidad.includes(busqueda.toLowerCase())
     );
   });
-  const activarUsuario =async(id,estado)=>{
-    await AuthService.cambiarEstadoUsuario(id,!estado)
+  const activarUsuario = async (id, estado) => {
+    await AuthService.cambiarEstadoUsuario(id, !estado);
     setUsuarios((prev) =>
       prev.map((user) =>
-        user.id_profile === id ? { ...user, estado: !estado?'Activo':'Inactivo' } : user
+        user.id_profile === id
+          ? { ...user, estado: !estado ? "Activo" : "Inactivo" }
+          : user
       )
     );
-  }
+  };
 
   return (
     <div className="dashboard">
@@ -229,6 +256,7 @@ const UserManagementPage = () => {
           <thead>
             <tr>
               <th>#</th>
+              <th>Prioridad</th>
               <th>Usuario</th>
               <th>Especialidad</th>
               <th>Correo</th>
@@ -243,6 +271,30 @@ const UserManagementPage = () => {
             {usuariosFiltrados.map((usuario, index) => (
               <tr key={usuario.id}>
                 <td>{index + 1}</td>
+                <td>
+                  {(usuario.position !== null &&usuario.position !== undefined) &&(
+                     <div style={{ display: "flex", alignItems: "center" }}>
+                     <button
+                       className="btn-flecha"
+                       onClick={() => moverPosicion(index, "subir")}
+                       disabled={index === 0} // Deshabilitar si es el primer usuario
+                     >
+                        ⇧ 
+                     </button>
+                     <span style={{ margin: "0 10px", fontSize: "18px" }}>
+                       {usuario.position}
+                     </span>
+                     <button
+                       className="btn-flecha"
+                       onClick={() => moverPosicion(index, "bajar")}
+                       disabled={index === usuariosFiltrados.length - 1} // Deshabilitar si es el último usuario
+                     >
+                       ⇩
+                     </button>
+                   </div>
+                  )}
+                 
+                </td>
                 <td>{usuario.nombre}</td>
                 <td>{usuario.especialidad}</td>
                 <td>{usuario.correo}</td>
@@ -274,16 +326,19 @@ const UserManagementPage = () => {
                   )}
                 </td>
                 <td>
-                <button
-                      className={
-                        usuario.estado ? "btn-premium" : "btn-no-premium"
-                      }
-                      onClick={() =>
-                        activarUsuario(usuario.id_profile,usuario.estado=='Activo')
-                      }
-                    >
-                      {usuario.estado=='Activo' ? "✅ Activo" : "❌ Inactivo"}
-                    </button>
+                  <button
+                    className={
+                      usuario.estado ? "btn-premium" : "btn-no-premium"
+                    }
+                    onClick={() =>
+                      activarUsuario(
+                        usuario.id_profile,
+                        usuario.estado == "Activo"
+                      )
+                    }
+                  >
+                    {usuario.estado == "Activo" ? "✅ Activo" : "❌ Inactivo"}
+                  </button>
                   <button
                     className="btn-ver"
                     onClick={() => {
@@ -377,8 +432,11 @@ const UserManagementPage = () => {
               }
             />
             <select
-            value={servicioSeleccionado}
-            onChange={(e) => setServicioSeleccionado(parseInt(e.target.value))}>
+              value={servicioSeleccionado}
+              onChange={(e) =>
+                setServicioSeleccionado(parseInt(e.target.value))
+              }
+            >
               <option value="">Seleccione una categoria</option>
               {servicios.map((servicio) => (
                 <option key={servicio.id} value={servicio.id}>
@@ -427,20 +485,25 @@ const UserManagementPage = () => {
               />
             )}
             <button onClick={agregarUsuario}>✅ Guardar</button>
-            <button onClick={() => {setModalAbierto(false)
-              setNuevoUsuario({
-                nombre: "",
-                especialidad: "",
-                descripcion: "",
-                correo: "",
-                telefono: "",
-                password: "",
-                imagen: "",
-              })
-              setProvinciaSeleccionada("")
-              setMunicipioSeleccionado("")
-              setServicioSeleccionado("")
-            }}>❌ Cancelar</button>
+            <button
+              onClick={() => {
+                setModalAbierto(false);
+                setNuevoUsuario({
+                  nombre: "",
+                  especialidad: "",
+                  descripcion: "",
+                  correo: "",
+                  telefono: "",
+                  password: "",
+                  imagen: "",
+                });
+                setProvinciaSeleccionada("");
+                setMunicipioSeleccionado("");
+                setServicioSeleccionado("");
+              }}
+            >
+              ❌ Cancelar
+            </button>
           </div>
         </div>
       )}

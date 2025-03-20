@@ -63,7 +63,7 @@ const PantallaDetallesProveedor = () => {
   // 📌 Función para contactar al proveedor
   const contactarProveedor = () => {
 
-    const mensaje = "Hola, deseeo informaccion acerca de servicio de: "+proveedor?.providers.description;
+    const mensaje = "Hola, lo contacto desde la app TuPincha  necesito sus servicios de: "+proveedor?.providers.description;
     abrirWhatsApp(proveedor?.providers.phone??"", mensaje??" ");
   };
 

@@ -45,15 +45,19 @@ const PantallaGestionServicios = () => {
   const [servicios, setServicios] = useState([]);
   const [servicio, setServicio] = useState(0);
   const [plan, setPlan] = useState(0);
+  const [duracionPlan, setDuracionPlan] = useState(0);
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [provincias, setProvincias] = useState([]);
   const [municipios, setMunicipios] = useState([]);
   const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(null);
   const [municipioSeleccionado, setMunicipioSeleccionado] = useState(0);
+  const [diasFaltantes, setDiasFaltantes] = useState(0);
   const [mostrarMunicipios, setMostrarMunicipios] = useState(false); // Nuevo estado
   const [modalVisible, setModalVisible] = useState(false);
-  const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] = useState(null)
-  const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] =useState(null);
+  const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] =
+    useState(null);
+  const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] =
+    useState(null);
   /** 🔥 Cargar Perfil */
   useEffect(() => {
     const cargarPerfil = async () => {
@@ -65,6 +69,23 @@ const PantallaGestionServicios = () => {
           "";
         const portafolios = perfilData?.portafolio;
         const ubicaciones = perfilData?.provider_locations;
+        const duracion = perfilData?.provider.planes.duracion;
+        setDuracionPlan(perfilData?.provider.planes.duracion)
+        // Obtener la fecha de creación
+        const createdAt = new Date(perfilData?.provider.created_at);
+
+        // Obtener la fecha actual
+        const fechaActual = new Date();
+
+        // Calcular la diferencia en milisegundos
+        const diffTime = fechaActual.getTime() - createdAt.getTime();
+
+        // Convertir la diferencia a días (usando Math.floor para obtener días completos)
+        const diasTranscurridos = Math.floor(diffTime / (1000 * 3600 * 24));
+
+        
+        setDiasFaltantes(diasTranscurridos);
+        
         setEspecialidad(especialidades);
         setPortafolio(perfilData.portafolio || []);
         setPortafolios(portafolios);
@@ -197,18 +218,17 @@ const PantallaGestionServicios = () => {
     } catch (error) {
       Alert.alert("Error", "No se pudo agregar el servicio.");
     }
-  };  /** 📌 Agregar Nueva Ubicacion */
+  }; /** 📌 Agregar Nueva Ubicacion */
   const agregarUbicacion = async () => {
     if (!provinciaSeleccionada || !municipioSeleccionado) {
       Alert.alert("Error", "Todos los campos son obligatorios.");
       return;
     }
     try {
-     
       await ProviderLocationsService.crear({
         provider_id: perfil.provider.id,
         provincia_id: provinciaSeleccionada,
-        municipio_id: municipioSeleccionado
+        municipio_id: municipioSeleccionado,
       });
       const nuevo_item = {
         id: obtenerUltimoIdUbicacion(1) + 1, // Obtener el último id de la solicitud
@@ -221,11 +241,9 @@ const PantallaGestionServicios = () => {
           nombre: nombreProvinciaSeleccionada,
         },
         provider_id: perfil.provider.id,
-        provincia_id:provinciaSeleccionada,
-        municipio_id: municipioSeleccionado
+        provincia_id: provinciaSeleccionada,
+        municipio_id: municipioSeleccionado,
       };
-      console.log(nuevo_item);
-      
       ubicaciones.push(nuevo_item);
       Alert.alert("Éxito", "Servicio agregado correctamente.");
       setProvinciaSeleccionada(null);
@@ -247,7 +265,7 @@ const PantallaGestionServicios = () => {
       // Si no hay cotizaciones, devuelve null o cualquier valor predeterminado
       return null;
     }
-  };  
+  };
   const obtenerUltimoIdPortafolio = (idPortafolio: number) => {
     // Encuentra la solicitud correspondiente
 
@@ -362,9 +380,11 @@ const PantallaGestionServicios = () => {
         );
         if (confirmation) {
           await ProviderLocationsService.eliminar(id);
-          const nuevasUbicaciones = ubicaciones.filter((item) => item.id !== id);
+          const nuevasUbicaciones = ubicaciones.filter(
+            (item) => item.id !== id
+          );
           setUbicaciones(nuevasUbicaciones);
-         
+
           window.alert("Servicio eliminado correctamente.");
         }
       } else {
@@ -527,22 +547,25 @@ const PantallaGestionServicios = () => {
               editable={editando}
               onChangeText={(text) => actualizarCampo("availability", text)}
             />
-            <View style={styles.switchContainer}>
-              <Text style={styles.label}>Plan {plan}</Text>
-              <Picker
-                style={styles.input}
-                selectedValue={plan}
-                onValueChange={(itemValue) => setPlan(itemValue)}
-              >
-                {planes.map((plan) => (
-                  <Picker.Item
-                    key={plan.id}
-                    label={plan.nombre}
-                    value={plan.id}
-                  />
-                ))}
-              </Picker>
-            </View>
+            {diasFaltantes -  perfil?.provider.planes.duracion == 1 && (
+              <View style={styles.switchContainer}>
+                <Text style={styles.label}>Plan {plan}</Text>
+                <Picker
+                  style={styles.input}
+                  selectedValue={plan}
+                  onValueChange={(itemValue) => setPlan(itemValue)}
+                >
+                  {planes.map((plan) => (
+                    <Picker.Item
+                      key={plan.id}
+                      label={plan.nombre}
+                      value={plan.id}
+                    />
+                  ))}
+                </Picker>
+              </View>
+            )}
+
             {editando ? (
               <TouchableOpacity
                 style={styles.botonGuardar}
@@ -660,11 +683,11 @@ const PantallaGestionServicios = () => {
             </TouchableOpacity>
             <Text style={styles.sectionTitle}>Ubicaciones</Text>
             <TouchableOpacity
-            style={styles.botonAgregar}
-            onPress={agregarUbicacion}
-          >
-            <Text style={styles.textoBoton}>✅ Agregar Ubicacion</Text>
-          </TouchableOpacity>
+              style={styles.botonAgregar}
+              onPress={agregarUbicacion}
+            >
+              <Text style={styles.textoBoton}>✅ Agregar Ubicacion</Text>
+            </TouchableOpacity>
 
             {ubicaciones.length > 0 ? (
               <FlatList
@@ -682,75 +705,74 @@ const PantallaGestionServicios = () => {
         )}
       </ScrollView>
       <Modal visible={modalVisible} animationType="slide" transparent>
-      <View style={styles.modalContainer}>
-        <View style={styles.modalContenido}>
-          {!mostrarMunicipios ? (
-            <>
-              <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
-              <ScrollView style={styles.scrollView}>
-                {provincias.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    style={[
-                      styles.opcion,
-                      provinciaSeleccionada === item.id &&
-                        styles.opcionActiva,
-                    ]}
-                    onPress={() => {
-                      setProvinciaSeleccionada(item.id);
-                      setNombreProvinciaSeleccionada(item.nombre);
-                      setMunicipioSeleccionado(null);
-                      setMunicipios([]);
-                      setMostrarMunicipios(true); // Cambia a mostrar municipios
-                    }}
-                  >
-                    <Text style={styles.textoOpcion}>{item.nombre}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity
-                onPress={() => setMostrarMunicipios(false)}
-                style={styles.botonVolver}
-              >
-                <Text style={styles.textoBoton}>← Volver</Text>
-              </TouchableOpacity>
-              <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
-              <FlatList
-                data={municipios}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={[
-                      styles.opcion,
-                      municipioSeleccionado === item.id &&
-                        styles.opcionActiva,
-                    ]}
-                    onPress={() => {
-                      setMunicipioSeleccionado(item.id);
-                      setNombreMunicipioSeleccionado(item.name);
-                      setModalVisible(false);
-                    }}
-                  >
-                    <Text style={styles.textoOpcion}>{item.name}</Text>
-                  </TouchableOpacity>
-                )}
-              />
-            </>
-          )}
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContenido}>
+            {!mostrarMunicipios ? (
+              <>
+                <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
+                <ScrollView style={styles.scrollView}>
+                  {provincias.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[
+                        styles.opcion,
+                        provinciaSeleccionada === item.id &&
+                          styles.opcionActiva,
+                      ]}
+                      onPress={() => {
+                        setProvinciaSeleccionada(item.id);
+                        setNombreProvinciaSeleccionada(item.nombre);
+                        setMunicipioSeleccionado(null);
+                        setMunicipios([]);
+                        setMostrarMunicipios(true); // Cambia a mostrar municipios
+                      }}
+                    >
+                      <Text style={styles.textoOpcion}>{item.nombre}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity
+                  onPress={() => setMostrarMunicipios(false)}
+                  style={styles.botonVolver}
+                >
+                  <Text style={styles.textoBoton}>← Volver</Text>
+                </TouchableOpacity>
+                <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
+                <FlatList
+                  data={municipios}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[
+                        styles.opcion,
+                        municipioSeleccionado === item.id &&
+                          styles.opcionActiva,
+                      ]}
+                      onPress={() => {
+                        setMunicipioSeleccionado(item.id);
+                        setNombreMunicipioSeleccionado(item.name);
+                        setModalVisible(false);
+                      }}
+                    >
+                      <Text style={styles.textoOpcion}>{item.name}</Text>
+                    </TouchableOpacity>
+                  )}
+                />
+              </>
+            )}
 
-          <TouchableOpacity
-            style={styles.botonCerrar}
-            onPress={() => setModalVisible(false)}
-          >
-            <Text style={styles.textoBoton}>Cerrar</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.botonCerrar}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.textoBoton}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </Modal>
-
+      </Modal>
     </View>
   );
 };

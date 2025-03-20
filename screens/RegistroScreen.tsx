@@ -35,7 +35,7 @@ const RegistroScreen = () => {
   const [esComision, setEsComision] = useState(false);
   const [especialidad, setEspecialidad] = useState("");
   const [servicio, setServicio] = useState(0);
-  const [plan, setPlan] = useState(0);
+  const [plan, setPlan] = useState(1);
   const [descripcion, setDescripcion] = useState("");
   const [imagenPerfil, setImagenPerfil] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -418,24 +418,7 @@ const RegistroScreen = () => {
             Porcentaje Comision (%)
             </Text>
           )}
-          {!esComision && (
-            <View style={styles.switchContainer}>
-              <Text style={styles.labelSwitch}>Plan</Text>
-              <Picker
-                style={styles.input}
-                selectedValue={plan}
-                onValueChange={(itemValue) => setPlan(itemValue)}
-              >
-                {planes.map((plan_data) => (
-                  <Picker.Item
-                    key={plan_data.id}
-                    label={plan_data.nombre}
-                    value={plan_data.id}
-                  />
-                ))}
-              </Picker>
-            </View>
-          )}
+          
         </>
       )}
 
