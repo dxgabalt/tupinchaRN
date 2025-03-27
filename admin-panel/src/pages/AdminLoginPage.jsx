@@ -14,26 +14,20 @@ const AdminLoginPage = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
-    // Simulación de autenticación (Reemplazar con la autenticación real)
-    setTimeout(() => {
-      // Iniciar sesión con el correo y contraseña
-      let  is_auth= AuthService.autenticarUsuario(email, password)
-      if(is_auth){
-        localStorage.setItem("adminAuth", "true"); // Guardar sesión
-        navigate("/dashboard"); // Redirigir al Dashboard
-      }else{
-        setError("❌ Credenciales incorrectas.");
-      }
-
-      /*if (email === "admin@panel.com" && password === "admin123") {
-        localStorage.setItem("adminAuth", "true"); // Guardar sesión
-        navigate("/dashboard"); // Redirigir al Dashboard
-      } else {
-        setError("❌ Credenciales incorrectas.");
-      }*/
+    // Iniciar sesión con el correo y contraseña
+    let  is_auth= await AuthService.autenticarUsuario(email, password)
+    if (!is_auth.is_admin) {
       setLoading(false);
-    }, 1500);
+      setError("❌ Acceso no autorizado.");
+      return
+    }
+    if(is_auth.success){
+      localStorage.setItem("adminAuth", "true"); // Guardar sesión
+      navigate("/dashboard"); // Redirigir al Dashboard
+    }else{
+      setError("❌ Credenciales incorrectas.");
+    }
+   
   };
 
   return (

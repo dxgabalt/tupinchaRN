@@ -382,7 +382,36 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "80%",
   },
-
+ /** 📸 Foto de perfil */
+  fotoPerfil: {
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    borderWidth: 4,
+    borderColor: '#FF0314',
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 5,
+    alignSelf: 'center', // Asegura el centrado horizontal
+  },
+  
+   /** 📌 Botón de cambiar foto */
+   botonFoto: {
+    backgroundColor: '#E5E7EB',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 15,
+    alignItems: 'center',
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    elevation: 3,
+  },
 });
 
 export default styles;

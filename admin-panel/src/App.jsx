@@ -11,12 +11,14 @@ import SupportManagementPage from "./pages/SupportManagementPage";
 import SettingsPage from "./pages/SettingsPage";
 import PlanesManagmentPage from "./pages/PlanesManagmentPage";
 import ServicesManagementPage from "./pages/ServicesmanagemenPage";
+import ResetPassword from "./components/ResetPassword";
 
 const App = () => {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<AdminLoginPage />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/users" element={<UserManagementPage />} />
         <Route path="/user-profile/:id" element={<UserProfilePage />} />

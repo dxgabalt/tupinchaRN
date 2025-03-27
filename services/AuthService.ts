@@ -41,12 +41,9 @@ export class AuthService {
 
         // Autoconfirmar el usuario
         const { error: updateError } =
-          await supabase_admin.auth.admin.updateUserById(
-            data.user.id,
-            {
-              email_confirm: true,
-            }
-          );
+          await supabase_admin.auth.admin.updateUserById(data.user.id, {
+            email_confirm: true,
+          });
 
         if (updateError) {
           console.error(`Error al confirmar usuario: ${updateError.message}`);
@@ -100,8 +97,8 @@ export class AuthService {
     nombre: string,
     telefono: string,
     esProveedor = false,
-    provincia_id:number,
-    municipio_id:number,
+    provincia_id: number,
+    municipio_id: number,
     profile_pic_url: string = " "
   ): Promise<void> {
     const { data: user, error: authError } =
@@ -128,12 +125,9 @@ export class AuthService {
     }
   }
   static async recuperarContrasena(email: string) {
-    const { error } = await supabase_client.auth.resetPasswordForEmail(
-      email,
-      {
-        redirectTo: "https://admin.tupincha.com/reset-password",
-      }
-    );
+    const { error } = await supabase_client.auth.resetPasswordForEmail(email, {
+      redirectTo: "https://admin.tupincha.com/reset-password",
+    });
 
     if (error) {
       console.error(
@@ -178,7 +172,7 @@ export class AuthService {
         rating: 0,
         municipio_id: userRequest.municipio_id,
         profile_pic_url: userRequest.url_foto,
-        is_verified: false,
+        is_verified: userRequest.esProveedor ? false : true,
       })
       .select();
 
@@ -191,19 +185,19 @@ export class AuthService {
       const profile_id = profile[0]?.id;
 
       // Insertar en "providers"
-      const { data: provider, error: providerError } =
-        await supabase_client
-          .from("providers")
-          .insert({
-            profile_id: profile_id, // Relacionar con el perfil
-            phone: userRequest.telefono,
-            speciality: userRequest.speciality || "",
-            availability: userRequest.description || "",
-            description: userRequest.description || "",
-            plan_id:
-              userRequest.esComision === false ? userRequest.plan_id : null,
-          })
-          .select();
+      const { data: provider, error: providerError } = await supabase_client
+        .from("providers")
+        .insert({
+          profile_id: profile_id, // Relacionar con el perfil
+          phone: userRequest.telefono,
+          speciality: userRequest.especialidad || "",
+          availability: userRequest.descripcion || "",
+          description: userRequest.descripcion || "",
+          plan_id:
+            userRequest.esComision === false ? userRequest.plan_id : null,
+          is_premium: this.isProveedorPrueba(userRequest.plan_id),
+        })
+        .select();
 
       if (providerError) {
         console.error(
@@ -239,7 +233,6 @@ export class AuthService {
       }
     }
   }
-
   static async autenticarUsuario(correo: string, contrasena: string) {
     const { data, error } = await supabase_client.auth.signInWithPassword({
       email: correo,
@@ -267,12 +260,12 @@ export class AuthService {
 
     return data.user;
   }
-  static async  esAutenticado():Promise<boolean>{
+  static async esAutenticado(): Promise<boolean> {
     let isauthenticated = false;
     const { data, error } = await supabase_client.auth.getUser();
     if (error || !data.user) {
       isauthenticated = false;
-    }else{
+    } else {
       isauthenticated = true;
     }
     return isauthenticated;
@@ -298,14 +291,13 @@ export class AuthService {
     }
     let providers = null;
     let portafolioProvider = null;
-    let ubicacionProviders = null; 
+    let ubicacionProviders = null;
     // Si el rol es 3, obtener datos adicionales
     if (profile.role_id === 3) {
-      const { data: providerData, error: providerError } =
-        await supabase_client
-          .from("providers")
-          .select("*,created_at,planes(id,nombre,duracion)")
-          .eq("profile_id", profile.id);
+      const { data: providerData, error: providerError } = await supabase_client
+        .from("providers")
+        .select("*,created_at,planes(id,nombre,duracion)")
+        .eq("profile_id", profile.id);
       if (providerError) {
         console.error("Error al obtener el proveedor:", providerError);
       } else {
@@ -321,7 +313,7 @@ export class AuthService {
         console.error("Error al obtener el portafolio:", portafolioError);
       } else {
         portafolioProvider = portafolioData;
-      } 
+      }
       const { data: ubicacionData, error: ubicacionError } =
         await supabase_client
           .from("provider_locations")
@@ -343,7 +335,11 @@ export class AuthService {
       email: data.user.email, // Email del usuario autenticado
     };
   }
-
+  static isProveedorPrueba(plan_id: number | null | undefined): boolean {
+    return plan_id == null || plan_id == undefined || plan_id !== 1
+      ? false
+      : true;
+  }
   static async actualizarNombre(
     idUsuario: string,
     nuevoNombre: string

@@ -50,48 +50,55 @@ const PantallaGestionServicios = () => {
   const [provincias, setProvincias] = useState([]);
   const [municipios, setMunicipios] = useState([]);
   const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(null);
-  const [municipioSeleccionado, setMunicipioSeleccionado] = useState(0);
+  const [municipioSeleccionado, setMunicipioSeleccionado] = useState(0);  
+  const [provinciaProfileSeleccionada, setProvinciaProfileSeleccionada] = useState(null);
+  const [municipioProfileSeleccionado, setMunicipioProfileSeleccionado] = useState(0);
   const [diasFaltantes, setDiasFaltantes] = useState(0);
   const [mostrarMunicipios, setMostrarMunicipios] = useState(false); // Nuevo estado
+  const [mostrarProfileMunicipios, setMostrarProfileMunicipios] = useState(false); // Nuevo estado
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalVisibleProfile, setModalVisibleProfile] = useState(false);
   const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] =
     useState(null);
   const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] =
+    useState(null); 
+     const [nombreMunicipioProfileSeleccionado, setNombreMunicipioProfileSeleccionado] =
     useState(null);
+  const [nombreProvinciaProfileSeleccionada, setNombreProvinciaProfileSeleccionada] =
+    useState(null);
+    const [nuevaFoto, setNuevaFoto] = useState("");
+    const [esGuardarPerfil, setEsGuardarPerfil] = useState(false);
+  
   /** 🔥 Cargar Perfil */
   useEffect(() => {
     const cargarPerfil = async () => {
       try {
         const perfilData = await AuthService.obtenerPerfil();
         setPerfil(perfilData);
-        const especialidades =
-          perfilData?.portafolio?.map((item) => item.especialidad).join(", ") ||
-          "";
+        //Ubicacion
+        setNombreProvinciaProfileSeleccionada(perfilData.provincias.nombre)
+        setNombreMunicipioProfileSeleccionado(perfilData.municipios.name)
+        setProvinciaProfileSeleccionada(perfilData.provincia_id)
+        setMunicipioProfileSeleccionado(perfilData.municipio_id)
         const portafolios = perfilData?.portafolio;
         const ubicaciones = perfilData?.provider_locations;
-        const duracion = perfilData?.provider.planes.duracion;
-        setDuracionPlan(perfilData?.provider.planes.duracion)
-        // Obtener la fecha de creación
-        const createdAt = new Date(perfilData?.provider.created_at);
-
-        // Obtener la fecha actual
-        const fechaActual = new Date();
-
-        // Calcular la diferencia en milisegundos
-        const diffTime = fechaActual.getTime() - createdAt.getTime();
-
-        // Convertir la diferencia a días (usando Math.floor para obtener días completos)
-        const diasTranscurridos = Math.floor(diffTime / (1000 * 3600 * 24));
-
-        
-        setDiasFaltantes(diasTranscurridos);
-        
-        setEspecialidad(especialidades);
+        const duracion = perfilData?.provider?.planes?.duracion;
         setPortafolio(perfilData.portafolio || []);
         setPortafolios(portafolios);
         setUbicaciones(ubicaciones);
+        setDuracionPlan(perfilData?.provider.planes.duracion)
+        // Obtener la fecha de creación
+        const createdAt = new Date(perfilData?.provider.created_at);
+        // Obtener la fecha actual
+        const fechaActual = new Date();
+        // Calcular la diferencia en milisegundos
+        const diffTime = fechaActual.getTime() - createdAt.getTime();
+        // Convertir la diferencia a días (usando Math.floor para obtener días completos)
+        const diasTranscurridos = Math.floor(diffTime / (1000 * 3600 * 24));
+        setDiasFaltantes(diasTranscurridos);
         setPlan(perfilData?.provider?.planes?.id);
       } catch (error) {
+        console.log("Error", error);
         Alert.alert("Error", "No se pudo cargar el perfil.");
       } finally {
         setCargando(false);
@@ -114,6 +121,27 @@ const PantallaGestionServicios = () => {
       console.error("Error obteniendo servicios:", error);
     }
   };
+  const cambiarFotoPerfil = async () => {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permiso denegado",
+          "Se requiere acceso a la galería para cambiar la foto."
+        );
+        return;
+      }
+  
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+  
+      if (!result.canceled) {
+        setNuevaFoto(result.assets[0].uri);
+      }
+    };
   useEffect(() => {
     optenerPlanes();
   }, []);
@@ -156,34 +184,89 @@ const PantallaGestionServicios = () => {
         }
       };
       obtenerMunicipios();
+    } else if(provinciaProfileSeleccionada){
+      const obtenerMunicipiosProfile = async () => {
+        try {
+          const municipios = await MunicipioService.obtenerTodos({
+            provincia_id: provinciaProfileSeleccionada,
+          });
+          setMunicipios(municipios);
+        } catch (error) {
+          console.error("Error obteniendo municipios:", error);
+        }
+      };
+      obtenerMunicipiosProfile();
     }
-  }, [provinciaSeleccionada]);
+  }, [provinciaSeleccionada,provinciaProfileSeleccionada]);
   /** 📌 Guardar Cambios en Perfil */
   const guardarPerfil = async () => {
     if (
       !perfil?.phone?.trim() ||
       !perfil?.provider?.speciality?.trim() ||
-      !perfil?.provider?.availability?.trim()
+      !perfil?.provider?.availability?.trim() ||
+      !perfil?.provider?.description?.trim() 
     ) {
       Alert.alert("Error", "Todos los campos son obligatorios.");
+      alert("Todos los campos son obligatorios.");
+      return;
+    }
+    if(!validarUbicacion()){
+      Alert.alert("Error", "Debe seleccionar una ubicación válida.");
+      alert("Debe seleccionar una ubicación válida.");
       return;
     }
     try {
+        let fotoURL = perfil.profile_pic_url;
+            if (nuevaFoto) {
+              setEsGuardarPerfil(true)
+              const urlSubida = await AuthService.subirFotoPerfil(
+                perfil.user_id,
+                nuevaFoto
+              );
+              if (urlSubida) {
+                fotoURL = urlSubida;
+              }
+            }
       const provider = {
         id: perfil.provider.id,
+        profile_id: perfil.id,
         phone: perfil.phone,
         speciality: perfil?.provider?.speciality,
         availability: perfil?.provider?.availability,
-        plan_id: plan,
+        description: perfil?.provider?.description,
+        plan_id: plan ==0 ? null: plan,
+        profile_pic_url: fotoURL,
+        municipio_id: municipioProfileSeleccionado,
+        provincia_id: provinciaProfileSeleccionada
       };
+      setEsGuardarPerfil(true)
       await ProviderServiceService.actualizarProveedor(provider);
-      Alert.alert("Éxito", "Perfil actualizado correctamente.");
       setEditando(false);
+      setEsGuardarPerfil(false)
+
+      Alert.alert("Éxito", "Perfil actualizado correctamente.");
     } catch (error) {
       Alert.alert("Error", "No se pudo actualizar el perfil.");
     }
   };
-
+  const validarUbicacion = (): boolean => {
+    if(ubicaciones.length>0){
+      const existeMunicipio = ubicaciones.some(
+        (ubicacion) => ubicacion.municipio_id === municipioProfileSeleccionado
+      );
+      return !existeMunicipio;
+    }
+    return true;
+  }; 
+   const validarUbicacionProvider = (): boolean => {
+    if(ubicaciones.length>0){
+      const existeMunicipio = ubicaciones.some(
+        (ubicacion) => ubicacion.municipio_id === municipioSeleccionado
+      );
+      return !existeMunicipio;
+    }
+    return true;
+  };
   /** 📌 Agregar Nuevo Servicio */
   const agregarServicio = async () => {
     if (!nuevaEspecialidad.trim() || !nuevaDescripcion.trim()) {
@@ -209,8 +292,6 @@ const PantallaGestionServicios = () => {
       };
       portafolios.push(nuevo_item);
       Alert.alert("Éxito", "Servicio agregado correctamente.");
-      const especialidad_nueva = especialidad + ", " + nuevaEspecialidad;
-      setEspecialidad(especialidad_nueva);
       setNuevaEspecialidad("");
       setNuevaDescripcion("");
       setFoto("");
@@ -218,10 +299,17 @@ const PantallaGestionServicios = () => {
     } catch (error) {
       Alert.alert("Error", "No se pudo agregar el servicio.");
     }
-  }; /** 📌 Agregar Nueva Ubicacion */
+  };
+   /** 📌 Agregar Nueva Ubicacion*/
   const agregarUbicacion = async () => {
     if (!provinciaSeleccionada || !municipioSeleccionado) {
       Alert.alert("Error", "Todos los campos son obligatorios.");
+      alert("Todos los campos son obligatorios.")
+      return;
+    }
+    if(!validarUbicacionProvider()){
+      Alert.alert("Error", "Seleccione un municipio diferente.");
+      alert("Seleccione un municipio diferente.")
       return;
     }
     try {
@@ -522,6 +610,20 @@ const PantallaGestionServicios = () => {
         ) : (
           <>
             {/* 📌 Campos del Perfil */}
+            <View style={{ alignItems: 'center', marginVertical: 15 }}>
+            <Image
+              source={{ uri: nuevaFoto || perfil?.profile_pic_url || 'https://via.placeholder.com/150' }} // URL de placeholder por si no hay imagen
+              style={styles.fotoPerfil}
+            />
+            {editando && (
+              <TouchableOpacity 
+                style={styles.botonFoto} 
+                onPress={cambiarFotoPerfil}
+              >
+                <Text style={[styles.textoBoton, { color: '#FF0314' }]}>📷 Cambiar Foto</Text>
+              </TouchableOpacity>
+            )}
+          </View>
             <Text style={styles.label}>📞 Teléfono:</Text>
             <TextInput
               style={styles.input}
@@ -533,11 +635,9 @@ const PantallaGestionServicios = () => {
             <Text style={styles.label}>🛠 Especialidad:</Text>
             <TextInput
               style={styles.input}
-              value={perfil?.provider?.speciality ?? " " + "," + especialidad}
+              value={perfil?.provider?.speciality || ''} // Asegúrate de que el valor no sea undefined
               editable={editando}
-              onChangeText={(text) =>
-                setPerfil({ ...perfil, speciality: text })
-              }
+              onChangeText={(text) => actualizarCampo("speciality", text)} // Usa la función actualizarCampo
             />
 
             <Text style={styles.label}>📅 Disponibilidad:</Text>
@@ -546,8 +646,30 @@ const PantallaGestionServicios = () => {
               value={perfil?.provider?.availability}
               editable={editando}
               onChangeText={(text) => actualizarCampo("availability", text)}
+            />            
+            <Text style={styles.label}>📝 Descripcion:</Text>
+            <TextInput
+              style={styles.input}
+              value={perfil?.provider?.description}
+              editable={editando}
+              multiline
+              onChangeText={(text) => actualizarCampo("description", text)}
             />
-            {diasFaltantes -  perfil?.provider.planes.duracion == 1 && (
+             {/* 🌍 Botón para seleccionar ubicación */}
+             <TouchableOpacity
+             style={styles.botonFiltro}
+             disabled={!editando}
+             onPress={() => setModalVisibleProfile(true)}
+           >
+             <Text style={styles.textoBoton}>
+               {provinciaProfileSeleccionada
+                 ? `${nombreProvinciaProfileSeleccionada} - ${
+                     nombreMunicipioProfileSeleccionado || "Selecciona municipio"
+                   }`
+                 : "Seleccionar Ubicación"}
+             </Text>
+           </TouchableOpacity>
+            {diasFaltantes -  perfil?.provider?.planes?.duracion == 1 && (
               <View style={styles.switchContainer}>
                 <Text style={styles.label}>Plan {plan}</Text>
                 <Picker
@@ -570,6 +692,7 @@ const PantallaGestionServicios = () => {
               <TouchableOpacity
                 style={styles.botonGuardar}
                 onPress={guardarPerfil}
+                disabled={esGuardarPerfil}
               >
                 <Text style={styles.textoBoton}>💾 Guardar Cambios</Text>
               </TouchableOpacity>
@@ -583,6 +706,7 @@ const PantallaGestionServicios = () => {
             )}
 
             {/* 📌 Agregar Nuevo Servicio */}
+            <Text style={styles.sectionTitle}>📁 Mi Portafolio</Text>
             <Text style={styles.label}>➕ Nueva Especialidad</Text>
             <TextInput
               style={styles.input}
@@ -614,16 +738,7 @@ const PantallaGestionServicios = () => {
               onChangeText={setNuevaDescripcion}
               multiline
             />
-
-            <TouchableOpacity
-              style={styles.botonAgregar}
-              onPress={agregarServicio}
-            >
-              <Text style={styles.textoBoton}>✅ Agregar Servicio</Text>
-            </TouchableOpacity>
-
             {/* 📌 Portafolio */}
-            <Text style={styles.label}>📸 Portafolio</Text>
             <TouchableOpacity
               style={styles.botonSubir}
               onPress={seleccionarImagen}
@@ -653,8 +768,13 @@ const PantallaGestionServicios = () => {
                 </TouchableOpacity>
               </View>
             ) : null}
+            <TouchableOpacity
+            style={styles.botonAgregar}
+            onPress={agregarServicio}
+          >
+            <Text style={styles.textoBoton}>✅ Agregar Servicio</Text>
+          </TouchableOpacity>
             {/* 📌 Lista de Portafolio */}
-            <Text style={styles.sectionTitle}>📁 Mi Portafolio</Text>
             {portafolios.length > 0 ? (
               <FlatList
                 data={portafolios}
@@ -668,6 +788,7 @@ const PantallaGestionServicios = () => {
               </Text>
             )}
             {/* 📌 Lista de Ubicaciones */}
+            <Text style={styles.sectionTitle}>Ubicaciones</Text>
             {/* 🌍 Botón para seleccionar ubicación */}
             <TouchableOpacity
               style={styles.botonFiltro}
@@ -681,7 +802,6 @@ const PantallaGestionServicios = () => {
                   : "Seleccionar Ubicación"}
               </Text>
             </TouchableOpacity>
-            <Text style={styles.sectionTitle}>Ubicaciones</Text>
             <TouchableOpacity
               style={styles.botonAgregar}
               onPress={agregarUbicacion}
@@ -704,6 +824,75 @@ const PantallaGestionServicios = () => {
           </>
         )}
       </ScrollView>
+      <Modal visible={modalVisibleProfile} animationType="slide" transparent>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContenido}>
+            {!mostrarProfileMunicipios ? (
+              <>
+                <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
+                <ScrollView style={styles.scrollView}>
+                  {provincias.map((item) => (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[
+                        styles.opcion,
+                        provinciaSeleccionada === item.id &&
+                          styles.opcionActiva,
+                      ]}
+                      onPress={() => {
+                       setProvinciaProfileSeleccionada(item.id);
+                        setNombreProvinciaProfileSeleccionada(item.nombre);
+                        setMunicipioProfileSeleccionado(null);
+                        setMunicipios([]);
+                        setMostrarProfileMunicipios(true); // Cambia a mostrar municipios
+                      }}
+                    >
+                      <Text style={styles.textoOpcion}>{item.nombre}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </>
+            ) : (
+              <>
+                <TouchableOpacity
+                  onPress={() => setMostrarProfileMunicipios(false)}
+                  style={styles.botonVolver}
+                >
+                  <Text style={styles.textoBoton}>← Volver</Text>
+                </TouchableOpacity>
+                <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
+                <FlatList
+                  data={municipios}
+                  keyExtractor={(item) => item.id.toString()}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[
+                        styles.opcion,
+                        municipioProfileSeleccionado === item.id &&
+                          styles.opcionActiva,
+                      ]}
+                      onPress={() => {
+                        setMunicipioProfileSeleccionado(item.id);
+                        setNombreMunicipioProfileSeleccionado(item.name);
+                        setModalVisibleProfile(false);
+                      }}
+                    >
+                      <Text style={styles.textoOpcion}>{item.name}</Text>
+                    </TouchableOpacity>
+                  )}
+                />
+              </>
+            )}
+
+            <TouchableOpacity
+              style={styles.botonCerrar}
+              onPress={() => setModalVisibleProfile(false)}
+            >
+              <Text style={styles.textoBoton}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>   
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={styles.modalContenido}>

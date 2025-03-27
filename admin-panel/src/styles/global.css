@@ -1077,3 +1077,56 @@ h1 {
   background-color: #60A5FA; /* Azul claro */
   transform: translateY(1px);
 }
+
+/* Paginacion*/
+.paginacion {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.paginacion button {
+  background-color: #1E3A8A;
+  border: 1px solid #ccc;
+  padding: 8px 16px;
+  margin: 0 4px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #fff;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.paginacion button:hover {
+  background-color: #3B82F6;
+}
+
+.paginacion button.active {
+  background-color: #60A5FA;
+  color: #fff;
+  border: 1px solid #4caf50;
+}
+
+.paginacion button:disabled {
+  background-color: #e0e0e0;
+  color: #888;
+  cursor: not-allowed;
+}
+.perfil-imagen {
+  width: 80px; /* Ajusta el tamaño que desees */
+  height: 80px; /* Ajusta el tamaño que desees */
+  border-radius: 50%; /* Hace que la imagen sea redonda */
+  object-fit: cover; /* Asegura que la imagen se recorte correctamente */
+}
+.error-message {
+  color: red;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.success-message {
+  color: green;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}

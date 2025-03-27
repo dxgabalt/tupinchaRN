@@ -194,6 +194,9 @@ const RegistroScreen = () => {
         Alert.alert(
           "Registro exitoso",
           "Tu cuenta ha sido creada y será validada en 24 horas."
+        );        
+        alert(
+          "Registro exitoso, Tu cuenta ha sido creada y será validada en 24 horas. "
         );
         navigation.navigate("GestionSolicitudes");
       }

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import "../styles/global.css";
-import { AuthService } from "../services/AuthService";
 import SolicitudService from "../services/SolicitudService";
 
 const UserProfilePage = () => {
@@ -15,13 +14,11 @@ const UserProfilePage = () => {
   const [loading, setLoading] = useState(true);
 
   // 📌 Estados de edición
-  const [editando, setEditando] = useState(false);
   const [nombre, setNombre] = useState("");
   const [telefono, setTelefono] = useState("");
   const [portafolio, setPortafolio] = useState(null);
   const [ubicaciones, setUbicaciones] = useState(null);
   const [estado, setEstado] = useState("Activo");
-  const [categoria, setCategoria] = useState("");
 
   // 📌 Historial de servicios
   const [historialSolicitados, setHistorialSolicitados] = useState([]);
@@ -39,7 +36,6 @@ const UserProfilePage = () => {
     setNombre(usuario.nombre || "");
     setTelefono(usuario.telefono || "");
     setEstado(usuario.estado || "Activo");
-    setCategoria(usuario.categoria || "");
     setPortafolio(usuario.portafolio || null);
     setUbicaciones(usuario.ubicaciones ||null)
     setLoading(false);
@@ -67,17 +63,6 @@ const UserProfilePage = () => {
     }
   };
 
-  // 📌 Guardar cambios
-  const guardarEdicion = () => {
-    alert("✅ Perfil actualizado con éxito.");
-    setEditando(false);
-    const status = estado === "Activo" ? 1 : 0;
-    AuthService.actualizarPerfil(id, {
-      name: nombre,
-      phone: telefono,
-      is_verified: status,
-    });
-  };
 
   if (loading) {
     return <p className="loading-msg">⏳ Cargando perfil...</p>;

@@ -166,9 +166,20 @@ export class ProviderServiceService {
         phone: perfil.phone,
         speciality: perfil.speciality,
         availability: perfil.availability,
+        description: perfil.description,
         plan_id: perfil.plan_id === undefined ? null : perfil.plan_id,
       })
       .eq("id", perfil.id)
+      .select();
+      const { data:profileData, error:ErrorProfile } = await supabase_client
+      .from("profiles")
+      .update({
+        profile_pic_url: perfil.profile_pic_url,
+        phone: perfil.phone,
+        municipio_id: perfil.municipio_id,
+        provincia_id:  perfil.provincia_id
+      })
+      .eq("id", perfil.profile_id)
       .select();
   }
   // Eliminar un PROVIDERSERVICE por ID

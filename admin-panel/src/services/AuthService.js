@@ -10,91 +10,89 @@ export class AuthService {
       password: contrasena,
     });
 
+    const {data:profileData} = await supabase_client.from('profiles').select('*').eq('user_id',data?.user.id).single()
     if (error) {
       console.error(`Error de autenticación: ${error.message}`, error);
       return { success: false, error };
     }
-    return { success: true, data };
+    return { success: true, is_admin: profileData.role_id === 1, data };
   }
-  static async obtenerUsuarios() {
+  static async obtenerUsuarios(pagina=1, porPagina= 20) {
     try {
-      // Obtener usuarios de auth
-      const { data: usuariosAuth, error: errorAuth } = await supabase_admin.auth.admin.listUsers();
-      if (errorAuth || !usuariosAuth?.users) {
-        console.error("Error obteniendo usuarios:", errorAuth);
-        return [];
+      // Obtener usuarios de auth (con paginación)
+      const { data, error } = await supabase_admin.auth.admin.listUsers({
+        page: pagina, 
+        perPage: porPagina, // Establece el número de usuarios por página
+      });
+  
+      if (error) {
+        console.error("Error obteniendo usuarios de auth:", error);
+        return { usuarios: [], total: 0 };
       }
+  
+      const usuariosAuth = data.users;
   
       // Obtener perfiles desde la tabla profiles
       const { data: perfiles, error: errorPerfil } = await supabase_client
         .from("profiles")
-        .select("id, name, role_id, roles(id, name),municipio_id,municipios(id,name,provincia_id), phone, rating, is_verified,profile_pic_url, user_id,created_at")
-        .order("created_at", { ascending: false }); // Cambia a true si deseas ordenar de manera ascendente
-        ;
+        .select("id, name, role_id, roles(id, name), municipio_id, municipios(id, name, provincia_id), phone, rating, is_verified, profile_pic_url, user_id, created_at");
   
       if (errorPerfil || !perfiles) {
         console.error("Error obteniendo perfiles:", errorPerfil);
-        return [];
+        return { usuarios: [], total: 0 };
       }
   
-      // Obtener proveedores solo si hay usuarios con role_id === 3
-      const proveedoresIds = perfiles.filter(p => p.role_id === 3).map(p => p.id);
+      // Obtener proveedores (si es necesario)
+      const { data: proveedores, error: errorProveedores } = await supabase_client
+        .from("providers")
+        .select("*, provider_services(id, provider_id, service_id)")
+        .order("position", { ascending: false });
   
-      let proveedores = [];
-      if (proveedoresIds.length > 0) {
-        const { data: providersData, error: errorProviders } = await supabase_client
-          .from("providers")
-          .select("*,provider_services(id,provider_id,service_id)")
-          .in("profile_id", proveedoresIds);
+      if (errorProveedores) console.error("Error obteniendo proveedores:", errorProveedores);
   
-        if (errorProviders) {
-          console.error("Error obteniendo proveedores:", errorProviders);
-        } else {
-          proveedores = providersData || [];
-        }
+      const { data: portafolios, error: errorPortafolio } = await supabase_client
+        .from("portafolio_provider")
+        .select("*, services(id, category)");
+  
+      if (errorPortafolio) console.error("Error obteniendo portafolios:", errorPortafolio);
+  
+      const { data: ubicaciones, error: errorUbicacion } = await supabase_client
+        .from("provider_locations")
+        .select("*, municipios(id, name), provincias(id, nombre)");
+  
+      if (errorUbicacion) console.error("Error obteniendo ubicaciones:", errorUbicacion);
+      let totalUsuarios = 0;
+
+      // Calcular el total de usuarios
+      const { data: users, error: errorCount } = await supabase_admin.auth.admin.listUsers();
+
+      if (errorCount) {
+        console.error('Error al obtener usuarios:', errorCount);
+      } else {
+        totalUsuarios = users.total;
       }
-  
-      // Obtener portafolios de proveedores
-      let portafolios = [];
-      let ubicaciones = [];
-      if (proveedores.length > 0) {
-        const providerIds = proveedores.map(p => p.id);
-        const { data: portafolioData, error: errorPortafolio } = await supabase_client
-          .from("portafolio_provider")
-          .select("*,services(id,category)")
-          .in("provider_id", providerIds);
-          if (errorPortafolio) {
-            console.error("Error obteniendo portafolios:", errorPortafolio);
-          } else {
-            portafolios = portafolioData || [];
-          }
-          const { data: ubicacionData, error: errorUbicacion } = await supabase_client
-          .from("provider_locations")
-          .select("*,municipios(id,name),provincias(id,nombre)")
-          .in("provider_id", providerIds);
-          if (errorPortafolio) {
-            console.error("Error obteniendo ubicaciones:", errorUbicacion);
-          } else {
-            ubicaciones = ubicacionData || [];
-          }
-       
+     
+      if (errorCount) {
+        console.error("Error obteniendo el total de usuarios:", errorCount);
+        return { usuarios: [], total: 0 };
       }
   
       // Mapear y combinar los datos
-      return usuariosAuth.users.map((usuario, index) => {
-        const perfil = perfiles.find((p) => p.user_id === usuario.id);
-        const provider = proveedores.find((p) => p.profile_id === perfil?.id);
+      const usuarios = usuariosAuth.map((usuario, index) => {
+        const perfil = perfiles.find(p => p.user_id === usuario.id);
+        const provider = proveedores.find(p => p.profile_id === perfil?.id);
         const portafolio = provider ? portafolios.filter(p => p.provider_id === provider.id) : [];
-         return {
+        const ubicacion = provider ? ubicaciones.filter(u => u.provider_id === provider.id) : [];
+        return {
           id: usuario.id,
           id_profile: perfil?.id,
           created_at: perfil?.created_at,
-          nombre: perfil?.name ?? usuario.email, // Usa el nombre o el email como fallback
-          tipo: perfil?.roles?.name ?? "Desconocido", // Si no hay rol, asigna "Desconocido"
-          categoria: perfil?.role_id === 3 ? "Pendiente" : "No aplica", // Categoría si es proveedor
+          nombre: perfil?.name ?? usuario.email,
+          tipo: perfil?.roles?.name ?? "Desconocido",
+          categoria: perfil?.role_id === 3 ? "Pendiente" : "No aplica",
           correo: usuario.email,
           telefono: perfil?.phone ?? "No registrado",
-          calificacion: perfil?.rating ?? 0, // Si no hay calificación, asigna 0
+          calificacion: perfil?.rating ?? 0,
           estado: perfil?.is_verified ? "Activo" : "Inactivo",
           especialidad: provider?.speciality,
           descripcion: provider?.description,
@@ -102,19 +100,30 @@ export class AuthService {
           provincia_id: perfil?.municipios?.provincia_id,
           municipio_id: perfil?.municipio_id,
           provider_id: provider?.id,
-          is_premium: provider?.is_premium?? false, 
-          service_id: provider?.provider_services[0]?.service_id,
+          is_premium: provider?.is_premium ?? false,
+          service_id: provider?.provider_services?.[0]?.service_id,
           imagen: perfil?.profile_pic_url,
-          portafolio, 
-          ubicaciones,
-          orden: index + 1,
+          rol: perfil?.roles,
+          portafolio,
+          ubicaciones: ubicacion,
+          orden: index + 1
         };
       });
+  
+      // Devolver los usuarios y el total de usuarios
+      return {
+        usuarios,
+        total: totalUsuarios,
+      };
     } catch (error) {
       console.error("Error inesperado obteniendo usuarios:", error);
-      return [];
+      return { usuarios: [], total: 0 };
     }
   }
+  
+  
+  
+  
   static async actualizarPerfilPanel(idUsuario, nuevoNombre, status) {
     const { error } = await supabase_client
       .from("profiles")
@@ -136,20 +145,41 @@ export class AuthService {
     }
   }  
   static async cambiarEstadoUsuario(id, nuevoEstado){
-    const { error } = await supabase_client
-      .from("profiles")
-      .update({ is_verified: nuevoEstado })
-      .eq("id", id);
-
+    const { data, error } = await supabase_client
+    .from("profiles")
+    .update({ is_verified: nuevoEstado })
+    .eq("id", id)
+    .select("id, is_verified,user_id");
+    const user_id = data[0].user_id;
+    await supabase_admin.auth.admin.updateUserById(
+      user_id,
+      {
+        email_confirm: nuevoEstado,
+      }
+    );
     if (error) {
       throw new Error(`Error al actualizar el estado de premium: ${error.message}`);
     }
   }
-  static async actualizarPerfil(id, datosActualizados) {
+  static async actualizarPerfil(id,profile_id, profileData,providerData) {
+    await SupabaseService.actualizarRegistro(
+      "providers",
+      providerData,
+      "profile_id",
+      profile_id
+    );
     return await SupabaseService.actualizarRegistro(
       "profiles",
-      datosActualizados,
+      profileData,
       "user_id",
+      id
+    );
+  }  
+  static async actualizarPrioridad(id, datosActualizados) {
+    return await SupabaseService.actualizarRegistro(
+      "providers",
+      datosActualizados,
+      "id",
       id
     );
   }
@@ -196,7 +226,13 @@ export class AuthService {
           .from('portafolio_provider')
           .delete()
           .in('provider_id', providerIds);
-        if (portafolioError) throw new Error(portafolioError.message);
+        if (portafolioError) throw new Error(portafolioError.message);      
+          // Eliminar de provider_locations usando los ids de providers
+        const { error: providerLocationError } = await supabase_client
+          .from('provider_locations')
+          .delete()
+          .in('provider_id', providerIds);
+        if (providerLocationError) throw new Error(providerLocationError.message);
   
         // Eliminar registros de providers
         const { error: providerError } = await supabase_client
@@ -223,10 +259,7 @@ export class AuthService {
       return { success: false, message: error.message };
     }
   }
-  
-  
-  
-  
+
   static async crearUsuarioAuth(
     correo,
     contrasena
