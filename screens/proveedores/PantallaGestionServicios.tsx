@@ -1,969 +1,1742 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  Image,
-  Animated,
-  ActivityIndicator,
   FlatList,
-  Platform,
+  TouchableOpacity,
+  Alert,
   Modal,
+  Animated,
+  ScrollView,
+  ActivityIndicator,
+  Image,
+  TextInput,
+  SafeAreaView,
+  StatusBar,
+  Platform,
+  KeyboardAvoidingView,
+  Dimensions,
+  StyleSheet,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import * as ImagePicker from "expo-image-picker";
-import styles from "../../styles/stylesGestionServicios";
+import SolicitudService from "../../services/SolicitudService";
+import type { Solicitud } from "../../models/Solicitud";
 import { AuthService } from "../../services/AuthService";
-import { ProviderServiceService } from "../../services/ProviderServiceService";
-import { ImageService } from "../../services/ImageService";
-import { PortafolioService } from "../../services/Portafolio";
-import { ServiceService } from "../../services/ServiceService";
-import { Picker } from "@react-native-picker/picker";
-import { PlanService } from "../../services/PlanService";
-import { Portafolio } from "../../models/Portafolio";
-import { MunicipioService } from "../../services/MunicipoService";
-import { ProvinciaService } from "../../services/ProvinciaService";
-import { ProviderLocationsService } from "../../services/ProviderLocationService";
+import CotizacionService from "../../services/CotizacionService";
+import type { CotizacionNota } from "../../models/CotizacionNota";
+import ContraOfertaService from "../../services/ContraOfertaService";
+import { MaterialIcons } from "@expo/vector-icons";
 
-const PantallaGestionServicios = () => {
+const { width } = Dimensions.get("window");
+
+const PantallaGestionSolicitudes = () => {
   const navigation = useNavigation();
-  const [perfil, setPerfil] = useState<any>(null);
-  const [nuevaEspecialidad, setNuevaEspecialidad] = useState("");
-  const [nuevaDescripcion, setNuevaDescripcion] = useState("");
-  const [portafolio, setPortafolio] = useState<string[]>([]);
-  const [portafolios, setPortafolios] = useState([]);
-  const [ubicaciones, setUbicaciones] = useState([]);
-  const [cargando, setCargando] = useState(true);
-  const [editando, setEditando] = useState(false);
-  const menuAnim = useRef(new Animated.Value(-300)).current;
+  const [solicitudes, setSolicitudes] = useState<Solicitud[]>([]);
+  const [loading, setLoading] = useState(true);
   const [menuVisible, setMenuVisible] = useState(false);
-  const [foto, setFoto] = useState("");
-  const [especialidad, setEspecialidad] = useState("");
-  const [servicios, setServicios] = useState([]);
-  const [servicio, setServicio] = useState(0);
-  const [plan, setPlan] = useState(0);
-  const [duracionPlan, setDuracionPlan] = useState(0);
-  const [planes, setPlanes] = useState<Plan[]>([]);
-  const [provincias, setProvincias] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
-  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(null);
-  const [municipioSeleccionado, setMunicipioSeleccionado] = useState(0);  
-  const [provinciaProfileSeleccionada, setProvinciaProfileSeleccionada] = useState(null);
-  const [municipioProfileSeleccionado, setMunicipioProfileSeleccionado] = useState(0);
-  const [diasFaltantes, setDiasFaltantes] = useState(0);
-  const [mostrarMunicipios, setMostrarMunicipios] = useState(false); // Nuevo estado
-  const [mostrarProfileMunicipios, setMostrarProfileMunicipios] = useState(false); // Nuevo estado
+  const [descripcion, setDescripcion] = useState("");
+  const [costoManoObra, setCostoManoObra] = useState("");
+  const [costoMateriales, setCostoMateriales] = useState("");
+  const [request, setRequest] = useState(0);
+  const [provider, setProvider] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
-  const [modalVisibleProfile, setModalVisibleProfile] = useState(false);
-  const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] =
-    useState(null);
-  const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] =
-    useState(null); 
-     const [nombreMunicipioProfileSeleccionado, setNombreMunicipioProfileSeleccionado] =
-    useState(null);
-  const [nombreProvinciaProfileSeleccionada, setNombreProvinciaProfileSeleccionada] =
-    useState(null);
-    const [nuevaFoto, setNuevaFoto] = useState("");
-    const [esGuardarPerfil, setEsGuardarPerfil] = useState(false);
-  
-  /** 🔥 Cargar Perfil */
-  useEffect(() => {
-    const cargarPerfil = async () => {
-      try {
-        const perfilData = await AuthService.obtenerPerfil();
-        setPerfil(perfilData);
-        //Ubicacion
-        setNombreProvinciaProfileSeleccionada(perfilData.provincias.nombre)
-        setNombreMunicipioProfileSeleccionado(perfilData.municipios.name)
-        setProvinciaProfileSeleccionada(perfilData.provincia_id)
-        setMunicipioProfileSeleccionado(perfilData.municipio_id)
-        const portafolios = perfilData?.portafolio;
-        const ubicaciones = perfilData?.provider_locations;
-        const duracion = perfilData?.provider?.planes?.duracion;
-        setPortafolio(perfilData.portafolio || []);
-        setPortafolios(portafolios);
-        setUbicaciones(ubicaciones);
-        setDuracionPlan(perfilData?.provider.planes.duracion)
-        // Obtener la fecha de creación
-        const createdAt = new Date(perfilData?.provider.created_at);
-        // Obtener la fecha actual
-        const fechaActual = new Date();
-        // Calcular la diferencia en milisegundos
-        const diffTime = fechaActual.getTime() - createdAt.getTime();
-        // Convertir la diferencia a días (usando Math.floor para obtener días completos)
-        const diasTranscurridos = Math.floor(diffTime / (1000 * 3600 * 24));
-        setDiasFaltantes(diasTranscurridos);
-        setPlan(perfilData?.provider?.planes?.id);
-      } catch (error) {
-        console.log("Error", error);
-        Alert.alert("Error", "No se pudo cargar el perfil.");
-      } finally {
-        setCargando(false);
-      }
-    };
-    cargarPerfil();
-  }, []);
-  const obtenerServicios = async () => {
+  const [respuestaNota, setRespuestaNota] = useState("");
+  const [nuevaNota, setNuevaNota] = useState("");
+  const [precio, setPrecio] = useState({});
+  const [cotizacionesNotas, setCotizacionesNotas] = useState({});
+  const [nuevaNotaSolicitud, setNuevaNotaSolicitud] = useState("");
+  const [expandedCards, setExpandedCards] = useState({});
+  const [refreshing, setRefreshing] = useState(false);
+  const [filtroActivo, setFiltroActivo] = useState("todas");
+
+  const menuAnim = useRef(new Animated.Value(-300)).current;
+  const overlayAnim = useRef(new Animated.Value(0)).current;
+
+  const obtenerSolicitudes = async () => {
     try {
-      const servicios = await ServiceService.obtenerTodos();
-      setServicios(
-        servicios.map((servicio) => ({
-          id: servicio.id,
-          category: servicio.category,
-          icono: servicio.icono,
-          tags: servicio.tags,
-        }))
+      setLoading(true);
+      const user = await AuthService.obtenerPerfil();
+      const user_id = user.user_id || "";
+      const provider_id = user.provider.id || "";
+      setProvider(provider_id);
+      const data = await SolicitudService.obtenerSolicitudesComoProveedor(user_id);
+      setSolicitudes(data);
+    } catch (error) {
+      Alert.alert(
+        "Error", 
+        "No se pudieron cargar las solicitudes.",
+        [{ text: "Reintentar", onPress: () => obtenerSolicitudes() }]
       );
-    } catch (error) {
-      console.error("Error obteniendo servicios:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
   };
-  const cambiarFotoPerfil = async () => {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
+
+  useEffect(() => {
+    obtenerSolicitudes();
+  }, []);
+
+  const manejarSolicitud = async (idSolicitud: number, estado: string) => {
+    try {
+      if (estado === "Rechazada") {
         Alert.alert(
-          "Permiso denegado",
-          "Se requiere acceso a la galería para cambiar la foto."
-        );
-        return;
-      }
-  
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.8,
-      });
-  
-      if (!result.canceled) {
-        setNuevaFoto(result.assets[0].uri);
-      }
-    };
-  useEffect(() => {
-    optenerPlanes();
-  }, []);
-  const optenerPlanes = async () => {
-    try {
-      const planes = await PlanService.obtenerTodos();
-      setPlanes(planes);
-    } catch (error) {
-      console.error("Error obteniendo servicios:", error);
-    }
-  };
-  useEffect(() => {
-    obtenerServicios();
-  }, []);
-
-  // Obtener las provincias
-  useEffect(() => {
-    const obtenerProvincias = async () => {
-      try {
-        const provincias = await ProvinciaService.obtenerTodos();
-        setProvincias(provincias);
-      } catch (error) {
-        console.error("Error obteniendo provincias:", error);
-      }
-    };
-    obtenerProvincias();
-  }, []);
-
-  // Obtener municipios cuando una provincia es seleccionada
-  useEffect(() => {
-    if (provinciaSeleccionada) {
-      const obtenerMunicipios = async () => {
-        try {
-          const municipios = await MunicipioService.obtenerTodos({
-            provincia_id: provinciaSeleccionada,
-          });
-          setMunicipios(municipios);
-        } catch (error) {
-          console.error("Error obteniendo municipios:", error);
-        }
-      };
-      obtenerMunicipios();
-    } else if(provinciaProfileSeleccionada){
-      const obtenerMunicipiosProfile = async () => {
-        try {
-          const municipios = await MunicipioService.obtenerTodos({
-            provincia_id: provinciaProfileSeleccionada,
-          });
-          setMunicipios(municipios);
-        } catch (error) {
-          console.error("Error obteniendo municipios:", error);
-        }
-      };
-      obtenerMunicipiosProfile();
-    }
-  }, [provinciaSeleccionada,provinciaProfileSeleccionada]);
-  /** 📌 Guardar Cambios en Perfil */
-  const guardarPerfil = async () => {
-    if (
-      !perfil?.phone?.trim() ||
-      !perfil?.provider?.speciality?.trim() ||
-      !perfil?.provider?.availability?.trim() ||
-      !perfil?.provider?.description?.trim() 
-    ) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
-      alert("Todos los campos son obligatorios.");
-      return;
-    }
-    if(!validarUbicacion()){
-      Alert.alert("Error", "Debe seleccionar una ubicación válida.");
-      alert("Debe seleccionar una ubicación válida.");
-      return;
-    }
-    try {
-        let fotoURL = perfil.profile_pic_url;
-            if (nuevaFoto) {
-              setEsGuardarPerfil(true)
-              const urlSubida = await AuthService.subirFotoPerfil(
-                perfil.user_id,
-                nuevaFoto
-              );
-              if (urlSubida) {
-                fotoURL = urlSubida;
+          "Confirmar acción",
+          "¿Estás seguro de que deseas rechazar esta solicitud?",
+          [
+            { text: "Cancelar", style: "cancel" },
+            { 
+              text: "Rechazar", 
+              style: "destructive",
+              onPress: async () => {
+                await actualizarEstadoSolicitud(idSolicitud, estado);
               }
             }
-      const provider = {
-        id: perfil.provider.id,
-        profile_id: perfil.id,
-        phone: perfil.phone,
-        speciality: perfil?.provider?.speciality,
-        availability: perfil?.provider?.availability,
-        description: perfil?.provider?.description,
-        plan_id: plan ==0 ? null: plan,
-        profile_pic_url: fotoURL,
-        municipio_id: municipioProfileSeleccionado,
-        provincia_id: provinciaProfileSeleccionada
-      };
-      setEsGuardarPerfil(true)
-      await ProviderServiceService.actualizarProveedor(provider);
-      setEditando(false);
-      setEsGuardarPerfil(false)
+          ]
+        );
+      } else {
+        await actualizarEstadoSolicitud(idSolicitud, estado);
+      }
+    } catch (error) {
+      Alert.alert("Error", "No se pudo actualizar la solicitud.");
+    }
+  };
 
-      Alert.alert("Éxito", "Perfil actualizado correctamente.");
-    } catch (error) {
-      Alert.alert("Error", "No se pudo actualizar el perfil.");
-    }
-  };
-  const validarUbicacion = (): boolean => {
-    if(ubicaciones.length>0){
-      const existeMunicipio = ubicaciones.some(
-        (ubicacion) => ubicacion.municipio_id === municipioProfileSeleccionado
-      );
-      return !existeMunicipio;
-    }
-    return true;
-  }; 
-   const validarUbicacionProvider = (): boolean => {
-    if(ubicaciones.length>0){
-      const existeMunicipio = ubicaciones.some(
-        (ubicacion) => ubicacion.municipio_id === municipioSeleccionado
-      );
-      return !existeMunicipio;
-    }
-    return true;
-  };
-  /** 📌 Agregar Nuevo Servicio */
-  const agregarServicio = async () => {
-    if (!nuevaEspecialidad.trim() || !nuevaDescripcion.trim()) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
-      return;
-    }
+  const actualizarEstadoSolicitud = async (idSolicitud: number, estado: string) => {
     try {
-      const url_imagen =
-        (await ImageService.subirImagen("servicios", foto)) ?? "";
-      await PortafolioService.agregarServicio(
-        perfil.provider.id,
-        nuevaEspecialidad,
-        nuevaDescripcion,
-        servicio,
-        url_imagen
-      );
-      const nuevo_item = {
-        id: obtenerUltimoIdPortafolio(1) + 1, // Obtener el último id de la solicitud
-        especialidad: nuevaEspecialidad,
-        provider_id: perfil.provider.id,
-        descripcion: nuevaDescripcion,
-        imagen: url_imagen,
-      };
-      portafolios.push(nuevo_item);
-      Alert.alert("Éxito", "Servicio agregado correctamente.");
-      setNuevaEspecialidad("");
-      setNuevaDescripcion("");
-      setFoto("");
-      setPortafolio([...portafolio, url_imagen]);
-    } catch (error) {
-      Alert.alert("Error", "No se pudo agregar el servicio.");
-    }
-  };
-   /** 📌 Agregar Nueva Ubicacion*/
-  const agregarUbicacion = async () => {
-    if (!provinciaSeleccionada || !municipioSeleccionado) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
-      alert("Todos los campos son obligatorios.")
-      return;
-    }
-    if(!validarUbicacionProvider()){
-      Alert.alert("Error", "Seleccione un municipio diferente.");
-      alert("Seleccione un municipio diferente.")
-      return;
-    }
-    try {
-      await ProviderLocationsService.crear({
-        provider_id: perfil.provider.id,
-        provincia_id: provinciaSeleccionada,
-        municipio_id: municipioSeleccionado,
-      });
-      const nuevo_item = {
-        id: obtenerUltimoIdUbicacion(1) + 1, // Obtener el último id de la solicitud
-        municipios: {
-          id: municipioSeleccionado,
-          name: nombreMunicipioSeleccionado,
-        },
-        provincias: {
-          id: provinciaSeleccionada,
-          nombre: nombreProvinciaSeleccionada,
-        },
-        provider_id: perfil.provider.id,
-        provincia_id: provinciaSeleccionada,
-        municipio_id: municipioSeleccionado,
-      };
-      ubicaciones.push(nuevo_item);
-      Alert.alert("Éxito", "Servicio agregado correctamente.");
-      setProvinciaSeleccionada(null);
-      setMunicipioSeleccionado(null);
-      setNombreMunicipioSeleccionado("");
-      setNombreProvinciaSeleccionada("");
-    } catch (error) {
-      Alert.alert("Error", "No se pudo agregar el servicio.");
-    }
-  };
-  const obtenerUltimoIdUbicacion = (idPortafolio: number) => {
-    // Encuentra la solicitud correspondiente
+      await SolicitudService.actualizarEstadoSolicitud(idSolicitud, estado, true);
+      
+      const mensaje = estado === "aceptada por proveedor" ? "Solicitud aceptada con éxito" : "Solicitud rechazada con éxito";
+      Alert.alert("Éxito", mensaje);
 
-    if (ubicaciones && ubicaciones.length > 0) {
-      // Obtener el último id de la cotización
-      const ultimoId = ubicaciones[ubicaciones.length - 1].id;
-      return ultimoId;
+      setSolicitudes((prevSolicitudes) =>
+        prevSolicitudes.map((solicitud) =>
+          solicitud.id === idSolicitud
+            ? { ...solicitud, status: estado }
+            : solicitud
+        )
+      );
+    } catch (error) {
+      Alert.alert("Error", "No se pudo actualizar la solicitud.");
+    }
+  };
+
+  const toggleMenu = () => {
+    setMenuVisible(!menuVisible);
+    Animated.parallel([
+      Animated.timing(menuAnim, {
+        toValue: menuVisible ? -300 : 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(overlayAnim, {
+        toValue: menuVisible ? 0 : 0.5,
+        duration: 300,
+        useNativeDriver: true,
+      })
+    ]).start();
+  };
+
+  const cerrarSesion = async () => {
+    try {
+      Alert.alert(
+        "Cerrar sesión",
+        "¿Estás seguro de que deseas cerrar sesión?",
+        [
+          { text: "Cancelar", style: "cancel" },
+          { 
+            text: "Cerrar sesión", 
+            style: "destructive",
+            onPress: async () => {
+              await AuthService.logout();
+              navigation.replace("Login");
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      Alert.alert("Error", "No se pudo cerrar sesión.");
+    }
+  };
+
+  const handleGuardar = () => {
+    if (!descripcion.trim()) {
+      Alert.alert("Error", "Por favor ingresa una descripción");
+      return;
+    }
+    
+    if (!costoManoObra.trim() || isNaN(Number(costoManoObra))) {
+      Alert.alert("Error", "Por favor ingresa un costo de mano de obra válido");
+      return;
+    }
+    
+    if (!costoMateriales.trim() || isNaN(Number(costoMateriales))) {
+      Alert.alert("Error", "Por favor ingresa un costo de materiales válido");
+      return;
+    }
+
+    CotizacionService.agregarCotizacion(
+      provider,
+      request,
+      costoManoObra,
+      costoMateriales,
+      descripcion
+    );
+    
+    const nuevoItemCotizacion = {
+      id: obtenerUltimoIdCotizacion(request) ?? 0 + 1,
+      costo_mano_obra: costoManoObra,
+      costo_materiales: costoMateriales,
+      descripcion: descripcion,
+    };
+
+    setSolicitudes((prevSolicitudes) =>
+      prevSolicitudes.map((solicitud) =>
+        solicitud.id === request
+          ? {
+              ...solicitud,
+              cotizaciones: [...solicitud.cotizaciones, nuevoItemCotizacion],
+            }
+          : solicitud
+      )
+    );
+    
+    setDescripcion("");
+    setCostoManoObra("");
+    setCostoMateriales("");
+    setModalVisible(false);
+    
+    Alert.alert("Éxito", "Cotización enviada correctamente");
+  };
+
+  const obtenerUltimoIdCotizacion = (idSolicitud: number) => {
+    const solicitud = solicitudes.find(
+      (solicitud) => solicitud.id === idSolicitud
+    );
+
+    if (solicitud && solicitud.cotizaciones.length > 0) {
+      return solicitud.cotizaciones[solicitud.cotizaciones.length - 1].id;
     } else {
-      // Si no hay cotizaciones, devuelve null o cualquier valor predeterminado
       return null;
     }
   };
-  const obtenerUltimoIdPortafolio = (idPortafolio: number) => {
-    // Encuentra la solicitud correspondiente
 
-    if (portafolios && portafolios.length > 0) {
-      // Obtener el último id de la cotización
-      const ultimoId = portafolios[portafolios.length - 1].id;
-      return ultimoId;
+  const mostrarModalCotizacion = (request_id: number) => {
+    setRequest(request_id);
+    setModalVisible(true);
+  };
+
+  const handleGuardarRespuesta = (
+    notaCotizacionId: number,
+    nota: CotizacionNota
+  ) => {
+    const respuesta = cotizacionesNotas[notaCotizacionId]?.texto;
+    
+    if (!respuesta || !respuesta.trim()) {
+      Alert.alert("Error", "Por favor ingresa una respuesta");
+      return;
+    }
+    
+    CotizacionService.agregarNotaCotizacion(notaCotizacionId, respuesta, true);
+    
+    setSolicitudes((prevSolicitudes) =>
+      prevSolicitudes.map((solicitud) => {
+        const updatedCotizaciones = solicitud.cotizaciones.map((cotizacion) => {
+          return {
+            ...cotizacion,
+            cotizacion_notas: cotizacion.cotizacion_notas.map((notaItem) => {
+              if (notaItem.id === notaCotizacionId) {
+                if (!notaItem.nota_provider) {
+                  return {
+                    ...notaItem,
+                    nota_provider: respuesta,
+                  };
+                }
+              }
+              return notaItem;
+            }),
+          };
+        });
+
+        return {
+          ...solicitud,
+          cotizaciones: updatedCotizaciones,
+        };
+      })
+    );
+    
+    setCotizacionesNotas((prevState) => ({
+      ...prevState,
+      [notaCotizacionId]: { texto: "" }
+    }));
+    setRespuestaNota("");
+  };
+
+  const handleCrearNota = (contraofertaId: number, respuesta: string) => {
+    if (!respuesta || !respuesta.trim()) {
+      Alert.alert("Error", "Por favor ingresa una nota");
+      return;
+    }
+    
+    ContraOfertaService.agregarNotaContraOferta(
+      contraofertaId,
+      respuesta,
+      true
+    );
+
+    setSolicitudes((prevSolicitudes) =>
+      prevSolicitudes.map((solicitud) => {
+        const updatedContraofertas = solicitud.contraofertas.map(
+          (contraoferta) => {
+            if (contraoferta.id === contraofertaId) {
+              const updatedNotas = contraoferta.contraoferta_notas.some(
+                (notaItem) => notaItem.nota_provider === respuesta
+              )
+                ? contraoferta.contraoferta_notas.map((notaItem) => ({
+                    ...notaItem,
+                    nota_provider: notaItem.nota_provider || respuesta,
+                  }))
+                : [
+                    ...contraoferta.contraoferta_notas,
+                    {
+                      contraoferta_id: contraofertaId,
+                      nota_client: "",
+                      nota_provider: respuesta,
+                      created_at: new Date().toISOString(),
+                    },
+                  ];
+
+              return {
+                ...contraoferta,
+                contraoferta_notas: updatedNotas,
+              };
+            }
+            return contraoferta;
+          }
+        );
+
+        return {
+          ...solicitud,
+          contraofertas: updatedContraofertas,
+        };
+      })
+    );
+    
+    setNuevaNota("");
+  };
+
+  const handleCrearNotaSolicitud = async (request_id: number, nota: string) => {
+    if (!nota || !nota.trim()) {
+      Alert.alert("Error", "Por favor ingresa una nota");
+      return;
+    }
+    
+    const nuevoItemNotaSolicitud = {
+      id: obtenerUltimoIdNotaSolicitud(request_id) ?? 0 + 1,
+      nota_client: "",
+      nota_provider: nota,
+    };
+    
+    await SolicitudService.agregarNotaCotizacion(request_id, nota, true);
+    
+    setSolicitudes((prevSolicitudes) =>
+      prevSolicitudes.map((solicitud) =>
+        solicitud.id === request_id
+          ? {
+              ...solicitud,
+              request_notas: [
+                ...solicitud.request_notas,
+                nuevoItemNotaSolicitud,
+              ],
+            }
+          : solicitud
+      )
+    );
+    
+    setNuevaNotaSolicitud("");
+  };
+
+  const obtenerUltimoIdNotaSolicitud = (idSolicitud: number) => {
+    const solicitud = solicitudes.find(
+      (solicitud) => solicitud.id === idSolicitud
+    );
+
+    if (solicitud && solicitud.request_notas.length > 0) {
+      return solicitud.request_notas[solicitud.request_notas.length - 1].id;
     } else {
-      // Si no hay cotizaciones, devuelve null o cualquier valor predeterminado
       return null;
     }
   };
-  /** 📌 Seleccionar Imagen */
-  const seleccionarImagen = async () => {
-    try {
-      const { status } =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("Permiso Denegado", "Se requiere acceso a la galería.");
-        return;
-      }
 
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        quality: 1,
-      });
+  const handleCambioNotaCotizacion = (
+    notaCotizacionId: number,
+    texto: string
+  ) => {
+    setCotizacionesNotas((prevState) => ({
+      ...prevState,
+      [notaCotizacionId]: {
+        ...prevState[notaCotizacionId],
+        texto,
+      },
+    }));
+  };  
 
-      if (!result.cancelled && result.assets) {
-        const foto = result.assets[0].uri;
-        setFoto(foto);
-        setPortafolio([...portafolio, foto]);
-      }
-    } catch (error) {
-      Alert.alert("Error", "No se pudo seleccionar la imagen.");
-    }
-  };
-
-  const actualizarCampo = (campo: string, valor: string) => {
-    setPerfil((prev) => ({
-      ...prev,
-      provider: { ...prev.provider, [campo]: valor },
+  const handleCambioPrecio = (
+    id: number,
+    precio: number
+  ) => {
+    setPrecio((prevState) => ({
+      ...prevState,
+      [id]: {
+        ...prevState[id],
+        precio,
+      },
     }));
   };
 
-  /** 📌 Mostrar/Ocultar Menú */
-  const toggleMenu = () => {
-    setMenuVisible(!menuVisible);
-    Animated.timing(menuAnim, {
-      toValue: menuVisible ? -300 : 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-  };
-  /** 📌 Eliminar Servicio */
-  const eliminarServicio = async (id: number) => {
-    try {
-      if (Platform.OS === "web") {
-        const confirmation = window.confirm(
-          "¿Estás seguro de que deseas eliminar este servicio?"
-        );
-        if (confirmation) {
-          await PortafolioService.eliminar(id);
-          const nuevosServicios = portafolios.filter((item) => item.id !== id);
-          setPortafolios(nuevosServicios);
-          const especialidades =
-            nuevosServicios.map((item) => item.especialidad).join(", ") || "";
-          setEspecialidad(especialidades);
-          window.alert("Servicio eliminado correctamente.");
-        }
-      } else {
-        // Confirmación antes de eliminar
-        Alert.alert(
-          "Confirmar eliminación",
-          "¿Estás seguro de que deseas eliminar este servicio?",
-          [
-            { text: "Cancelar", style: "cancel" },
-            {
-              text: "Eliminar",
-              style: "destructive",
-              onPress: async () => {
-                await PortafolioService.eliminar(parseInt(id));
-
-                // Actualizar el estado eliminando el servicio
-                const nuevosServicios = portafolio.filter(
-                  (item) => item.id !== id
-                );
-                setPortafolio(nuevosServicios);
-
-                // Actualizar la lista de especialidades
-                const nuevasEspecialidades = nuevosServicios
-                  .map((item) => item.especialidad)
-                  .join(", ");
-                setEspecialidad(nuevasEspecialidades);
-
-                Alert.alert("Éxito", "Servicio eliminado correctamente.");
-              },
-            },
-          ]
-        );
-      }
-    } catch (error) {
-      Alert.alert("Error", "No se pudo eliminar el servicio.");
+  const establecerPrecio = async(id) => {
+    if (!precio[id]?.precio) {
+      Alert.alert("Error", "Por favor ingresa un precio válido");
+      return;
     }
-  };
-  /** 📌 Eliminar Ubicacion */
-  const eliminarUbicacion = async (id: number) => {
+    
+    const precio_input = precio[id].precio;
+    
     try {
-      if (Platform.OS === "web") {
-        const confirmation = window.confirm(
-          "¿Estás seguro de que deseas eliminar este servicio?"
-        );
-        if (confirmation) {
-          await ProviderLocationsService.eliminar(id);
-          const nuevasUbicaciones = ubicaciones.filter(
-            (item) => item.id !== id
-          );
-          setUbicaciones(nuevasUbicaciones);
-
-          window.alert("Servicio eliminado correctamente.");
-        }
-      } else {
-        // Confirmación antes de eliminar
-        Alert.alert(
-          "Confirmar eliminación",
-          "¿Estás seguro de que deseas eliminar este servicio?",
-          [
-            { text: "Cancelar", style: "cancel" },
-            {
-              text: "Eliminar",
-              style: "destructive",
-              onPress: async () => {
-                await ProviderLocationsService.eliminar(parseInt(id));
-                // Actualizar el estado eliminando el servicio
-                const nuevasUbicaciones = ubicaciones.filter(
-                  (item) => item.id !== id
-                );
-                setUbicaciones(nuevasUbicaciones);
-                Alert.alert("Éxito", "Ubicacion eliminado correctamente.");
-              },
-            },
-          ]
-        );
-      }
+      await SolicitudService.actualizarPrecio(id, precio_input);
+      
+      setSolicitudes((prevSolicitudes) =>
+        prevSolicitudes.map((solicitud) =>
+          solicitud.id === id
+            ? { ...solicitud, price: precio_input }
+            : solicitud
+        )
+      );
+      
+      setPrecio((prevState) => ({
+        ...prevState,
+        [id]: { precio: '' }
+      }));
+      
+      Alert.alert("Éxito", "Precio establecido correctamente");
     } catch (error) {
-      Alert.alert("Error", "No se pudo eliminar el servicio.");
+      Alert.alert("Error", "No se pudo establecer el precio");
     }
   };
 
-  /** 📌 Renderizar Item del Portafolio */
-  const renderPortfolioItem = ({ item }: { item: Portafolio }) => (
-    <View style={styles.portfolioItem}>
-      <View style={styles.portfolioContent}>
-        {item.imagen ? (
-          <Image
-            source={{ uri: item.imagen }}
-            style={styles.portfolioImage}
-            resizeMode="cover"
-          />
-        ) : (
-          <View style={[styles.portfolioImage, styles.noImage]}>
-            <Text style={styles.noImageText}>Sin imagen</Text>
-          </View>
-        )}
-        <View style={styles.portfolioInfo}>
-          <Text style={styles.portfolioTitle}>{item.especialidad}</Text>
-          <Text style={styles.portfolioDescription}>{item.descripcion}</Text>
-        </View>
-      </View>
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() => eliminarServicio(item.id)}
-      >
-        <Text style={styles.deleteButtonText}>🗑️</Text>
-      </TouchableOpacity>
-    </View>
-  );
-  /** 📌 Renderizar Item de Ubicaciones */
-  const renderUbicacionItem = ({ item }: { item: any }) => (
-    <View style={styles.portfolioItem}>
-      <View style={styles.portfolioContent}>
-        <View style={styles.portfolioInfo}>
-          <Text style={styles.portfolioTitle}>{item.provincias.nombre}</Text>
-          <Text style={styles.portfolioDescription}>
-            {item.municipios.name}
-          </Text>
-        </View>
-      </View>
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() => eliminarUbicacion(item.id)}
-      >
-        <Text style={styles.deleteButtonText}>🗑️</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  const toggleCardExpansion = (id) => {
+    setExpandedCards(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    obtenerSolicitudes();
+  };
+
+  const solicitudesFiltradas = solicitudes.filter(solicitud => {
+    if (filtroActivo === "todas") return true;
+    if (filtroActivo === "pendientes") return solicitud.status === "pendiente";
+    if (filtroActivo === "aceptadas") return solicitud.status === "aceptada" || solicitud.status === "aceptada por proveedor";
+    if (filtroActivo === "rechazadas") return solicitud.status === "Rechazada";
+    return true;
+  });
+
+  const getStatusColor = (status) => {
+    switch(status.toLowerCase()) {
+      case 'aceptada':
+      case 'aceptada por proveedor':
+        return '#2E7D32';
+      case 'pendiente':
+        return '#F57C00';
+      case 'rechazada':
+        return '#D32F2F';
+      default:
+        return '#757575';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch(status.toLowerCase()) {
+      case 'aceptada':
+      case 'aceptada por proveedor':
+        return <MaterialIcons name="check-circle" size={16} color="#2E7D32" />;
+      case 'pendiente':
+        return <MaterialIcons name="schedule" size={16} color="#F57C00" />;
+      case 'rechazada':
+        return <MaterialIcons name="cancel" size={16} color="#D32F2F" />;
+      default:
+        return <MaterialIcons name="help" size={16} color="#757575" />;
+    }
+  };
+
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (e) {
+      return dateString;
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      {/* 🔥 Menú Lateral */}
-      {menuVisible && <View style={styles.overlay} />}
-      <Animated.View
-        style={[
-          styles.menuContainer,
-          { transform: [{ translateX: menuAnim }] },
-        ]}
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar backgroundColor="#0047AB" barStyle="light-content" />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.container}
       >
-        <ScrollView>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate("GestionSolicitudes")}
-          >
-            <Text style={styles.menuText}>📋 Ver Solicitudes</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuItem}
-            onPress={() => navigation.navigate("PantallaNotificacion")}
-          >
-            <Text style={styles.menuText}>🔔 Notificaciones</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.menuCerrar}
-            onPress={async () => {
-              const logoutSuccess = await AuthService.logout();
-              if (logoutSuccess) {
-                navigation.replace("Login");
-              } else {
-                Alert.alert("Error", "No se pudo cerrar sesión.");
-              }
-            }}
-          >
-            <Text style={styles.menuCerrarTexto}>🚪 Cerrar Sesión</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuCerrar} onPress={toggleMenu}>
-            <Text style={styles.menuCerrarTexto}>Cerrar</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </Animated.View>
-
-      {/* 🔥 Encabezado */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
-          <Text style={styles.menuIcon}>☰</Text>
-        </TouchableOpacity>
-        <Text style={styles.titulo}>👨‍🔧 Gestión de Servicios</Text>
-      </View>
-
-      <ScrollView style={styles.formContainer}>
-        {cargando ? (
-          <ActivityIndicator
-            size="large"
-            color="#FF0314"
-            style={{ marginTop: 20 }}
+        {menuVisible && (
+          <Animated.View 
+            style={[
+              styles.overlay, 
+              { opacity: overlayAnim }
+            ]} 
+            onTouchStart={toggleMenu}
           />
-        ) : (
-          <>
-            {/* 📌 Campos del Perfil */}
-            <View style={{ alignItems: 'center', marginVertical: 15 }}>
-            <Image
-              source={{ uri: nuevaFoto || perfil?.profile_pic_url || 'https://via.placeholder.com/150' }} // URL de placeholder por si no hay imagen
-              style={styles.fotoPerfil}
-            />
-            {editando && (
-              <TouchableOpacity 
-                style={styles.botonFoto} 
-                onPress={cambiarFotoPerfil}
-              >
-                <Text style={[styles.textoBoton, { color: '#FF0314' }]}>📷 Cambiar Foto</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-            <Text style={styles.label}>📞 Teléfono:</Text>
-            <TextInput
-              style={styles.input}
-              value={perfil?.phone}
-              editable={editando}
-              onChangeText={(text) => setPerfil({ ...perfil, phone: text })}
-            />
-
-            <Text style={styles.label}>🛠 Especialidad:</Text>
-            <TextInput
-              style={styles.input}
-              value={perfil?.provider?.speciality || ''} // Asegúrate de que el valor no sea undefined
-              editable={editando}
-              onChangeText={(text) => actualizarCampo("speciality", text)} // Usa la función actualizarCampo
-            />
-
-            <Text style={styles.label}>📅 Disponibilidad:</Text>
-            <TextInput
-              style={styles.input}
-              value={perfil?.provider?.availability}
-              editable={editando}
-              onChangeText={(text) => actualizarCampo("availability", text)}
-            />            
-            <Text style={styles.label}>📝 Descripcion:</Text>
-            <TextInput
-              style={styles.input}
-              value={perfil?.provider?.description}
-              editable={editando}
-              multiline
-              onChangeText={(text) => actualizarCampo("description", text)}
-            />
-             {/* 🌍 Botón para seleccionar ubicación */}
-             <TouchableOpacity
-             style={styles.botonFiltro}
-             disabled={!editando}
-             onPress={() => setModalVisibleProfile(true)}
-           >
-             <Text style={styles.textoBoton}>
-               {provinciaProfileSeleccionada
-                 ? `${nombreProvinciaProfileSeleccionada} - ${
-                     nombreMunicipioProfileSeleccionado || "Selecciona municipio"
-                   }`
-                 : "Seleccionar Ubicación"}
-             </Text>
-           </TouchableOpacity>
-            {diasFaltantes -  perfil?.provider?.planes?.duracion == 1 && (
-              <View style={styles.switchContainer}>
-                <Text style={styles.label}>Plan {plan}</Text>
-                <Picker
-                  style={styles.input}
-                  selectedValue={plan}
-                  onValueChange={(itemValue) => setPlan(itemValue)}
-                >
-                  {planes.map((plan) => (
-                    <Picker.Item
-                      key={plan.id}
-                      label={plan.nombre}
-                      value={plan.id}
-                    />
-                  ))}
-                </Picker>
-              </View>
-            )}
-
-            {editando ? (
-              <TouchableOpacity
-                style={styles.botonGuardar}
-                onPress={guardarPerfil}
-                disabled={esGuardarPerfil}
-              >
-                <Text style={styles.textoBoton}>💾 Guardar Cambios</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.botonEditar}
-                onPress={() => setEditando(true)}
-              >
-                <Text style={styles.textoBoton}>✏️ Editar Perfil</Text>
-              </TouchableOpacity>
-            )}
-
-            {/* 📌 Agregar Nuevo Servicio */}
-            <Text style={styles.sectionTitle}>📁 Mi Portafolio</Text>
-            <Text style={styles.label}>➕ Nueva Especialidad</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ejemplo: Electricidad"
-              value={nuevaEspecialidad}
-              onChangeText={setNuevaEspecialidad}
-            />
-            <View style={styles.switchContainer}>
-              <Text style={styles.label}>Categoria</Text>
-              <Picker
-                style={styles.input}
-                selectedValue={servicio}
-                onValueChange={(itemValue) => setServicio(itemValue)}
-              >
-                {servicios.map((servicio_data) => (
-                  <Picker.Item
-                    key={servicio_data.id}
-                    label={servicio_data.category}
-                    value={servicio_data.id}
-                  />
-                ))}
-              </Picker>
-            </View>
-            <Text style={styles.label}>📝 Descripción</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ejemplo: Instalaciones y mantenimiento."
-              value={nuevaDescripcion}
-              onChangeText={setNuevaDescripcion}
-              multiline
-            />
-            {/* 📌 Portafolio */}
-            <TouchableOpacity
-              style={styles.botonSubir}
-              onPress={seleccionarImagen}
-            >
-              <Text style={styles.textoBoton}>📷 Subir Imagen</Text>
-            </TouchableOpacity>
-            {/* 🔥 Previsualización de Imagen */}
-            {foto ? (
-              <View style={{ position: "relative", width: 200, height: 200 }}>
-                <Image
-                  source={{ uri: foto }}
-                  style={{ width: 200, height: 200, borderRadius: 10 }}
-                  resizeMode="cover"
-                />
-                <TouchableOpacity
-                  onPress={() => setFoto("")}
-                  style={{
-                    position: "absolute",
-                    top: 5,
-                    right: 5,
-                    backgroundColor: "red",
-                    padding: 5,
-                    borderRadius: 50,
-                  }}
-                >
-                  <Text style={{ color: "white", fontWeight: "bold" }}>X</Text>
-                </TouchableOpacity>
-              </View>
-            ) : null}
-            <TouchableOpacity
-            style={styles.botonAgregar}
-            onPress={agregarServicio}
-          >
-            <Text style={styles.textoBoton}>✅ Agregar Servicio</Text>
-          </TouchableOpacity>
-            {/* 📌 Lista de Portafolio */}
-            {portafolios.length > 0 ? (
-              <FlatList
-                data={portafolios}
-                renderItem={renderPortfolioItem}
-                keyExtractor={(item) => item.id}
-                scrollEnabled={false}
-              />
-            ) : (
-              <Text style={styles.emptyMessage}>
-                No hay servicios en tu portafolio. Agrega uno nuevo.
-              </Text>
-            )}
-            {/* 📌 Lista de Ubicaciones */}
-            <Text style={styles.sectionTitle}>Ubicaciones</Text>
-            {/* 🌍 Botón para seleccionar ubicación */}
-            <TouchableOpacity
-              style={styles.botonFiltro}
-              onPress={() => setModalVisible(true)}
-            >
-              <Text style={styles.textoBoton}>
-                {provinciaSeleccionada
-                  ? `${nombreProvinciaSeleccionada} - ${
-                      nombreMunicipioSeleccionado || "Selecciona municipio"
-                    }`
-                  : "Seleccionar Ubicación"}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.botonAgregar}
-              onPress={agregarUbicacion}
-            >
-              <Text style={styles.textoBoton}>✅ Agregar Ubicacion</Text>
-            </TouchableOpacity>
-
-            {ubicaciones.length > 0 ? (
-              <FlatList
-                data={ubicaciones}
-                renderItem={renderUbicacionItem}
-                keyExtractor={(item) => item.id}
-                scrollEnabled={false}
-              />
-            ) : (
-              <Text style={styles.emptyMessage}>
-                No hay servicios en tu portafolio. Agrega uno nuevo.
-              </Text>
-            )}
-          </>
         )}
-      </ScrollView>
-      <Modal visible={modalVisibleProfile} animationType="slide" transparent>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContenido}>
-            {!mostrarProfileMunicipios ? (
-              <>
-                <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
-                <ScrollView style={styles.scrollView}>
-                  {provincias.map((item) => (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={[
-                        styles.opcion,
-                        provinciaSeleccionada === item.id &&
-                          styles.opcionActiva,
-                      ]}
-                      onPress={() => {
-                       setProvinciaProfileSeleccionada(item.id);
-                        setNombreProvinciaProfileSeleccionada(item.nombre);
-                        setMunicipioProfileSeleccionado(null);
-                        setMunicipios([]);
-                        setMostrarProfileMunicipios(true); // Cambia a mostrar municipios
-                      }}
-                    >
-                      <Text style={styles.textoOpcion}>{item.nombre}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </>
-            ) : (
-              <>
-                <TouchableOpacity
-                  onPress={() => setMostrarProfileMunicipios(false)}
-                  style={styles.botonVolver}
-                >
-                  <Text style={styles.textoBoton}>← Volver</Text>
-                </TouchableOpacity>
-                <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
-                <FlatList
-                  data={municipios}
-                  keyExtractor={(item) => item.id.toString()}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.opcion,
-                        municipioProfileSeleccionado === item.id &&
-                          styles.opcionActiva,
-                      ]}
-                      onPress={() => {
-                        setMunicipioProfileSeleccionado(item.id);
-                        setNombreMunicipioProfileSeleccionado(item.name);
-                        setModalVisibleProfile(false);
-                      }}
-                    >
-                      <Text style={styles.textoOpcion}>{item.name}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </>
-            )}
 
+        <Animated.View style={[styles.menuContainer, { transform: [{ translateX: menuAnim }] }]}>
+          <View style={styles.menuHeader}>
+            <MaterialIcons name="business" size={40} color="#FFFFFF" />
+            <Text style={styles.menuTitle}>Panel de Proveedor</Text>
+          </View>
+          
+          <ScrollView style={styles.menuScrollView}>
             <TouchableOpacity
-              style={styles.botonCerrar}
-              onPress={() => setModalVisibleProfile(false)}
+              style={styles.menuItem}
+              onPress={() => {
+                toggleMenu();
+                navigation.navigate("GestionServicios");
+              }}
             >
-              <Text style={styles.textoBoton}>Cerrar</Text>
+              <MaterialIcons name="settings" size={24} color="#0047AB" style={styles.menuItemIcon} />
+              <Text style={styles.menuText}>Gestionar Servicios</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => {
+                toggleMenu();
+                navigation.navigate("PantallaNotificacion");
+              }}
+            >
+              <MaterialIcons name="notifications" size={24} color="#0047AB" style={styles.menuItemIcon} />
+              <Text style={styles.menuText}>Notificaciones</Text>
+            </TouchableOpacity>
+          </ScrollView>
+          
+          <View style={styles.menuFooter}>
+            <TouchableOpacity style={styles.menuLogoutButton} onPress={cerrarSesion}>
+              <MaterialIcons name="logout" size={24} color="#E53935" style={styles.menuItemIcon} />
+              <Text style={styles.menuLogoutText}>Cerrar Sesión</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity style={styles.menuCloseButton} onPress={toggleMenu}>
+              <Text style={styles.menuCloseText}>Cerrar</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+
+        <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <TouchableOpacity style={styles.menuButton} onPress={toggleMenu}>
+              <MaterialIcons name="menu" size={24} color="#FFFFFF" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Solicitudes Recibidas</Text>
+            <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
+              <MaterialIcons name="refresh" size={24} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>   
-      <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContenido}>
-            {!mostrarMunicipios ? (
-              <>
-                <Text style={styles.modalTitulo}>Selecciona una Provincia</Text>
-                <ScrollView style={styles.scrollView}>
-                  {provincias.map((item) => (
-                    <TouchableOpacity
-                      key={item.id}
-                      style={[
-                        styles.opcion,
-                        provinciaSeleccionada === item.id &&
-                          styles.opcionActiva,
-                      ]}
-                      onPress={() => {
-                        setProvinciaSeleccionada(item.id);
-                        setNombreProvinciaSeleccionada(item.nombre);
-                        setMunicipioSeleccionado(null);
-                        setMunicipios([]);
-                        setMostrarMunicipios(true); // Cambia a mostrar municipios
-                      }}
-                    >
-                      <Text style={styles.textoOpcion}>{item.nombre}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </>
-            ) : (
-              <>
-                <TouchableOpacity
-                  onPress={() => setMostrarMunicipios(false)}
-                  style={styles.botonVolver}
-                >
-                  <Text style={styles.textoBoton}>← Volver</Text>
-                </TouchableOpacity>
-                <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
-                <FlatList
-                  data={municipios}
-                  keyExtractor={(item) => item.id.toString()}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.opcion,
-                        municipioSeleccionado === item.id &&
-                          styles.opcionActiva,
-                      ]}
-                      onPress={() => {
-                        setMunicipioSeleccionado(item.id);
-                        setNombreMunicipioSeleccionado(item.name);
-                        setModalVisible(false);
-                      }}
-                    >
-                      <Text style={styles.textoOpcion}>{item.name}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </>
-            )}
 
-            <TouchableOpacity
-              style={styles.botonCerrar}
-              onPress={() => setModalVisible(false)}
+        <View style={styles.filtersContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScrollContent}>
+            <TouchableOpacity 
+              style={[styles.filterButton, filtroActivo === "todas" && styles.filterButtonActive]}
+              onPress={() => setFiltroActivo("todas")}
             >
-              <Text style={styles.textoBoton}>Cerrar</Text>
+              <MaterialIcons 
+                name="list" 
+                size={16} 
+                color={filtroActivo === "todas" ? "#FFFFFF" : "#0047AB"} 
+              />
+              <Text style={[styles.filterButtonText, filtroActivo === "todas" && styles.filterButtonTextActive]}>
+                Todas
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.filterButton, filtroActivo === "pendientes" && styles.filterButtonActive]}
+              onPress={() => setFiltroActivo("pendientes")}
+            >
+              <MaterialIcons 
+                name="schedule" 
+                size={16} 
+                color={filtroActivo === "pendientes" ? "#FFFFFF" : "#F57C00"} 
+              />
+              <Text style={[styles.filterButtonText, filtroActivo === "pendientes" && styles.filterButtonTextActive]}>
+                Pendientes
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.filterButton, filtroActivo === "aceptadas" && styles.filterButtonActive]}
+              onPress={() => setFiltroActivo("aceptadas")}
+            >
+              <MaterialIcons 
+                name="check-circle" 
+                size={16} 
+                color={filtroActivo === "aceptadas" ? "#FFFFFF" : "#2E7D32"} 
+              />
+              <Text style={[styles.filterButtonText, filtroActivo === "aceptadas" && styles.filterButtonTextActive]}>
+                Aceptadas
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.filterButton, filtroActivo === "rechazadas" && styles.filterButtonActive]}
+              onPress={() => setFiltroActivo("rechazadas")}
+            >
+              <MaterialIcons 
+                name="cancel" 
+                size={16} 
+                color={filtroActivo === "rechazadas" ? "#FFFFFF" : "#D32F2F"} 
+              />
+              <Text style={[styles.filterButtonText, filtroActivo === "rechazadas" && styles.filterButtonTextActive]}>
+                Rechazadas
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0047AB" />
+            <Text style={styles.loadingText}>Cargando solicitudes...</Text>
+          </View>
+        ) : solicitudesFiltradas.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <MaterialIcons name="inbox" size={64} color="#CCCCCC" />
+            <Text style={styles.emptyTitle}>No hay solicitudes</Text>
+            <Text style={styles.emptyDescription}>
+              {filtroActivo === "todas" 
+                ? "No tienes solicitudes en este momento" 
+                : `No tienes solicitudes ${filtroActivo === "pendientes" ? "pendientes" : filtroActivo === "aceptadas" ? "aceptadas" : "rechazadas"}`}
+            </Text>
+            <TouchableOpacity style={styles.emptyButton} onPress={handleRefresh}>
+              <Text style={styles.emptyButtonText}>Actualizar</Text>
             </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
-    </View>
+        ) : (
+          <FlatList
+            data={solicitudesFiltradas}
+            keyExtractor={(item) => item.id.toString()}
+            contentContainerStyle={styles.listContainer}
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            renderItem={({ item }) => (
+              <View style={styles.requestCard}>
+                <TouchableOpacity 
+                  style={styles.cardHeader}
+                  onPress={() => toggleCardExpansion(item.id)}
+                >
+                  <View style={styles.cardHeaderLeft}>
+                    <Image
+                      source={{
+                        uri: item.images || "https://via.placeholder.com/100"
+                      }}
+                      style={styles.requestImage}
+                    />
+                    <View style={styles.requestInfo}>
+                      <Text style={styles.requestDescription} numberOfLines={1}>
+                        {item.request_description}
+                      </Text>
+                      <View style={styles.requestMeta}>
+                        <View style={styles.metaItem}>
+                          <MaterialIcons name="event" size={14} color="#666666" />
+                          <Text style={styles.metaText}>{formatDate(item.service_date)}</Text>
+                        </View>
+                        <View style={styles.metaItem}>
+                          <MaterialIcons name="location-on" size={14} color="#666666" />
+                          <Text style={styles.metaText} numberOfLines={1}>{item.direccion || "Sin dirección"}</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                  
+                  <View style={styles.cardHeaderRight}>
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
+                      {getStatusIcon(item.status)}
+                      <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+                        {item.status.toUpperCase()}
+                      </Text>
+                    </View>
+                    <MaterialIcons 
+                      name={expandedCards[item.id] ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+                      size={24} 
+                      color="#666666" 
+                    />
+                  </View>
+                </TouchableOpacity>
+                
+                {expandedCards[item.id] && (
+                  <View style={styles.cardBody}>
+                    <View style={styles.cardSection}>
+                      <Text style={styles.sectionTitle}>Detalles de la solicitud</Text>
+                      
+                      <View style={styles.detailRow}>
+                        <View style={styles.detailItem}>
+                          <MaterialIcons name="description" size={16} color="#0047AB" />
+                          <Text style={styles.detailLabel}>Descripción:</Text>
+                        </View>
+                        <Text style={styles.detailValue}>{item.request_description}</Text>
+                      </View>
+                      
+                      <View style={styles.detailRow}>
+                        <View style={styles.detailItem}>
+                          <MaterialIcons name="event" size={16} color="#0047AB" />
+                          <Text style={styles.detailLabel}>Fecha de servicio:</Text>
+                        </View>
+                        <Text style={styles.detailValue}>{formatDate(item.service_date)}</Text>
+                      </View>
+                      
+                      <View style={styles.detailRow}>
+                        <View style={styles.detailItem}>
+                          <MaterialIcons name="location-on" size={16} color="#0047AB" />
+                          <Text style={styles.detailLabel}>Dirección:</Text>
+                        </View>
+                        <Text style={styles.detailValue}>{item.direccion || "Sin dirección"}</Text>
+                      </View>
+                      
+                      <View style={styles.detailRow}>
+                        <View style={styles.detailItem}>
+                          <MaterialIcons name="attach-money" size={16} color="#0047AB" />
+                          <Text style={styles.detailLabel}>Precio:</Text>
+                        </View>
+                        {item.price > 0 ? (
+                          <Text style={styles.detailValue}>{item.price} USD</Text>
+                        ) : (
+                          <View style={styles.priceInputContainer}>
+                            <TextInput
+                              style={styles.priceInput}
+                              placeholder="0.00"
+                              keyboardType="numeric"
+                              maxLength={6}
+                              value={precio[item.id]?.precio?.toString() || ''}
+                              onChangeText={(valor) => handleCambioPrecio(item.id, Number.parseFloat(valor) || 0)}
+                            />
+                            <TouchableOpacity 
+                              style={styles.priceButton}
+                              onPress={() => establecerPrecio(item.id)}
+                            >
+                              <Text style={styles.priceButtonText}>Establecer</Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+                      </View>
+                    </View>
+                    
+                    {item.status !== "Rechazada" && (
+                      <View style={styles.actionsContainer}>
+                        {item.status === "pendiente" && (
+                          <View style={styles.actionButtons}>
+                            <TouchableOpacity
+                              style={styles.acceptButton}
+                              onPress={() => manejarSolicitud(item.id, "aceptada por proveedor")}
+                            >
+                              <MaterialIcons name="check" size={16} color="#FFFFFF" />
+                              <Text style={styles.actionButtonText}>Aceptar</Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity
+                              style={styles.rejectButton}
+                              onPress={() => manejarSolicitud(item.id, "Rechazada")}
+                            >
+                              <MaterialIcons name="close" size={16} color="#FFFFFF" />
+                              <Text style={styles.actionButtonText}>Rechazar</Text>
+                            </TouchableOpacity>
+                          </View>
+                        )}
+                        {(item.status === "aceptada" || item.status === "aceptada por proveedor") && (
+                          <TouchableOpacity
+                            style={styles.quoteButton}
+                            onPress={() => mostrarModalCotizacion(item.id)}
+                          >
+                            <MaterialIcons name="receipt" size={16} color="#FFFFFF" />
+                            <Text style={styles.actionButtonText}>Enviar Cotización</Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+                    )}
+                    
+                    <View style={styles.cardSection}>
+                      <Text style={styles.sectionTitle}>Notas</Text>
+                      
+                      {item.request_notas.length > 0 ? (
+                        <View style={styles.chatContainer}>
+                          <FlatList
+                            data={item.request_notas}
+                            keyExtractor={(nota) => nota.id.toString()}
+                            scrollEnabled={false}
+                            renderItem={({ item: nota }) => (
+                              <View style={styles.chatItem}>
+                                {nota.nota_client && (
+                                  <View style={styles.clientMessage}>
+                                    <Text style={styles.messageText}>{nota.nota_client}</Text>
+                                    <Text style={styles.messageTime}>
+                                      {formatDate(nota.created_at)}
+                                    </Text>
+                                  </View>
+                                )}
+                                
+                                {nota.nota_provider && (
+                                  <View style={styles.providerMessage}>
+                                    <Text style={styles.messageText}>{nota.nota_provider}</Text>
+                                    <Text style={styles.messageTime}>
+                                      {formatDate(nota.created_at)}
+                                    </Text>
+                                  </View>
+                                )}
+                              </View>
+                            )}
+                          />
+                        </View>
+                      ) : (
+                        <Text style={styles.emptyNotes}>No hay notas para esta solicitud</Text>
+                      )}
+                      
+                      {item.status !== "Rechazada" && (
+                        <View style={styles.newNoteContainer}>
+                          <TextInput
+                            style={styles.noteInput}
+                            placeholder="Escribir nueva nota..."
+                            value={nuevaNotaSolicitud}
+                            onChangeText={setNuevaNotaSolicitud}
+                            multiline
+                          />
+                          <TouchableOpacity
+                            style={styles.sendButton}
+                            onPress={() => handleCrearNotaSolicitud(item.id, nuevaNotaSolicitud)}
+                          >
+                            <MaterialIcons name="send" size={20} color="#FFFFFF" />
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                    
+                    {item.cotizaciones.length > 0 && (
+                      <View style={styles.cardSection}>
+                        <Text style={styles.sectionTitle}>Cotizaciones</Text>
+                        
+                        <FlatList
+                          data={item.cotizaciones}
+                          keyExtractor={(cotizacion) => cotizacion.id.toString()}
+                          scrollEnabled={false}
+                          renderItem={({ item: cotizacion }) => (
+                            <View style={styles.quoteCard}>
+                              <View style={styles.quoteHeader}>
+                                <Text style={styles.quoteTitle}>Cotización #{cotizacion.id}</Text>
+                              </View>
+                              
+                              <View style={styles.quoteDetails}>
+                                <View style={styles.quoteRow}>
+                                  <View style={styles.quoteItem}>
+                                    <MaterialIcons name="build" size={16} color="#0047AB" />
+                                    <Text style={styles.quoteLabel}>Mano de obra:</Text>
+                                  </View>
+                                  <Text style={styles.quoteValue}>{cotizacion.costo_mano_obra} USD</Text>
+                                </View>
+                                
+                                <View style={styles.quoteRow}>
+                                  <View style={styles.quoteItem}>
+                                    <MaterialIcons name="category" size={16} color="#0047AB" />
+                                    <Text style={styles.quoteLabel}>Materiales:</Text>
+                                  </View>
+                                  <Text style={styles.quoteValue}>{cotizacion.costo_materiales} USD</Text>
+                                </View>
+                                
+                                <View style={styles.quoteRow}>
+                                  <View style={styles.quoteItem}>
+                                    <MaterialIcons name="attach-money" size={16} color="#0047AB" />
+                                    <Text style={styles.quoteLabel}>Total:</Text>
+                                  </View>
+                                  <Text style={styles.quoteTotalValue}>
+                                    {Number.parseFloat(cotizacion.costo_mano_obra) + Number.parseFloat(cotizacion.costo_materiales)} USD
+                                  </Text>
+                                </View>
+                                
+                                <View style={styles.quoteDescription}>
+                                  <Text style={styles.quoteDescriptionLabel}>Descripción:</Text>
+                                  <Text style={styles.quoteDescriptionText}>{cotizacion.descripcion}</Text>
+                                </View>
+                              </View>
+                              
+                              {cotizacion.cotizacion_notas?.length > 0 && (
+                                <View style={styles.quoteNotes}>
+                                  <Text style={styles.quoteNotesTitle}>Notas de la cotización:</Text>
+                                  
+                                  <View style={styles.chatContainer}>
+                                    <FlatList
+                                      data={cotizacion.cotizacion_notas}
+                                      keyExtractor={(nota, index) => index.toString()}
+                                      scrollEnabled={false}
+                                      renderItem={({ item: nota }) => (
+                                        <View style={styles.chatItem}>
+                                          {nota.nota_client && (
+                                            <View style={styles.clientMessage}>
+                                              <Text style={styles.messageText}>{nota.nota_client}</Text>
+                                              <Text style={styles.messageTime}>
+                                                {formatDate(nota.updated_at)}
+                                              </Text>
+                                            </View>
+                                          )}
+                                          
+                                          {nota.nota_provider && (
+                                            <View style={styles.providerMessage}>
+                                              <Text style={styles.messageText}>{nota.nota_provider}</Text>
+                                              <Text style={styles.messageTime}>
+                                                {formatDate(nota.created_at)}
+                                              </Text>
+                                            </View>
+                                          )}
+                                        </View>
+                                      )}
+                                    />
+                                  </View>
+                                  
+                                  {nota.nota_client && !nota.nota_provider && item.status !== "Rechazada" && (
+                                    <View style={styles.newNoteContainer}>
+                                      <TextInput
+                                        style={styles.noteInput}
+                                        placeholder="Responder a la nota..."
+                                        value={cotizacionesNotas[nota.id]?.texto || ""}
+                                        onChangeText={(texto) => handleCambioNotaCotizacion(nota.id, texto)}
+                                        multiline
+                                      />
+                                      <TouchableOpacity
+                                        style={styles.sendButton}
+                                        onPress={() => handleGuardarRespuesta(nota.id, nota)}
+                                      >
+                                        <MaterialIcons name="send" size={20} color="#FFFFFF" />
+                                      </TouchableOpacity>
+                                    </View>
+                                  )}
+                                </View>
+                              )}
+                            </View>
+                          )}
+                        />
+                      </View>
+                    )}
+                    
+                    {item.contraofertas.length > 0 && (
+                      <View style={styles.cardSection}>
+                        <Text style={styles.sectionTitle}>Contraofertas</Text>
+                        
+                        <FlatList
+                          data={item.contraofertas}
+                          keyExtractor={(contraoferta) => contraoferta.id.toString()}
+                          scrollEnabled={false}
+                          renderItem={({ item: contraoferta }) => (
+                            <View style={styles.quoteCard}>
+                              <View style={styles.quoteHeader}>
+                                <Text style={styles.quoteTitle}>Contraoferta #{contraoferta.id}</Text>
+                              </View>
+                              
+                              <View style={styles.quoteDetails}>
+                                <View style={styles.quoteRow}>
+                                  <View style={styles.quoteItem}>
+                                    <MaterialIcons name="build" size={16} color="#0047AB" />
+                                    <Text style={styles.quoteLabel}>Mano de obra:</Text>
+                                  </View>
+                                  <Text style={styles.quoteValue}>{contraoferta.costo_mano_obra} USD</Text>
+                                </View>
+                                
+                                <View style={styles.quoteRow}>
+                                  <View style={styles.quoteItem}>
+                                    <MaterialIcons name="category" size={16} color="#0047AB" />
+                                    <Text style={styles.quoteLabel}>Materiales:</Text>
+                                  </View>
+                                  <Text style={styles.quoteValue}>{contraoferta.costo_materiales} USD</Text>
+                                </View>
+                                
+                                <View style={styles.quoteRow}>
+                                  <View style={styles.quoteItem}>
+                                    <MaterialIcons name="attach-money" size={16} color="#0047AB" />
+                                    <Text style={styles.quoteLabel}>Total:</Text>
+                                  </View>
+                                  <Text style={styles.quoteTotalValue}>
+                                    {Number.parseFloat(contraoferta.costo_mano_obra) + Number.parseFloat(contraoferta.costo_materiales)} USD
+                                  </Text>
+                                </View>
+                                
+                                <View style={styles.quoteDescription}>
+                                  <Text style={styles.quoteDescriptionLabel}>Descripción:</Text>
+                                  <Text style={styles.quoteDescriptionText}>{contraoferta.descripcion}</Text>
+                                </View>
+                              </View>
+                              
+                              <View style={styles.quoteNotes}>
+                                <Text style={styles.quoteNotesTitle}>Notas de la contraoferta:</Text>
+                                
+                                {contraoferta.contraoferta_notas.length > 0 ? (
+                                  <View style={styles.chatContainer}>
+                                    <FlatList
+                                      data={contraoferta.contraoferta_notas}
+                                      keyExtractor={(nota, index) => index.toString()}
+                                      scrollEnabled={false}
+                                      renderItem={({ item: nota }) => (
+                                        <View style={styles.chatItem}>
+                                          {nota.nota_client && (
+                                            <View style={styles.clientMessage}>
+                                              <Text style={styles.messageText}>{nota.nota_client}</Text>
+                                              <Text style={styles.messageTime}>
+                                                {formatDate(nota.updated_at)}
+                                              </Text>
+                                            </View>
+                                          )}
+                                          
+                                          {nota.nota_provider && (
+                                            <View style={styles.providerMessage}>
+                                              <Text style={styles.messageText}>{nota.nota_provider}</Text>
+                                              <Text style={styles.messageTime}>
+                                                {formatDate(nota.created_at)}
+                                              </Text>
+                                            </View>
+                                          )}
+                                        </View>
+                                      )}
+                                    />
+                                  </View>
+                                ) : (
+                                  <Text style={styles.emptyNotes}>No hay notas para esta contraoferta</Text>
+                                )}
+                                
+                                {item.status !== "Rechazada" && (
+                                  <View style={styles.newNoteContainer}>
+                                    <TextInput
+                                      style={styles.noteInput}
+                                      placeholder="Escribir nueva nota..."
+                                      value={nuevaNota}
+                                      onChangeText={setNuevaNota}
+                                      multiline
+                                    />
+                                    <TouchableOpacity
+                                      style={styles.sendButton}
+                                      onPress={() => handleCrearNota(contraoferta.id, nuevaNota)}
+                                    >
+                                      <MaterialIcons name="send" size={20} color="#FFFFFF" />
+                                    </TouchableOpacity>
+                                  </View>
+                                )}
+                              </View>
+                            </View>
+                          )}
+                        />
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
+          />
+        )}
+
+        <Modal visible={modalVisible} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Nueva Cotización</Text>
+                <TouchableOpacity 
+                  style={styles.modalCloseButton}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <MaterialIcons name="close" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
+              </View>
+              
+              <ScrollView style={styles.modalBody}>
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Descripción</Text>
+                  <TextInput
+                    style={styles.formTextArea}
+                    placeholder="Detalle los servicios incluidos en esta cotización..."
+                    value={descripcion}
+                    onChangeText={setDescripcion}
+                    multiline
+                    numberOfLines={4}
+                  />
+                </View>
+                
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Costo de Mano de Obra (USD)</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    placeholder="0.00"
+                    keyboardType="numeric"
+                    value={costoManoObra}
+                    onChangeText={setCostoManoObra}
+                  />
+                </View>
+                
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Costo de Materiales (USD)</Text>
+                  <TextInput
+                    style={styles.formInput}
+                    placeholder="0.00"
+                    keyboardType="numeric"
+                    value={costoMateriales}
+                    onChangeText={setCostoMateriales}
+                  />
+                </View>
+                
+                <View style={styles.formGroup}>
+                  <Text style={styles.formLabel}>Total (USD)</Text>
+                  <View style={styles.totalContainer}>
+                    <Text style={styles.totalAmount}>
+                      {(Number.parseFloat(costoManoObra) || 0) + (Number.parseFloat(costoMateriales) || 0)}
+                    </Text>
+                  </View>
+                </View>
+              </ScrollView>
+              
+              <View style={styles.modalFooter}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={handleGuardar}
+                >
+                  <Text style={styles.saveButtonText}>Enviar Cotización</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 };
 
-export default PantallaGestionServicios;
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#0047AB",
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#F5F7FA",
+  },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "#000",
+    zIndex: 1,
+  },
+  menuContainer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 280,
+    height: "100%",
+    backgroundColor: "#FFFFFF",
+    zIndex: 2,
+    elevation: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 2, height: 0 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    display: "flex",
+    flexDirection: "column",
+  },
+  menuHeader: {
+    padding: 20,
+    backgroundColor: "#0047AB",
+    alignItems: "center",
+    paddingTop: 40,
+  },
+  menuTitle: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 10,
+  },
+  menuScrollView: {
+    flex: 1,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#F0F0F0",
+  },
+  menuItemIcon: {
+    marginRight: 15,
+    width: 24,
+    textAlign: "center",
+  },
+  menuText: {
+    fontSize: 16,
+    color: "#333333",
+  },
+  menuFooter: {
+    borderTopWidth: 1,
+    borderTopColor: "#F0F0F0",
+  },
+  menuLogoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+    backgroundColor: "#F8F8F8",
+  },
+  menuLogoutText: {
+    fontSize: 16,
+    color: "#E53935",
+    fontWeight: "500",
+  },
+  menuCloseButton: {
+    padding: 15,
+    alignItems: "center",
+    backgroundColor: "#EEEEEE",
+  },
+  menuCloseText: {
+    fontSize: 16,
+    color: "#333333",
+    fontWeight: "500",
+  },
+  header: {
+    backgroundColor: "#0047AB",
+    paddingTop: Platform.OS === 'ios' ? 0 : 10,
+    paddingBottom: 15,
+  },
+  headerTop: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  menuButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  headerTitle: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  refreshButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  filtersContainer: {
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEEEEE",
+  },
+  filtersScrollContent: {
+    paddingHorizontal: 15,
+  },
+  filterButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    marginRight: 10,
+    backgroundColor: "#FFFFFF",
+  },
+  filterButtonActive: {
+    backgroundColor: "#0047AB",
+    borderColor: "#0047AB",
+  },
+  filterButtonText: {
+    fontSize: 14,
+    color: "#333333",
+    marginLeft: 5,
+  },
+  filterButtonTextActive: {
+    color: "#FFFFFF",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666666",
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333333",
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  emptyDescription: {
+    fontSize: 14,
+    color: "#666666",
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  emptyButton: {
+    backgroundColor: "#0047AB",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  emptyButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  listContainer: {
+    padding: 15,
+    paddingBottom: 30,
+  },
+  requestCard: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    overflow: "hidden",
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 15,
+    borderBottomWidth: 0,
+    borderBottomColor: "#F0F0F0",
+  },
+  cardHeaderLeft: {
+    flexDirection: "row",
+    flex: 1,
+  },
+  requestImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginRight: 15,
+  },
+  requestInfo: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  requestDescription: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333333",
+    marginBottom: 5,
+  },
+  requestMeta: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  metaItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 12,
+    marginBottom: 2,
+  },
+  metaText: {
+    fontSize: 12,
+    color: "#666666",
+    marginLeft: 4,
+  },
+  cardHeaderRight: {
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+  },
+  statusBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginBottom: 5,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: "bold",
+    marginLeft: 4,
+  },
+  cardBody: {
+    padding: 15,
+  },
+  cardSection: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333333",
+    marginBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EEEEEE",
+    paddingBottom: 8,
+  },
+  detailRow: {
+    marginBottom: 10,
+  },
+  detailItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333333",
+    marginLeft: 8,
+  },
+  detailValue: {
+    fontSize: 14,
+    color: "#666666",
+    marginLeft: 24,
+  },
+  priceInputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginLeft: 24,
+  },
+  priceInput: {
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    width: 100,
+    fontSize: 14,
+  },
+  priceButton: {
+    backgroundColor: "#0047AB",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginLeft: 10,
+  },
+  priceButtonText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  actionsContainer: {
+    marginBottom: 20,
+  },
+  actionButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  acceptButton: {
+    flex: 1,
+    backgroundColor: "#2E7D32",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderRadius: 6,
+    marginRight: 8,
+  },
+  rejectButton: {
+    flex: 1,
+    backgroundColor: "#D32F2F",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderRadius: 6,
+    marginLeft: 8,
+  },
+  quoteButton: {
+    backgroundColor: "#0047AB",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderRadius: 6,
+  },
+  actionButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "500",
+    marginLeft: 8,
+  },
+  chatContainer: {
+    marginBottom: 15,
+  },
+  chatItem: {
+    marginBottom: 10,
+  },
+  clientMessage: {
+    backgroundColor: "#F0F4FF",
+    padding: 12,
+    borderRadius: 12,
+    borderTopLeftRadius: 4,
+    maxWidth: "80%",
+    alignSelf: "flex-start",
+  },
+  providerMessage: {
+    backgroundColor: "#E3F2FD",
+    padding: 12,
+    borderRadius: 12,
+    borderTopRightRadius: 4,
+    maxWidth: "80%",
+    alignSelf: "flex-end",
+  },
+  messageText: {
+    fontSize: 14,
+    color: "#333333",
+  },
+  messageTime: {
+    fontSize: 10,
+    color: "#666666",
+    marginTop: 4,
+    alignSelf: "flex-end",
+  },
+  emptyNotes: {
+    fontSize: 14,
+    color: "#999999",
+    fontStyle: "italic",
+    textAlign: "center",
+    padding: 15,
+  },
+  newNoteContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    borderRadius: 20,
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+  },
+  noteInput: {
+    flex: 1,
+    fontSize: 14,
+    paddingVertical: 8,
+  },
+  sendButton: {
+    width: 36,
+    height: 36,
+    backgroundColor: "#0047AB",
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  quoteCard: {
+    backgroundColor: "#FAFAFA",
+    borderRadius: 8,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#EEEEEE",
+    overflow: "hidden",
+  },
+  quoteHeader: {
+    backgroundColor: "#0047AB",
+    padding: 10,
+  },
+  quoteTitle: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "bold",
+  },
+  quoteDetails: {
+    padding: 15,
+  },
+  quoteRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  quoteItem: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  quoteLabel: {
+    fontSize: 14,
+    color: "#333333",
+    marginLeft: 8,
+  },
+  quoteValue: {
+    fontSize: 14,
+    color: "#666666",
+  },
+  quoteTotalValue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#0047AB",
+  },
+  quoteDescription: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: "#EEEEEE",
+  },
+  quoteDescriptionLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333333",
+    marginBottom: 5,
+  },
+  quoteDescriptionText: {
+    fontSize: 14,
+    color: "#666666",
+    lineHeight: 20,
+  },
+  quoteNotes: {
+    padding: 15,
+    borderTopWidth: 1,
+    borderTopColor: "#EEEEEE",
+  },
+  quoteNotesTitle: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333333",
+    marginBottom: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    width: "90%",
+    maxHeight: "80%",
+    overflow: "hidden",
+  },
+  modalHeader: {
+    backgroundColor: "#0047AB",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 15,
+  },
+  modalTitle: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  modalCloseButton: {
+    width: 36,
+    height: 36,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalBody: {
+    padding: 15,
+    maxHeight: 400,
+  },
+  formGroup: {
+    marginBottom: 15,
+  },
+  formLabel: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#333333",
+    marginBottom: 8,
+  },
+  formInput: {
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+  },
+  formTextArea: {
+    borderWidth: 1,
+    borderColor: "#DDDDDD",
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 14,
+    minHeight: 100,
+    textAlignVertical: "top",
+  },
+  totalContainer: {
+    backgroundColor: "#F5F5F5",
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  totalAmount: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#0047AB",
+  },
+  modalFooter: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    borderTopColor: "#EEEEEE",
+    padding: 15,
+  },
+  cancelButton: {
+    flex: 1,
+    backgroundColor: "#F5F5F5",
+    paddingVertical: 12,
+    borderRadius: 6,
+    marginRight: 8,
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: "#666666",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  saveButton: {
+    flex: 1,
+    backgroundColor: "#0047AB",
+    paddingVertical: 12,
+    borderRadius: 6,
+    marginLeft: 8,
+    alignItems: "center",
+  },
+  saveButtonText: {
+    color: "#FFFFFF",
+    fontSize: 14,
+    fontWeight: "500",
+  },
+});
+
+export default PantallaGestionSolicitudes;
