@@ -1,0 +1,114 @@
+76a98ae6a4f6c8163b0ad2c27a5bab3d
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+var _slicedToArray2 = _interopRequireDefault(require("@babel/runtime/helpers/slicedToArray"));
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getPatternParts = getPatternParts;
+function getPatternParts(path) {
+  var parts = [];
+  var current = {
+    segment: ''
+  };
+  var isRegex = false;
+  var isParam = false;
+  var regexInnerParens = 0;
+  for (var i = 0; i <= path.length; i++) {
+    var _char = path[i];
+    if (_char != null) {
+      current.segment += _char;
+    }
+    if (_char === ':') {
+      if (current.segment === ':') {
+        isParam = true;
+      } else if (!isRegex) {
+        throw new Error("Encountered ':' in the middle of a segment in path: ".concat(path));
+      }
+    } else if (_char === '(') {
+      if (isParam) {
+        if (isRegex) {
+          regexInnerParens++;
+        } else {
+          isRegex = true;
+        }
+      } else {
+        throw new Error("Encountered '(' without preceding ':' in path: ".concat(path));
+      }
+    } else if (_char === ')') {
+      if (isParam && isRegex) {
+        if (regexInnerParens) {
+          regexInnerParens--;
+          current.regex += _char;
+        } else {
+          isRegex = false;
+          isParam = false;
+        }
+      } else {
+        throw new Error("Encountered ')' without preceding '(' in path: ".concat(path));
+      }
+    } else if (_char === '?') {
+      if (current.param) {
+        isParam = false;
+        current.optional = true;
+      } else {
+        throw new Error("Encountered '?' without preceding ':' in path: ".concat(path));
+      }
+    } else if (_char == null || _char === '/' && !isRegex) {
+      isParam = false;
+      current.segment = current.segment.replace(/\/$/, '');
+      if (current.segment === '') {
+        continue;
+      }
+      if (current.param) {
+        current.param = current.param.replace(/^:/, '');
+      }
+      if (current.regex) {
+        current.regex = current.regex.replace(/^\(/, '').replace(/\)$/, '');
+      }
+      parts.push(current);
+      if (_char == null) {
+        break;
+      }
+      current = {
+        segment: ''
+      };
+    }
+    if (isRegex) {
+      current.regex = current.regex || '';
+      current.regex += _char;
+    }
+    if (isParam && !isRegex) {
+      current.param = current.param || '';
+      current.param += _char;
+    }
+  }
+  if (isRegex) {
+    throw new Error("Could not find closing ')' in path: ".concat(path));
+  }
+  var params = parts.map(function (part) {
+    return part.param;
+  }).filter(Boolean);
+  var _iterator = _createForOfIteratorHelper(params.entries()),
+    _step;
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var _step$value = (0, _slicedToArray2["default"])(_step.value, 2),
+        index = _step$value[0],
+        param = _step$value[1];
+      if (params.indexOf(param) !== index) {
+        throw new Error("Duplicate param name '".concat(param, "' found in path: ").concat(path));
+      }
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+  return parts;
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJnZXRQYXR0ZXJuUGFydHMiLCJwYXRoIiwicGFydHMiLCJjdXJyZW50Iiwic2VnbWVudCIsImlzUmVnZXgiLCJpc1BhcmFtIiwicmVnZXhJbm5lclBhcmVucyIsImkiLCJsZW5ndGgiLCJjaGFyIiwiRXJyb3IiLCJjb25jYXQiLCJyZWdleCIsInBhcmFtIiwib3B0aW9uYWwiLCJyZXBsYWNlIiwicHVzaCIsInBhcmFtcyIsIm1hcCIsInBhcnQiLCJmaWx0ZXIiLCJCb29sZWFuIiwiX2l0ZXJhdG9yIiwiX2NyZWF0ZUZvck9mSXRlcmF0b3JIZWxwZXIiLCJlbnRyaWVzIiwiX3N0ZXAiLCJzIiwibiIsImRvbmUiLCJfc3RlcCR2YWx1ZSIsIl9zbGljZWRUb0FycmF5MiIsInZhbHVlIiwiaW5kZXgiLCJpbmRleE9mIiwiZXJyIiwiZSIsImYiXSwic291cmNlcyI6WyIuLi8uLi9zcmMvZ2V0UGF0dGVyblBhcnRzLnRzeCJdLCJzb3VyY2VzQ29udGVudCI6W251bGxdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7QUFVTyxTQUFTQSxlQUFlQSxDQUFDQyxJQUFZLEVBQWlCO0VBQzNELElBQU1DLEtBQW9CLEdBQUcsRUFBRTtFQUUvQixJQUFJQyxPQUFvQixHQUFHO0lBQUVDLE9BQU8sRUFBRTtFQUFHLENBQUM7RUFFMUMsSUFBSUMsT0FBTyxHQUFHLEtBQUs7RUFDbkIsSUFBSUMsT0FBTyxHQUFHLEtBQUs7RUFDbkIsSUFBSUMsZ0JBQWdCLEdBQUcsQ0FBQztFQUd4QixLQUFLLElBQUlDLENBQUMsR0FBRyxDQUFDLEVBQUVBLENBQUMsSUFBSVAsSUFBSSxDQUFDUSxNQUFNLEVBQUVELENBQUMsRUFBRSxFQUFFO0lBQ3JDLElBQU1FLEtBQUksR0FBR1QsSUFBSSxDQUFDTyxDQUFDLENBQUM7SUFFcEIsSUFBSUUsS0FBSSxJQUFJLElBQUksRUFBRTtNQUNoQlAsT0FBTyxDQUFDQyxPQUFPLElBQUlNLEtBQUk7SUFDekI7SUFFQSxJQUFJQSxLQUFJLEtBQUssR0FBRyxFQUFF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

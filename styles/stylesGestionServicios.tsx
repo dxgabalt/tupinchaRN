@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   /** 🔥 Contenedor Principal */
@@ -57,12 +57,22 @@ const styles = StyleSheet.create({
   },
 
   /** 🔥 Encabezado */
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    backgroundColor: '#FF0314',
-    elevation: 5,
+   header: {
+     backgroundColor: "#003366",
+     paddingTop: Platform.OS === "ios" ? 0 : 10,
+     paddingBottom: 15,
+   },
+  headerContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  headerTitle: {
+    color: "#FFFFFF",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   menuButton: {
     padding: 10,

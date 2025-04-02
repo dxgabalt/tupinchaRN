@@ -1,0 +1,93 @@
+6001a9a453de372539f21cc0ccd6f346
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.useFocusEffect = useFocusEffect;
+var React = _interopRequireWildcard(require("react"));
+var _useNavigation = require("./useNavigation.js");
+function _getRequireWildcardCache(e) {
+  if ("function" != typeof WeakMap) return null;
+  var r = new WeakMap(),
+    t = new WeakMap();
+  return (_getRequireWildcardCache = function _getRequireWildcardCache(e) {
+    return e ? t : r;
+  })(e);
+}
+function _interopRequireWildcard(e, r) {
+  if (!r && e && e.__esModule) return e;
+  if (null === e || "object" != (0, _typeof2["default"])(e) && "function" != typeof e) return {
+    "default": e
+  };
+  var t = _getRequireWildcardCache(r);
+  if (t && t.has(e)) return t.get(e);
+  var n = {
+      __proto__: null
+    },
+    a = Object.defineProperty && Object.getOwnPropertyDescriptor;
+  for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) {
+    var i = a ? Object.getOwnPropertyDescriptor(e, u) : null;
+    i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u];
+  }
+  return n["default"] = e, t && t.set(e, n), n;
+}
+function useFocusEffect(effect) {
+  var navigation = (0, _useNavigation.useNavigation)();
+  if (arguments[1] !== undefined) {
+    var message = "You passed a second argument to 'useFocusEffect', but it only accepts one argument. " + "If you want to pass a dependency array, you can use 'React.useCallback':\n\n" + 'useFocusEffect(\n' + '  React.useCallback(() => {\n' + '    // Your code here\n' + '  }, [depA, depB])\n' + ');\n\n' + 'See usage guide: https://reactnavigation.org/docs/use-focus-effect';
+    console.error(message);
+  }
+  React.useEffect(function () {
+    var isFocused = false;
+    var cleanup;
+    var callback = function callback() {
+      var destroy = effect();
+      if (destroy === undefined || typeof destroy === 'function') {
+        return destroy;
+      }
+      if (process.env.NODE_ENV !== 'production') {
+        var _message = 'An effect function must not return anything besides a function, which is used for clean-up.';
+        if (destroy === null) {
+          _message += " You returned 'null'. If your effect does not require clean-up, return 'undefined' (or nothing).";
+        } else if (typeof destroy.then === 'function') {
+          _message += "\n\nIt looks like you wrote 'useFocusEffect(async () => ...)' or returned a Promise. " + 'Instead, write the async function inside your effect ' + 'and call it immediately:\n\n' + 'useFocusEffect(\n' + '  React.useCallback(() => {\n' + '    async function fetchData() {\n' + '      // You can await here\n' + '      const response = await MyAPI.getData(someId);\n' + '      // ...\n' + '    }\n\n' + '    fetchData();\n' + '  }, [someId])\n' + ');\n\n' + 'See usage guide: https://reactnavigation.org/docs/use-focus-effect';
+        } else {
+          _message += " You returned '".concat(JSON.stringify(destroy), "'.");
+        }
+        console.error(_message);
+      }
+    };
+    if (navigation.isFocused()) {
+      cleanup = callback();
+      isFocused = true;
+    }
+    var unsubscribeFocus = navigation.addListener('focus', function () {
+      if (isFocused) {
+        return;
+      }
+      if (cleanup !== undefined) {
+        cleanup();
+      }
+      cleanup = callback();
+      isFocused = true;
+    });
+    var unsubscribeBlur = navigation.addListener('blur', function () {
+      if (cleanup !== undefined) {
+        cleanup();
+      }
+      cleanup = undefined;
+      isFocused = false;
+    });
+    return function () {
+      if (cleanup !== undefined) {
+        cleanup();
+      }
+      unsubscribeFocus();
+      unsubscribeBlur();
+    };
+  }, [effect, navigation]);
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJSZWFjdCIsIl9pbnRlcm9wUmVxdWlyZVdpbGRjYXJkIiwicmVxdWlyZSIsIl91c2VOYXZpZ2F0aW9uIiwiX2dldFJlcXVpcmVXaWxkY2FyZENhY2hlIiwiZSIsIldlYWtNYXAiLCJyIiwidCIsIl9fZXNNb2R1bGUiLCJfdHlwZW9mMiIsImhhcyIsImdldCIsIm4iLCJfX3Byb3RvX18iLCJhIiwiT2JqZWN0IiwiZGVmaW5lUHJvcGVydHkiLCJnZXRPd25Qcm9wZXJ0eURlc2NyaXB0b3IiLCJ1IiwiaGFzT3duUHJvcGVydHkiLCJjYWxsIiwiaSIsInNldCIsInVzZUZvY3VzRWZmZWN0IiwiZWZmZWN0IiwibmF2aWdhdGlvbiIsInVzZU5hdmlnYXRpb24iLCJhcmd1bWVudHMiLCJ1bmRlZmluZWQiLCJtZXNzYWdlIiwiY29uc29sZSIsImVycm9yIiwidXNlRWZmZWN0IiwiaXNGb2N1c2VkIiwiY2xlYW51cCIsImNhbGxiYWNrIiwiZGVzdHJveSIsInByb2Nlc3MiLCJlbnYiLCJOT0RFX0VOViIsInRoZW4iLCJjb25jYXQiLCJKU09OIiwic3RyaW5naWZ5IiwidW5zdWJzY3JpYmVGb2N1cyIsImFkZExpc3RlbmVyIiwidW5zdWJzY3JpYmVCbHVyIl0sInNvdXJjZXMiOlsiLi4vLi4vc3JjL3VzZUZvY3VzRWZmZWN0LnRzeCJdLCJzb3VyY2VzQ29udGVudCI6W251bGxdLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7QUFBQSxJQUFBQSxLQUFBLEdBQUFDLHVCQUFBLENBQUFDLE9BQUE7QUFFQSxJQUFBQyxjQUFBLEdBQUFELE9BQUE7QUFBZ0QsU0FBQUUseUJBQUFDLENBQUE7RUFBQSx5QkFBQUMsT0FBQTtFQUFBLElBQUFDLENBQUEsT0FBQUQsT0FBQTtJQUFBRSxDQUFBLE9BQUFGLE9BQUE7RUFBQSxRQUFBRix3QkFBQSxZQUFBQSx5QkFBQUMsQ0FBQTtJQUFBLE9BQUFBLENBQUEsR0FBQUcsQ0FBQSxHQUFBRCxDQUFBO0VBQUEsR0FBQUYsQ0FBQTtBQUFBO0FBQUEsU0FB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

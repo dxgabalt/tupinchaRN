@@ -1,6 +1,10 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    "strict": true, "paths": {
+      "react-native/Libraries/Animated/NativeAnimatedHelper": [
+        "./__mocks__/react-native/Libraries/Animated/NativeAnimatedHelper"
+      ]
+    }
   }
 }

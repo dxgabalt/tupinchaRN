@@ -1,0 +1,82 @@
+e5bcb336575cd2b3d54aeeccbdb9134c
+"use strict";
+
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+var _typeof2 = _interopRequireDefault(require("@babel/runtime/helpers/typeof"));
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t["return"] || t["return"](); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.useFocusedListenersChildrenAdapter = useFocusedListenersChildrenAdapter;
+var React = _interopRequireWildcard(require("react"));
+var _NavigationBuilderContext = require("./NavigationBuilderContext.js");
+function _getRequireWildcardCache(e) {
+  if ("function" != typeof WeakMap) return null;
+  var r = new WeakMap(),
+    t = new WeakMap();
+  return (_getRequireWildcardCache = function _getRequireWildcardCache(e) {
+    return e ? t : r;
+  })(e);
+}
+function _interopRequireWildcard(e, r) {
+  if (!r && e && e.__esModule) return e;
+  if (null === e || "object" != (0, _typeof2["default"])(e) && "function" != typeof e) return {
+    "default": e
+  };
+  var t = _getRequireWildcardCache(r);
+  if (t && t.has(e)) return t.get(e);
+  var n = {
+      __proto__: null
+    },
+    a = Object.defineProperty && Object.getOwnPropertyDescriptor;
+  for (var u in e) if ("default" !== u && {}.hasOwnProperty.call(e, u)) {
+    var i = a ? Object.getOwnPropertyDescriptor(e, u) : null;
+    i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u];
+  }
+  return n["default"] = e, t && t.set(e, n), n;
+}
+function useFocusedListenersChildrenAdapter(_ref) {
+  var navigation = _ref.navigation,
+    focusedListeners = _ref.focusedListeners;
+  var _React$useContext = React.useContext(_NavigationBuilderContext.NavigationBuilderContext),
+    addListener = _React$useContext.addListener;
+  var listener = React.useCallback(function (callback) {
+    if (navigation.isFocused()) {
+      var _iterator = _createForOfIteratorHelper(focusedListeners),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var _listener = _step.value;
+          var _listener2 = _listener(callback),
+            handled = _listener2.handled,
+            result = _listener2.result;
+          if (handled) {
+            return {
+              handled: handled,
+              result: result
+            };
+          }
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+      return {
+        handled: true,
+        result: callback(navigation)
+      };
+    } else {
+      return {
+        handled: false,
+        result: null
+      };
+    }
+  }, [focusedListeners, navigation]);
+  React.useEffect(function () {
+    return addListener === null || addListener === void 0 ? void 0 : addListener('focus', listener);
+  }, [addListener, listener]);
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJuYW1lcyI6WyJSZWFjdCIsIl9pbnRlcm9wUmVxdWlyZVdpbGRjYXJkIiwicmVxdWlyZSIsIl9OYXZpZ2F0aW9uQnVpbGRlckNvbnRleHQiLCJfZ2V0UmVxdWlyZVdpbGRjYXJkQ2FjaGUiLCJlIiwiV2Vha01hcCIsInIiLCJ0IiwiX19lc01vZHVsZSIsIl90eXBlb2YyIiwiaGFzIiwiZ2V0IiwibiIsIl9fcHJvdG9fXyIsImEiLCJPYmplY3QiLCJkZWZpbmVQcm9wZXJ0eSIsImdldE93blByb3BlcnR5RGVzY3JpcHRvciIsInUiLCJoYXNPd25Qcm9wZXJ0eSIsImNhbGwiLCJpIiwic2V0IiwidXNlRm9jdXNlZExpc3RlbmVyc0NoaWxkcmVuQWRhcHRlciIsIl9yZWYiLCJuYXZpZ2F0aW9uIiwiZm9jdXNlZExpc3RlbmVycyIsIl9SZWFjdCR1c2VDb250ZXh0IiwidXNlQ29udGV4dCIsIk5hdmlnYXRpb25CdWlsZGVyQ29udGV4dCIsImFkZExpc3RlbmVyIiwibGlzdGVuZXIiLCJ1c2VDYWxsYmFjayIsImNhbGxiYWNrIiwiaXNGb2N1c2VkIiwiX2l0ZXJhdG9yIiwiX2NyZWF0ZUZvck9mSXRlcmF0b3JIZWxwZXIiLCJfc3RlcCIsInMiLCJkb25lIiwidmFsdWUiLCJfbGlzdGVuZXIyIiwiaGFuZGxlZCIsInJlc3VsdCIsImVyciIsImYiLCJ1c2VFZmZlY3QiXSwic291cmNlcyI6WyIuLi8uLi9zcmMvdXNlRm9jdXNlZExpc3RlbmVyc0NoaWxkcmVuQWRhcHRlci50c3giXSwic291cmNlc0NvbnRlbnQiOltudWxsXSwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7O0FBQ0EsSUFBQUEsS0FBQSxHQUFBQyx1QkFBQSxDQUFBQyxPQUFBO0FBRUEsSUFBQUMseUJBQUEsR0FBQUQsT0FBQTtBQUlvQyxTQUFBRSx5QkFBQUMsQ0FBQTtFQUFBLHlCQUFBQyxPQUFBO0VBQUEsSUFBQUMsQ0FBQSxPQUFBRCxPQUFBO0lBQUFFLENBQUEsT0FBQUYsT0FBQTtFQUFBLFFBQUFGLHdCQUFBLFlBQUFBLHlCQUFBQyxDQUFBO0lBQUEsT0FBQUEsQ0FBQSxHQUFBRyxDQUFBLEdBQUFELENBQUE7RUFBQSxHQUFBRixDQUFBO0FBQUE7QUFBQSxTQUFBSix3QkFBQUksQ0FBQSxFQUFBRSxDQUFBO0VBQUEsS0FBQUEsQ0FBQSxJQUFBRixDQUFBLElBQUFBLENBQUEsQ0FBQUksVUFBQSxTQUFBSixDQUFBO0VBQUEsYUFBQUEsQ0FBQSxvQkFBQUssUUFBQSxhQUFBTCxDQUFBLDBCQUFBQSxDQUFBO0lBQUEsV0FBQUE7RUFBQTtFQUFBLElBQUFHLENBQUEsR0FBQUosd0JBQUEsQ0FBQUcsQ0FBQTtFQUFBLElBQUFDLENBQUEsSUFBQUEsQ0FBQSxDQUFBRyxHQUFBLENBQUFOLENBQUEsVUFBQUcsQ0FBQSxDQUFBSSxHQUFBLENBQUFQLENBQUE7RUFBQSxJQUFBUSxDQUFBO01BQUFDLFNBQUE7SUFBQTtJQUFBQyxDQUFBLEdBQUFDLE1BQUEsQ0FBQUMsY0FBQSxJQUFBRCxNQUFBLENBQUFFLHdCQUFBO0VBQUEsU0FBQUMsQ0FBQSxJQUFBZCxDQUFBLG9CQUFBYyxDQUFBLE9BQUFDLGNBQUEsQ0FBQUMsSUFBQSxDQUFBaEIsQ0FBQSxFQUFBYyxDQUFBO0lBQUEsSUFBQUcsQ0FBQSxHQUFBUCxDQUFBLEdBQUFDLE1BQUEsQ0FBQUUsd0JBQUEsQ0FBQWIsQ0FBQSxFQUFBYyxDQUFBO0lBQUFHLENBQUEsS0FBQUEsQ0FBQSxDQUFBVixHQUFBLElBQUFVLENBQUEsQ0FBQUMsR0FBQSxJQUFBUCxNQUFBLENBQUFDLGNBQUEsQ0FBQUosQ0FBQSxFQUFBTSxDQUFBLEVBQUFHLENBQUEsSUFBQVQsQ0FBQSxDQUFBTSxDQUFBLElBQUFkLENBQUEsQ0FBQWMsQ0FBQTtFQUFBO0VBQUEsT0FBQU4sQ0FBQSxjQUFBUixDQUFBLEVBQUFHLENBQUEsSUFBQUEsQ0FBQSxDQUFBZSxHQUFBLENBQUFsQixDQUFBLEVBQUFRLENBQUEsR0FBQUEsQ0FBQTtBQUFBO0FBVzdCLFNBQVNXLGtDQUFrQ0EsQ0FBQUMsSUFBQSxFQUd0QztFQUFBLElBRlZDLFVBQVUsR0FBQUQsSUFBQSxDQUFWQyxVQUFVO0lBQ1ZDLGdCQUFBLEdBQUFGLElBQUEsQ0FBQUUsZ0JBQUE7RUFFQSxJQUFBQyxpQkFBQSxHQUF3QjVCLEtBQUssQ0FBQzZCLFVBQVUsQ0FBQzFCLHlCQUFBLENBQUEyQix3QkFBd0IsQ0FBQztJQUExREMsV0FBQSxHQUFBSCxpQkFBQSxDQUFBRyxXQUFBO0VBRVIsSUFBTUMsUUFBUSxHQUFHaEMsS0FBSyxDQUFDaUMsV0FBVyxDQUMvQixVQUFBQyxRQUF3QyxFQUFLO0lBQzVDLElBQUlSLFVBQVUsQ0FBQ1MsU0FBUyxDQUFDLENBQUMsRUFBRTtNQUFBLElBQUFDLFNBQUEsR0FBQUMsMEJBQUEsQ0FDSFYsZ0JBQWdCO1FBQUFXLEtBQUE7TUFBQTtRQUF2QyxLQUFBRixTQUFBLENBQUFHLENBQUEsTUFBQUQsS0FBQSxHQUFBRixTQUFBLENBQUF2QixDQUFBLElBQUEyQixJQUFBLEdBQXlDO1VBQUEsSUFBOUJSLFNBQVEsR0FBQU0sS0FBQSxDQUFBRyxLQUFBO1VBQ2pCLElBQUFDLFVBQUEsR0FBNEJWLFNBQVEsQ0FBQ0UsUUFBUSxDQUFDO1lBQXRDUyxPQUFPLEdBQUFELFVBQUEsQ0FBUEMsT0FBTztZQUFFQyxNQUFBLEdBQUFGLFVBQUEsQ0FBQUUsTUFBQTtVQUVqQixJQUFJRCxPQUFPLEVBQUU7WUFDWCxPQUFPO2NBQUVBLE9BQU8sRUFBUEEsT0FBTztjQUFFQyxNQUFBLEVBQUFBO1lBQU8sQ0FBQztVQUM1QjtRQUNGO01BQUEsU0FBQUMsR0FBQTtRQUFBVCxTQUFBLENBQUEvQixDQUFBLENBQUF3QyxHQUFBO01BQUE7UUFBQVQsU0FBQSxDQUFBVSxDQUFBO01BQUE7TUFFQSxPQUFPO1FBQUVILE9BQU8sRUFBRSxJQUFJO1FBQUVDLE1BQU0sRUFBRVYsUUFBUSxDQUFDUixVQUFVO01BQUUsQ0FBQztJQUN4RCxDQUFDLE1BQU07TUFDTCxPQUFPO1FBQUVpQixPQUFPLEVBQUUsS0FBSztRQUFFQyxNQUFNLEVBQUU7TUFBSyxDQUFDO0lBQ3pDO0VBQ0YsQ0FBQyxFQUNELENBQUNqQixnQkFBZ0IsRUFBRUQsVUFBVSxDQUMvQixDQUFDO0VBRUQxQixLQUFLLENBQUMrQyxTQUFTLENBQ2I7SUFBQSxPQUFNaEIsV0FBVyxhQUFYQSxXQUFXLHVCQUFYQSxXQUFXLENBQUcsT0FBTyxFQUFFQyxRQUFRLENBQUM7RUFBQSxHQUN0QyxDQUFDRCxXQUFXLEVBQUVDLFFBQVEsQ0FDeEIsQ0FBQztBQUNIIiwiaWdub3JlTGlzdCI6W119

@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import * as ImagePicker from "expo-image-picker"; // 📌 Importar librería para seleccionar imágenes
 import { useNavigation } from "@react-navigation/native";
-import styles from "../styles/stylesRegistro";
+import styles from "../styles/stylesRegistro.styles";
 import { AuthService } from "../services/AuthService";
 import { Picker } from "@react-native-picker/picker";
 import { ServiceService } from "../services/ServiceService";
@@ -24,80 +24,73 @@ import { ProvinciaService } from "../services/ProvinciaService";
 import { PlanService } from "../services/PlanService";
 import { ConfiguracionService } from "../services/ConfiguracionService";
 import { Configuracion } from "../models/Configuracion";
+import { Controller, useForm } from "react-hook-form";
 
 const RegistroScreen = () => {
   const navigation = useNavigation();
-  const [nombre, setNombre] = useState("");
-  const [correo, setCorreo] = useState("");
-  const [contrasena, setContrasena] = useState("");
-  const [telefono, setTelefono] = useState("");
-  const [esProveedor, setEsProveedor] = useState(false);
-  const [esComision, setEsComision] = useState(false);
-  const [especialidad, setEspecialidad] = useState("");
-  const [servicio, setServicio] = useState(0);
-  const [plan, setPlan] = useState(1);
-  const [descripcion, setDescripcion] = useState("");
   const [imagenPerfil, setImagenPerfil] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [servicios, setServicios] = useState<Service[]>([]);
   const [provincias, setProvincias] = useState([]);
   const [municipios, setMunicipios] = useState([]);
-  const [configuracion, setConfiguracion] = useState<Configuracion |null>(null);
+  const [configuracion, setConfiguracion] = useState<Configuracion | null>(
+    null
+  );
   const [planes, setPlanes] = useState<Plan[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(null);
-  const [municipioSeleccionado, setMunicipioSeleccionado] = useState(0);
   const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] =
     useState(null);
   const [mostrarMunicipios, setMostrarMunicipios] = useState(false); // Nuevo estado
   const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] =
     useState(null);
-
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+    watch,
+    getValues,
+    setValue,
+  } = useForm({
+    defaultValues: {
+      nombre: "",
+      correo: "",
+      contrasena: "",
+      telefono: "",
+      esProveedor: false,
+      esComision: false,
+      especialidad: "",
+      servicio: 0,
+      plan: 1,
+      descripcion: "",
+      provinciaSeleccionada: 0,
+      municipioSeleccionado: 0,
+    },
+  });
+  const esProveedor = watch("esProveedor");
+  const esComision = watch("esComision");
   // 📌 Permitir al usuario subir una imagen desde su galería
   const seleccionarImagen = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permiso denegado",
-        "Necesitamos acceso a tu galería para subir la imagen."
-      );
+      Alert.alert("Permiso requerido", "Necesitamos acceso a tu galería");
       return;
     }
 
     const resultado = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
+      aspect: [4, 3],
       quality: 1,
     });
 
-    if (!resultado.cancelled && resultado.assets) {
-      const imageUri = resultado.assets[0].uri;
-      setImagenPerfil(imageUri);
+    if (!resultado.canceled && resultado.assets) {
+      setImagenPerfil(resultado.assets[0].uri);
     }
   };
 
   // 📌 Validar campos antes de registrar
   const validarCampos = () => {
-    if (
-      !nombre.trim() ||
-      !correo.trim() ||
-      !contrasena.trim() ||
-      !telefono.trim()
-    ) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
-      return false;
-    }
-
-    if (!correo.includes("@")) {
-      Alert.alert("Error", "Por favor, ingresa un correo válido.");
-      return false;
-    }
-
-    if (contrasena.length < 6) {
-      Alert.alert("Error", "La contraseña debe tener al menos 6 caracteres.");
-      return false;
-    }
-    if (esProveedor && !imagenPerfil) {
+    if (getValues("esProveedor") && !imagenPerfil) {
       Alert.alert("Error", "Los proveedores deben subir una imagen de perfil.");
       return false;
     }
@@ -120,10 +113,10 @@ const RegistroScreen = () => {
       console.error("Error obteniendo servicios:", error);
     }
   };
-   const obtenerConfiguracion= async () => {
+  const obtenerConfiguracion = async () => {
     try {
       const configuracion = await ConfiguracionService.obtenerPorId(1);
-     setConfiguracion(configuracion);
+      setConfiguracion(configuracion);
     } catch (error) {
       console.error("Error obteniendo servicios:", error);
     }
@@ -146,7 +139,7 @@ const RegistroScreen = () => {
   };
   useEffect(() => {
     obtenerConfiguracion();
-  }, []);  
+  }, []);
   useEffect(() => {
     obtenerServicios();
   }, []);
@@ -154,36 +147,41 @@ const RegistroScreen = () => {
     obtenerPlanes();
   }, []);
   // 📌 Función simulada para registrar usuario
-  const registrarUsuario = async () => {
+  const registrarUsuario = async (data: any) => {
     if (!validarCampos()) return;
     setLoading(true);
+
     try {
-      const id_usuario = await AuthService.crearUsuarioAuth(correo, contrasena);
-      if (esProveedor) {
+      const id_usuario = await AuthService.crearUsuarioAuth(
+        data.correo,
+        data.contrasena
+      );
+
+      if (data.esProveedor) {
         const url_foto = await AuthService.subirFotoPerfil(
           id_usuario,
           imagenPerfil
         );
         AuthService.guardarPerfil({
           usuario_id: id_usuario,
-          nombre,
-          telefono,
-          municipio_id: municipioSeleccionado,
-          servicio_id: servicio,
-          plan_id: plan,
-          esProveedor,
-          especialidad,
-          descripcion,
+          nombre: data.nombre,
+          telefono: data.telefono,
+          municipio_id: data.municipioSeleccionado,
+          servicio_id: data.servicio,
+          plan_id: data.plan,
+          esProveedor: data.esProveedor,
+          especialidad: data.especialidad,
+          descripcion: data.descripcion,
           url_foto,
-          esComision,
+          esComision: data.esComision,
         });
       } else {
         AuthService.guardarPerfil({
           usuario_id: id_usuario,
-          nombre,
-          telefono,
-          municipio_id: municipioSeleccionado,
-          esProveedor,
+          nombre: data.nombre,
+          telefono: data.telefono,
+          municipio_id: data.municipioSeleccionado,
+          esProveedor: data.esProveedor,
         });
       }
       const perfil = await AuthService.obtenerPerfil();
@@ -194,15 +192,14 @@ const RegistroScreen = () => {
         Alert.alert(
           "Registro exitoso",
           "Tu cuenta ha sido creada y será validada en 24 horas."
-        );        
+        );
         alert(
           "Registro exitoso, Tu cuenta ha sido creada y será validada en 24 horas. "
         );
         navigation.navigate("GestionSolicitudes");
       }
     } catch (error) {
-      setLoading(false);
-      Alert.alert("Error", "No se pudo registrar el usuario.");
+      console.error("Error registrando usuario:", error);
     }
   };
 
@@ -221,11 +218,11 @@ const RegistroScreen = () => {
 
   // Obtener municipios cuando una provincia es seleccionada
   useEffect(() => {
-    if (provinciaSeleccionada) {
+    if (getValues("provinciaSeleccionada")) {
       const obtenerMunicipios = async () => {
         try {
           const municipios = await MunicipioService.obtenerTodos({
-            provincia_id: provinciaSeleccionada,
+            provincia_id: getValues("provinciaSeleccionada"),
           });
           setMunicipios(municipios);
         } catch (error) {
@@ -234,7 +231,7 @@ const RegistroScreen = () => {
       };
       obtenerMunicipios();
     }
-  }, [provinciaSeleccionada]);
+  }, [getValues("provinciaSeleccionada")]);
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -260,33 +257,86 @@ const RegistroScreen = () => {
       )}
 
       {/* 📌 Campos de entrada */}
-      <TextInput
-        placeholder="Nombre Completo"
-        style={styles.input}
-        value={nombre}
-        onChangeText={setNombre}
+      <Controller
+        control={control}
+        name="nombre"
+        rules={{ required: "Nombre es obligatorio" }}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            placeholder="Nombre Completo"
+            style={styles.input}
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+          />
+        )}
       />
-      <TextInput
-        placeholder="Correo Electrónico"
-        style={styles.input}
-        value={correo}
-        keyboardType="email-address"
-        onChangeText={setCorreo}
+      {errors.nombre && (
+        <Text style={styles.errorText}>{errors.nombre.message}</Text>
+      )}
+
+      <Controller
+        control={control}
+        name="correo"
+        rules={{
+          required: "Correo es obligatorio",
+          pattern: {
+            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+            message: "Correo inválido",
+          },
+        }}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            placeholder="Correo Electrónico"
+            style={styles.input}
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            keyboardType="email-address"
+          />
+        )}
       />
-      <TextInput
-        placeholder="Contraseña"
-        style={styles.input}
-        value={contrasena}
-        secureTextEntry
-        onChangeText={setContrasena}
+      {errors.correo && (
+        <Text style={styles.errorText}>{errors.correo.message}</Text>
+      )}
+
+      <Controller
+        control={control}
+        name="contrasena"
+        rules={{ required: "Contraseña es obligatoria" }}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            placeholder="Contraseña"
+            style={styles.input}
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            secureTextEntry
+          />
+        )}
       />
-      <TextInput
-        placeholder="Teléfono"
-        style={styles.input}
-        value={telefono}
-        keyboardType="phone-pad"
-        onChangeText={setTelefono}
+      {errors.contrasena && (
+        <Text style={styles.errorText}>{errors.contrasena.message}</Text>
+      )}
+      <Controller
+        control={control}
+        name="telefono"
+        rules={{ required: "Telefono es obligatorio" }}
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            placeholder="Telefono"
+            style={styles.input}
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            keyboardType="phone-pad"
+          />
+        )}
       />
+      {errors.telefono && (
+        <Text style={styles.errorText}>{errors.telefono.message}</Text>
+      )}
+
       {/* 📌 Modal de selección de ubicación */}
       {/* 🌍 Botón para seleccionar ubicación */}
       <TouchableOpacity
@@ -294,7 +344,7 @@ const RegistroScreen = () => {
         onPress={() => setModalVisible(true)}
       >
         <Text style={styles.textoBoton}>
-          {provinciaSeleccionada
+          {getValues("provinciaSeleccionada")
             ? `${nombreProvinciaSeleccionada} - ${
                 nombreMunicipioSeleccionado || "Selecciona municipio"
               }`
@@ -313,13 +363,13 @@ const RegistroScreen = () => {
                       key={item.id}
                       style={[
                         styles.opcion,
-                        provinciaSeleccionada === item.id &&
+                        getValues("provinciaSeleccionada") === item.id &&
                           styles.opcionActiva,
                       ]}
                       onPress={() => {
-                        setProvinciaSeleccionada(item.id);
+                        setValue("provinciaSeleccionada", item.id);
                         setNombreProvinciaSeleccionada(item.nombre);
-                        setMunicipioSeleccionado(null);
+                        setValue("municipioSeleccionado", 0);
                         setMunicipios([]);
                         setMostrarMunicipios(true); // Cambia a mostrar municipios
                       }}
@@ -345,11 +395,11 @@ const RegistroScreen = () => {
                     <TouchableOpacity
                       style={[
                         styles.opcion,
-                        municipioSeleccionado === item.id &&
+                        getValues("municipioSeleccionado") === item.id &&
                           styles.opcionActiva,
                       ]}
                       onPress={() => {
-                        setMunicipioSeleccionado(item.id);
+                        setValue("municipioSeleccionado", item.id);
                         setNombreMunicipioSeleccionado(item.name);
                         setModalVisible(false);
                       }}
@@ -372,63 +422,131 @@ const RegistroScreen = () => {
       </Modal>
 
       {/* 📌 Toggle para proveedores */}
-      <View style={styles.switchContainer}>
-        <Text style={styles.labelSwitch}>¿Te registras como proveedor?</Text>
-        <Switch value={esProveedor} onValueChange={setEsProveedor} />
-      </View>
-
+      <Controller
+        control={control}
+        name="esProveedor"
+        render={({ field: { onChange, value } }) => (
+          <View style={styles.switchContainer}>
+            <Text style={styles.labelSwitch}>
+              ¿Te registras como proveedor?
+            </Text>
+            <Switch value={value} onValueChange={onChange} />
+          </View>
+        )}
+      />
       {/* 📌 Campos adicionales para proveedores */}
-      {esProveedor && (
+      {getValues("esProveedor") && (
         <>
-          <TextInput
-            placeholder="Especialidad (Ej: Fontanería, Electricidad)"
-            style={styles.input}
-            value={especialidad}
-            onChangeText={setEspecialidad}
-          />
-          <TextInput
-            placeholder="Descripción del servicio"
-            style={styles.input}
-            value={descripcion}
-            onChangeText={setDescripcion}
-            multiline
-          />
-          <View style={styles.switchContainer}>
-            <Text style={styles.labelSwitch}>Categoria</Text>
-            <Picker
-              style={styles.input}
-              selectedValue={servicio}
-              onValueChange={(itemValue) => setServicio(itemValue)}
-            >
-              {servicios.map((servicio_data) => (
-                <Picker.Item
-                  key={servicio_data.id}
-                  label={servicio_data.category}
-                  value={servicio_data.id}
+          <Controller
+            control={control}
+            name="especialidad"
+            rules={{
+              required: watch("esProveedor")
+                ? "Especialidad es obligatoria"
+                : false,
+              minLength: {
+                value: 3,
+                message: "Mínimo 3 caracteres",
+              },
+            }}
+            render={({
+              field: { onChange, onBlur, value },
+              fieldState: { error },
+            }) => (
+              <>
+                <TextInput
+                  placeholder="Especialidad"
+                  style={[styles.input]}
+                  value={value}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
                 />
-              ))}
-            </Picker>
-          </View>
+                {error && <Text style={styles.errorText}>{error.message}</Text>}
+              </>
+            )}
+          />
+          <Controller
+            control={control}
+            name="descripcion"
+            rules={{
+              required: watch("esProveedor")
+                ? "Descripción es obligatoria"
+                : false,
+              minLength: {
+                value: 10,
+                message: "Mínimo 10 caracteres",
+              },
+            }}
+            render={({
+              field: { onChange, onBlur, value },
+              fieldState: { error },
+            }) => (
+              <>
+                <TextInput
+                  placeholder="Descripción del servicio"
+                  style={[styles.input]}
+                  value={value}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  multiline
+                />
+                {error && <Text style={styles.errorText}>{error.message}</Text>}
+              </>
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="servicio"
+            rules={{
+              validate: (value) =>
+                !watch("esProveedor") ||
+                value !== 0 ||
+                "Debes seleccionar un servicio",
+            }}
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <View style={error ? styles.pickerError : styles.switchContainer}>
+                <Text style={styles.labelSwitch}>Categoria</Text>
+                 <Picker  style={styles.input} 
+                 selectedValue={value} 
+                 onValueChange={onChange}>
+                  <Picker.Item label="Selecciona un servicio" value={0} />
+                  {servicios.map((servicio) => (
+                    <Picker.Item
+                      key={servicio.id}
+                      label={servicio.category}
+                      value={servicio.id}
+                    />
+                  ))}
+                </Picker>
+                {error && <Text style={styles.errorText}>{error.message}</Text>}
+              </View>
+            )}
+          />
           {/* 📌 Toggle para comision */}
-          <View style={styles.switchContainer}>
-            <Text style={styles.labelSwitch}>
-              ¿Deseas suscripcion por porcentaje?
-            </Text>
-            <Switch value={esComision} onValueChange={setEsComision} />
-          </View>
+          <Controller
+            control={control}
+            name="esComision"
+            render={({ field: { onChange, value } }) => (
+              <View style={styles.switchContainer}>
+                <Text style={styles.labelSwitch}>
+                  ¿Deseas suscripcion por porcentaje?
+                </Text>
+                <Switch value={value} onValueChange={onChange} />
+              </View>
+            )}
+          />
+
           {esComision && (
-            <Text style={styles.labelSwitch}>
-            Porcentaje Comision (%)
-            </Text>
+            <Text style={styles.labelSwitch}>Porcentaje Comision (%)</Text>
           )}
-          
         </>
       )}
 
       {/* 📌 Botón de registro */}
       <TouchableOpacity
         style={styles.botonRegistrar}
-        onPress={registrarUsuario}
+        onPress={handleSubmit(registrarUsuario)}
         disabled={loading}
       >
         <Text style={styles.textoBoton}>✅ Registrarse</Text>

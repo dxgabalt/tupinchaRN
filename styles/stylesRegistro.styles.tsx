@@ -150,6 +150,41 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: "80%",
   },
+  errorText: {
+    color: "#FF0314",
+    fontSize: 14,
+    marginTop: 5,
+    textAlign: "center",
+  },
+  inputError:{
+    borderColor: "#FF0314",
+    borderWidth: 1,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 10,
+    color: "#FF0314",
+  },
+  pickerError:{
+    borderColor: "#FF0314",
+    borderWidth: 1,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    marginBottom: 10,
+    color: "#FF0314",
+  },
+  picker:{
+    width: "90%",
+    marginBottom: 10,
+    color: "#374151",
+  },
+  botonVolver: {
+    backgroundColor: "#FF0314",
+    paddingVertical: 12,
+    width: "100%",
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 15,
+  }
 
 });
 

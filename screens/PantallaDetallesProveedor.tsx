@@ -44,6 +44,7 @@ const PantallaDetallesProveedor = () => {
     proveedor?.providers.portafolio_provider?.map((portafolio) => ({
       uri: portafolio.imagen,
     })) || []
+    const servicios= proveedor?.providers.portafolio_provider?.map(servicio => servicio.especialidad).join(', ');
 
   // Gestor de gestos para zoom de imágenes
   const pinchHandler = useAnimatedGestureHandler({
@@ -112,7 +113,10 @@ const PantallaDetallesProveedor = () => {
     const obtenerProveedor = async () => {
       try {
         const providerService = await ProviderServiceService.obtenerPorId(idProveedor)
+        console.log(providerService);
+        
         setProveedor(providerService)
+        
       } catch (error) {
         console.error("Error obteniendo datos del proveedor:", error)
         Alert.alert("Error", "No se pudo cargar la información del proveedor.")
@@ -343,10 +347,9 @@ const PantallaDetallesProveedor = () => {
                       <Text style={styles.sectionTitle}>Servicios Ofrecidos</Text>
                     </View>
                     <View style={styles.servicesList}>
-                      {proveedor?.services?.name ? (
+                      {servicios.length>0 ? (
                         <View style={styles.serviceItem}>
-                          <MaterialIcons name="check-circle" size={16} color="#2E7D32" />
-                          <Text style={styles.serviceText}>{proveedor.services.name}</Text>
+                          <Text style={styles.serviceText}>{servicios}</Text>
                         </View>
                       ) : (
                         <Text style={styles.noDataText}>No hay servicios listados.</Text>
@@ -410,15 +413,10 @@ const PantallaDetallesProveedor = () => {
 
             {/* Botones de Acción */}
             <View style={styles.actionButtonsContainer}>
-              <TouchableOpacity style={styles.actionButton} onPress={llamarProveedor}>
-                <MaterialIcons name="call" size={24} color="#FFFFFF" />
-                <Text style={styles.actionButtonText}>Llamar</Text>
-              </TouchableOpacity>
-
               {proveedor?.providers.is_premium && (
                 <TouchableOpacity style={styles.actionButton} onPress={contactarProveedor}>
                   <MaterialIcons name="chat" size={24} color="#FFFFFF" />
-                  <Text style={styles.actionButtonText}>WhatsApp</Text>
+                  <Text style={styles.actionButtonText}>Contactar</Text>
                 </TouchableOpacity>
               )}
 
