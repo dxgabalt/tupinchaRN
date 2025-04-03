@@ -41,9 +41,9 @@ const LoginScreen = () => {
 
       // Redirección según el rol del usuario
       if (response.role === 3) {
-        navigation.replace("GestionSolicitudes")
+        navigation.navigate("GestionSolicitudes")
       } else {
-        navigation.replace("PantallaNegocios")
+        navigation.navigate("PantallaNegocios")
       }
     } catch (error) {
       console.error("Error de autenticación:", error)
@@ -112,11 +112,11 @@ const LoginScreen = () => {
 
           {/* Enlaces */}
           <View style={styles.linksContainer}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("OlvidarContrasena")}>
               <Text style={styles.forgotPasswordLink}>¿Olvidaste tu contraseña?</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("RegistroScreen")}>
               <Text style={styles.registerLink}>
                 ¿No tienes cuenta? <Text style={styles.registerHighlight}>Regístrate aquí</Text>
               </Text>

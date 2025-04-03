@@ -25,24 +25,30 @@ import { PlanService } from "../services/PlanService";
 import { ConfiguracionService } from "../services/ConfiguracionService";
 import { Configuracion } from "../models/Configuracion";
 import { Controller, useForm } from "react-hook-form";
+import { Provincia } from "../models/Provincia";
+import { Municipio } from "../models/Municipio";
+import { ImageService } from "../services/ImageService";
 
 const RegistroScreen = () => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation();
+
   const [imagenPerfil, setImagenPerfil] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [servicios, setServicios] = useState<Service[]>([]);
-  const [provincias, setProvincias] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
+  const [provincias, setProvincias] = useState<Provincia[]>([]);
+  const [municipios, setMunicipios] = useState<Municipio[]>([]);
   const [configuracion, setConfiguracion] = useState<Configuracion | null>(
     null
   );
-  const [planes, setPlanes] = useState<Plan[]>([]);
+  const [foto, setFoto] = useState("");
+    const [planes, setPlanes] = useState<Plan[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] =
-    useState(null);
+  useState<string|null>(null);
   const [mostrarMunicipios, setMostrarMunicipios] = useState(false); // Nuevo estado
   const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] =
-    useState(null);
+    useState<string|null>(null);
   const {
     handleSubmit,
     control,
@@ -92,6 +98,7 @@ const RegistroScreen = () => {
   const validarCampos = () => {
     if (getValues("esProveedor") && !imagenPerfil) {
       Alert.alert("Error", "Los proveedores deben subir una imagen de perfil.");
+      alert("Los proveedores deben subir una imagen de perfil.");
       return false;
     }
 
@@ -116,7 +123,9 @@ const RegistroScreen = () => {
   const obtenerConfiguracion = async () => {
     try {
       const configuracion = await ConfiguracionService.obtenerPorId(1);
-      setConfiguracion(configuracion);
+      if (configuracion) {
+        setConfiguracion(configuracion);
+      }
     } catch (error) {
       console.error("Error obteniendo servicios:", error);
     }
@@ -185,7 +194,6 @@ const RegistroScreen = () => {
         });
       }
       const perfil = await AuthService.obtenerPerfil();
-
       if (perfil?.role_id !== 3) {
         navigation.navigate("PantallaNegocios");
       } else {
@@ -367,8 +375,8 @@ const RegistroScreen = () => {
                           styles.opcionActiva,
                       ]}
                       onPress={() => {
-                        setValue("provinciaSeleccionada", item.id);
-                        setNombreProvinciaSeleccionada(item.nombre);
+                        setValue("provinciaSeleccionada", item.id || 0);
+                        setNombreProvinciaSeleccionada(item.nombre || "");
                         setValue("municipioSeleccionado", 0);
                         setMunicipios([]);
                         setMostrarMunicipios(true); // Cambia a mostrar municipios
@@ -390,7 +398,7 @@ const RegistroScreen = () => {
                 <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
                 <FlatList
                   data={municipios}
-                  keyExtractor={(item) => item.id.toString()}
+                  keyExtractor={(item) => item.id!.toString()}
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       style={[
@@ -399,8 +407,8 @@ const RegistroScreen = () => {
                           styles.opcionActiva,
                       ]}
                       onPress={() => {
-                        setValue("municipioSeleccionado", item.id);
-                        setNombreMunicipioSeleccionado(item.name);
+                        setValue("municipioSeleccionado", item.id ||0);
+                        setNombreMunicipioSeleccionado(item.name|| "");
                         setModalVisible(false);
                       }}
                     >
@@ -507,9 +515,11 @@ const RegistroScreen = () => {
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <View style={error ? styles.pickerError : styles.switchContainer}>
                 <Text style={styles.labelSwitch}>Categoria</Text>
-                 <Picker  style={styles.input} 
-                 selectedValue={value} 
-                 onValueChange={onChange}>
+                <Picker
+                  style={styles.input}
+                  selectedValue={value}
+                  onValueChange={onChange}
+                >
                   <Picker.Item label="Selecciona un servicio" value={0} />
                   {servicios.map((servicio) => (
                     <Picker.Item

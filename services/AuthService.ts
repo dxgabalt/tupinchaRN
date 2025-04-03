@@ -358,5 +358,5 @@ export class AuthService {
     const url_perfil =
       (await ImageService.subirImagen("imagenes-perfil", foto)) ?? "";
     return url_perfil;
-  }
+  } 
 }

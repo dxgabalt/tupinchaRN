@@ -184,7 +184,14 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginTop: 15,
-  }
+  },
+  botonSubir: {
+    backgroundColor: '#003366',
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
 
 });
 
