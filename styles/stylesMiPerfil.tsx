@@ -208,6 +208,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
         marginBottom: 12,
       },
+      errorText: {
+        color: "#FF0314",
+        fontSize: 14,
+        marginTop: 5,
+        textAlign: "center",
+      },
 });
 
 export default styles;

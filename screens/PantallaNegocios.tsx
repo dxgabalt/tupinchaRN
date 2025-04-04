@@ -22,6 +22,8 @@ import { ServiceService } from "../services/ServiceService"
 import { MunicipioService } from "../services/MunicipoService"
 import { ProvinciaService } from "../services/ProvinciaService"
 import { AuthService } from "../services/AuthService"
+import { Provincia } from "../models/Provincia"
+import { Municipio } from "../models/Municipio"
 
 const PantallaNegocios = () => {
   const navigation = useNavigation()
@@ -33,8 +35,8 @@ const PantallaNegocios = () => {
   const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] = useState(null)
   const [menuVisible, setMenuVisible] = useState(false)
   const [categorias, setCategorias] = useState([])
-  const [provincias, setProvincias] = useState([])
-  const [municipios, setMunicipios] = useState([])
+  const [provincias, setProvincias] = useState<Provincia[]>([])
+  const [municipios, setMunicipios] = useState<Municipio[]>([])
   const [usuario, setUsuario] = useState({ id: "", name: "", email: "", phone: "", profile_pic_url: "", user_id: "" })
   const [mostrarMunicipios, setMostrarMunicipios] = useState(false)
 
@@ -325,16 +327,22 @@ const PantallaNegocios = () => {
             )}
           />
 
-          {/* Banners Promocionales */}
-          <View style={styles.bannersContainer}>
-            <TouchableOpacity style={styles.bannerCompras} onPress={handlePress}>
+          {/* Banners Promocionales - Ahora en fila horizontal */}
+          <View style={styles.bannersRow}>
+            <TouchableOpacity 
+              style={[styles.banner, styles.bannerCompras]} 
+              onPress={handlePress}
+            >
               <View style={styles.bannerContent}>
                 <Text style={styles.bannerIcon}>🛒</Text>
                 <Text style={styles.bannerText}>Realiza tus compras aquí</Text>
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.bannerSoporte} onPress={contactar}>
+            <TouchableOpacity 
+              style={[styles.banner, styles.bannerSoporte]} 
+              onPress={contactar}
+            >
               <View style={styles.bannerContent}>
                 <Text style={styles.bannerIcon}>📞</Text>
                 <Text style={styles.bannerText}>Atención Personalizada</Text>
@@ -688,28 +696,28 @@ const styles = {
     color: "#333333",
     fontWeight: "500",
   },
-  bannersContainer: {
+  // Nuevos estilos para los banners en fila
+  bannersRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 10,
     marginBottom: 20,
   },
-  bannerCompras: {
-    backgroundColor: "#E53935", // Rojo
+  banner: {
+    flex: 1,
     borderRadius: 10,
-    marginBottom: 10,
+    marginHorizontal: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
   },
+  bannerCompras: {
+    backgroundColor: "#E53935", // Rojo
+  },
   bannerSoporte: {
     backgroundColor: "#2E7D32", // Verde
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
   },
   bannerContent: {
     flexDirection: "row",

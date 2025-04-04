@@ -142,6 +142,24 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 5,
   },
+  errorText: {
+    color: "#FF0314",
+    fontSize: 14,
+    marginTop: 5,
+    textAlign: "center",
+  },
+  pickerError: {
+    marginBottom: 15,
+    borderColor: 'red',
+    borderWidth: 1,
+    borderRadius: 5,
+  },
+  inputError: {
+    backgroundColor: 'white',
+    borderColor: 'red',
+    borderWidth: 1,
+    borderRadius: 5,
+  },
   botonSubir: {
     backgroundColor: '#003366',
     paddingVertical: 14,

@@ -28,7 +28,23 @@ import { MunicipioService } from "../../services/MunicipoService";
 import { ProvinciaService } from "../../services/ProvinciaService";
 import { ProviderLocationsService } from "../../services/ProviderLocationService";
 import { MaterialIcons } from "@expo/vector-icons" // Assuming you're using Expo
-
+import { Controller, useForm } from "react-hook-form";
+type FormData = {
+  phone: string;
+  speciality: string;
+  availability: string;
+  description: string;
+  plan_id: number;
+  profile_pic_url: string;
+  municipio_id: number;
+  provincia_id: number;
+};
+type PortfolioFormData = {
+  nuevaEspecialidad: string;
+  nuevaDescripcion: string;
+  servicio: number;
+  foto: string;
+};
 const PantallaGestionServicios = () => {
   const navigation = useNavigation();
   const [perfil, setPerfil] = useState<any>(null);
@@ -52,8 +68,6 @@ const PantallaGestionServicios = () => {
   const [municipios, setMunicipios] = useState([]);
   const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(null);
   const [municipioSeleccionado, setMunicipioSeleccionado] = useState(0);  
-  const [provinciaProfileSeleccionada, setProvinciaProfileSeleccionada] = useState(null);
-  const [municipioProfileSeleccionado, setMunicipioProfileSeleccionado] = useState(0);
   const [diasFaltantes, setDiasFaltantes] = useState(0);
   const [mostrarMunicipios, setMostrarMunicipios] = useState(false); // Nuevo estado
   const [mostrarProfileMunicipios, setMostrarProfileMunicipios] = useState(false); // Nuevo estado
@@ -70,18 +84,67 @@ const PantallaGestionServicios = () => {
     useState(null);
     const [nuevaFoto, setNuevaFoto] = useState("");
     const [esGuardarPerfil, setEsGuardarPerfil] = useState(false);
-  
+    const {
+      control,
+      handleSubmit,
+      formState: { errors },
+      reset,
+      setValue,
+      watch,
+    } = useForm<FormData>({
+      defaultValues: {
+        phone: "",
+        speciality: "",
+        availability: "",
+        description: "",
+        plan_id: 0,
+        profile_pic_url: "",
+        municipio_id: 0,
+        provincia_id: 0,
+      },
+    });
+    const provinciaProfileSeleccionada  = watch("provincia_id");
+   const municipioProfileSeleccionado = watch("municipio_id");  
+    // Formulario de Portafolio
+  const {
+    control: controlPortafolio,
+    handleSubmit: handleSubmitPortafolio,
+    formState: { errors: errorsPortafolio },
+    reset: resetPortafolio,
+    setValue: setValuePortafolio,
+    watch: watchPortafolio,
+  } = useForm<PortfolioFormData>({
+    defaultValues: {
+      nuevaEspecialidad: "",
+      nuevaDescripcion: "",
+      servicio: 0,
+      foto: "",
+    },
+  });
   /** 🔥 Cargar Perfil */
   useEffect(() => {
     const cargarPerfil = async () => {
       try {
         const perfilData = await AuthService.obtenerPerfil();
         setPerfil(perfilData);
+
+         // Establecer valores del formulario
+         reset({
+          phone: perfilData?.phone || "",
+          speciality: perfilData?.provider?.speciality || "",
+          availability: perfilData?.provider?.availability || "",
+          description: perfilData?.provider?.description || "",
+          plan_id: perfilData?.provider?.planes?.id || 0,
+          profile_pic_url: perfilData?.profile_pic_url || "",
+          municipio_id: perfilData?.municipio_id || 0,
+          provincia_id: perfilData?.provincia_id || 0,
+        });
         //Ubicacion
-        setNombreProvinciaProfileSeleccionada(perfilData.provincias.nombre)
-        setNombreMunicipioProfileSeleccionado(perfilData.municipios.name)
-        setProvinciaProfileSeleccionada(perfilData.provincia_id)
-        setMunicipioProfileSeleccionado(perfilData.municipio_id)
+        setNombreProvinciaProfileSeleccionada(perfilData.provincias.nombre);
+        setNombreMunicipioProfileSeleccionado(perfilData.municipios.name);
+        setValue('provincia_id', perfilData.provincia_id);
+        setValue('municipio_id', perfilData.municipio_id);
+
         const portafolios = perfilData?.portafolio;
         const ubicaciones = perfilData?.provider_locations;
         const duracion = perfilData?.provider?.planes?.duracion;
@@ -201,17 +264,7 @@ const PantallaGestionServicios = () => {
     }
   }, [provinciaSeleccionada,provinciaProfileSeleccionada]);
   /** 📌 Guardar Cambios en Perfil */
-  const guardarPerfil = async () => {
-    if (
-      !perfil?.phone?.trim() ||
-      !perfil?.provider?.speciality?.trim() ||
-      !perfil?.provider?.availability?.trim() ||
-      !perfil?.provider?.description?.trim() 
-    ) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
-      alert("Todos los campos son obligatorios.");
-      return;
-    }
+  const guardarPerfil = async (data: FormData) => {
     if(!validarUbicacion()){
       Alert.alert("Error", "Debe seleccionar una ubicación válida.");
       alert("Debe seleccionar una ubicación válida.");
@@ -232,14 +285,14 @@ const PantallaGestionServicios = () => {
       const provider = {
         id: perfil.provider.id,
         profile_id: perfil.id,
-        phone: perfil.phone,
-        speciality: perfil?.provider?.speciality,
-        availability: perfil?.provider?.availability,
-        description: perfil?.provider?.description,
-        plan_id: plan ==0 ? null: plan,
+        phone: data.phone,
+        speciality: data.speciality,
+        availability: data.availability,
+        description: data.description,
+        plan_id: data.plan_id === 0 ? null : data.plan_id,
         profile_pic_url: fotoURL,
-        municipio_id: municipioProfileSeleccionado,
-        provincia_id: provinciaProfileSeleccionada
+        municipio_id: data.municipio_id,
+        provincia_id: data.provincia_id,
       };
       setEsGuardarPerfil(true)
       await ProviderServiceService.actualizarProveedor(provider);
@@ -270,7 +323,7 @@ const PantallaGestionServicios = () => {
     return true;
   };
   /** 📌 Agregar Nuevo Servicio */
-  const agregarServicio = async () => {
+  const agregarServicio = async (data: PortfolioFormData) => {
     setIsDisabled(true)
     if (!nuevaEspecialidad.trim() || !nuevaDescripcion.trim()) {
       Alert.alert("Error", "Todos los campos son obligatorios.");
@@ -281,16 +334,16 @@ const PantallaGestionServicios = () => {
         (await ImageService.subirImagen("servicios", foto)) ?? "";
       await PortafolioService.agregarServicio(
         perfil.provider.id,
-        nuevaEspecialidad,
-        nuevaDescripcion,
-        servicio,
+        data.nuevaEspecialidad,
+        data.nuevaDescripcion,
+        data.servicio,
         url_imagen
       );
       const nuevo_item = {
         id: obtenerUltimoIdPortafolio(1) + 1, // Obtener el último id de la solicitud
-        especialidad: nuevaEspecialidad,
+        especialidad:  data.nuevaEspecialidad,
         provider_id: perfil.provider.id,
-        descripcion: nuevaDescripcion,
+        descripcion:  data.nuevaDescripcion,
         imagen: url_imagen,
       };
       portafolios.push(nuevo_item);
@@ -624,36 +677,70 @@ const PantallaGestionServicios = () => {
             )}
           </View>
             <Text style={styles.label}>📞 Teléfono:</Text>
-            <TextInput
-              style={styles.input}
-              value={perfil?.phone}
-              editable={editando}
-              onChangeText={(text) => setPerfil({ ...perfil, phone: text })}
-            />
-
+            <Controller
+            control={control}
+            name="phone"
+            rules={{ required: 'Telefono es requerido' }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={styles.input}
+                value={value}
+                editable={editando}
+                onBlur={onBlur}
+                onChangeText={onChange}
+              />
+            )}
+          />
+          {errors.phone && <Text style={styles.errorText}>{errors.phone.message}</Text>}
             <Text style={styles.label}>🛠 Especialidad:</Text>
-            <TextInput
-              style={styles.input}
-              value={perfil?.provider?.speciality || ''} // Asegúrate de que el valor no sea undefined
-              editable={editando}
-              onChangeText={(text) => actualizarCampo("speciality", text)} // Usa la función actualizarCampo
-            />
-
+            <Controller
+            control={control}
+            name="speciality"
+            rules={{ required: 'Especialidad es requerida' }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={styles.input}
+                value={value}
+                editable={editando}
+                onBlur={onBlur}
+                onChangeText={onChange}
+              />
+            )}
+          />
+          {errors.speciality && <Text style={styles.errorText}>{errors.speciality.message}</Text>}
             <Text style={styles.label}>📅 Disponibilidad:</Text>
-            <TextInput
-              style={styles.input}
-              value={perfil?.provider?.availability}
-              editable={editando}
-              onChangeText={(text) => actualizarCampo("availability", text)}
-            />            
+            <Controller
+            control={control}
+            name="availability"
+            rules={{ required: 'Disponibilidad es requerida' }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={styles.input}
+                value={value}
+                editable={editando}
+                onBlur={onBlur}
+                onChangeText={onChange}
+              />
+            )}
+          />    
+          {errors.availability && <Text style={styles.errorText}>{errors.availability.message}</Text>}    
             <Text style={styles.label}>📝 Descripcion:</Text>
-            <TextInput
-              style={styles.input}
-              value={perfil?.provider?.description}
-              editable={editando}
-              multiline
-              onChangeText={(text) => actualizarCampo("description", text)}
+            <Controller
+              control={control}
+              name="description"
+              rules={{ required: 'Descripción es requerida' }}
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.input}
+                  value={value}
+                  editable={editando}
+                  multiline
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                />
+              )}
             />
+            {errors.description && <Text style={styles.errorText}>{errors.description.message}</Text>}
              {/* 🌍 Botón para seleccionar ubicación */}
              <TouchableOpacity
              style={styles.botonFiltro}
@@ -690,7 +777,7 @@ const PantallaGestionServicios = () => {
             {editando ? (
               <TouchableOpacity
                 style={styles.botonGuardar}
-                onPress={guardarPerfil}
+                onPress={handleSubmit(guardarPerfil)}
                 disabled={esGuardarPerfil}
               >
                 <Text style={styles.textoBoton}>💾 Guardar Cambios</Text>
@@ -707,19 +794,39 @@ const PantallaGestionServicios = () => {
             {/* 📌 Agregar Nuevo Servicio */}
             <Text style={styles.sectionTitle}>📁 Mi Portafolio</Text>
             <Text style={styles.label}>➕ Nueva Especialidad</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ejemplo: Electricidad"
-              value={nuevaEspecialidad}
-              onChangeText={setNuevaEspecialidad}
-            />
-            <View style={styles.switchContainer}>
+            <Controller
+            control={controlPortafolio}
+            name="nuevaEspecialidad"
+            rules={{ required: 'Especialidad es requerida' }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={styles.input}
+                placeholder="Ejemplo: Electricidad"
+                value={value}
+                onBlur={onBlur}
+                onChangeText={onChange}
+              />
+            )}
+          />
+          {errorsPortafolio.nuevaEspecialidad && (
+            <Text style={styles.errorText}>{errorsPortafolio.nuevaEspecialidad.message}</Text>
+          )}
+
+          <Controller
+          control={controlPortafolio}
+          name="servicio"
+          rules={{
+            validate: (value) => value !== 0 || "Debes seleccionar una categoría"
+          }}
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <View style={error ? styles.pickerError : styles.switchContainer}>
               <Text style={styles.label}>Categoria</Text>
               <Picker
-                style={styles.input}
-                selectedValue={servicio}
-                onValueChange={(itemValue) => setServicio(itemValue)}
+                style={error ? styles.inputError : styles.input}
+                selectedValue={value}
+                onValueChange={onChange}
               >
+                <Picker.Item label="Selecciona una categoría" value={0} />
                 {servicios.map((servicio_data) => (
                   <Picker.Item
                     key={servicio_data.id}
@@ -728,15 +835,31 @@ const PantallaGestionServicios = () => {
                   />
                 ))}
               </Picker>
+              {error && (
+                <Text style={styles.errorText}>{error.message}</Text>
+              )}
             </View>
+          )}
+        />
             <Text style={styles.label}>📝 Descripción</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Ejemplo: Instalaciones y mantenimiento."
-              value={nuevaDescripcion}
-              onChangeText={setNuevaDescripcion}
-              multiline
-            />
+            <Controller
+            control={controlPortafolio}
+            name="nuevaDescripcion"
+            rules={{ required: 'Descripción es requerida' }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                style={styles.input}
+                placeholder="Ejemplo: Instalaciones y mantenimiento."
+                value={value}
+                onBlur={onBlur}
+                onChangeText={onChange}
+                multiline
+              />
+            )}
+          />
+          {errorsPortafolio.nuevaDescripcion && (
+            <Text style={styles.errorText}>{errorsPortafolio.nuevaDescripcion.message}</Text>
+          )}
             {/* 📌 Portafolio */}
             <TouchableOpacity
               style={styles.botonSubir}
@@ -769,7 +892,7 @@ const PantallaGestionServicios = () => {
             ) : null}
             <TouchableOpacity
             style={styles.botonAgregar}
-            onPress={agregarServicio}
+            onPress={handleSubmitPortafolio(agregarServicio)}
             disabled={isDisabled}
             >
             <Text style={styles.textoBoton}>✅ Agregar Servicio</Text>
@@ -836,13 +959,13 @@ const PantallaGestionServicios = () => {
                       key={item.id}
                       style={[
                         styles.opcion,
-                        provinciaSeleccionada === item.id &&
+                        provinciaProfileSeleccionada === item.id &&
                           styles.opcionActiva,
                       ]}
                       onPress={() => {
-                       setProvinciaProfileSeleccionada(item.id);
+                        setValue('provincia_id', item.id);
                         setNombreProvinciaProfileSeleccionada(item.nombre);
-                        setMunicipioProfileSeleccionado(null);
+                        setValue('municipio_id',null);
                         setMunicipios([]);
                         setMostrarProfileMunicipios(true); // Cambia a mostrar municipios
                       }}
@@ -872,7 +995,7 @@ const PantallaGestionServicios = () => {
                           styles.opcionActiva,
                       ]}
                       onPress={() => {
-                        setMunicipioProfileSeleccionado(item.id);
+                        setValue('municipio_id',item.id);
                         setNombreMunicipioProfileSeleccionado(item.name);
                         setModalVisibleProfile(false);
                       }}

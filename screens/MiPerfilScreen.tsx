@@ -17,6 +17,9 @@ import styles from "../styles/stylesMiPerfil";
 import { AuthService } from "../services/AuthService";
 import { MunicipioService } from "../services/MunicipoService";
 import { ProvinciaService } from "../services/ProvinciaService";
+import { Controller, useForm } from "react-hook-form";
+import { Provincia } from "../models/Provincia";
+import { Municipio } from "../models/Municipio";
 
 const usuarioDefault = {
   id: "",
@@ -27,38 +30,61 @@ const usuarioDefault = {
   user_id: "",
   rol_id: 0,
 };
-
+type PerfilData = {
+  email: string;
+  nuevoTelefono: string;
+  nuevoNombre: string;
+  municipio_id: number;
+  provincia_id: number;
+};
 const MiPerfilScreen = () => {
   const navigation = useNavigation();
   const [usuario, setUsuario] = useState(usuarioDefault);
   const [editando, setEditando] = useState(false);
-  const [nuevoNombre, setNuevoNombre] = useState("");
-  const [nuevoTelefono, setNuevoTelefono] = useState("");
   const [nuevaFoto, setNuevaFoto] = useState("");
   const animacionBoton = new Animated.Value(1);
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [provincias, setProvincias] = useState([]);
-  const [municipios, setMunicipios] = useState([]);
-  const [provinciaSeleccionada, setProvinciaSeleccionada] = useState(null);
-  const [municipioSeleccionado, setMunicipioSeleccionado] = useState(null);
-  const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] =
-    useState(null);
-  const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] =
-    useState(null);
-  const [mostrarMunicipios, setMostrarMunicipios] = useState(false);
+  const [provincias, setProvincias] = useState<Provincia[]>([]);
+  const [municipios, setMunicipios] = useState<Municipio[]>([]);
 
+  const [nombreMunicipioSeleccionado, setNombreMunicipioSeleccionado] =
+    useState<String| null>(null);
+  const [nombreProvinciaSeleccionada, setNombreProvinciaSeleccionada] =
+    useState<String |null>(null);
+  const [mostrarMunicipios, setMostrarMunicipios] = useState(false);
+const {
+      control,
+      handleSubmit,
+      formState: { errors },
+      reset,
+      setValue,
+      watch,
+    } = useForm<PerfilData>({
+      defaultValues: {
+        email: "",
+        nuevoTelefono: "",
+        nuevoNombre: "",
+        municipio_id: 0,
+        provincia_id: 0,
+      },
+    });
+    const provinciaSeleccionada  = watch("provincia_id");
+   const municipioSeleccionado = watch("municipio_id"); 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const profile = await AuthService.obtenerPerfil();
         if (profile) {
+          reset({
+            nuevoTelefono: profile.phone || "",
+            email: profile.email || "",
+            nuevoNombre:profile.name || "",
+            municipio_id: profile.municipios.id || 0,
+            provincia_id: profile.provincias.id || 0,
+          });
           setUsuario(profile);
-          setNuevoNombre(profile.name || "");
-          setNuevoTelefono(profile.phone || "");
-          setProvinciaSeleccionada(profile.provincias.id);
           setNombreProvinciaSeleccionada(profile.provincias.nombre);
-          setMunicipioSeleccionado(profile.municipios.id);
           setNombreMunicipioSeleccionado(profile.municipios.name);
         }
       } catch (error) {
@@ -90,12 +116,7 @@ const MiPerfilScreen = () => {
     }
   };
 
-  const guardarCambios = async () => {
-    if (!nuevoNombre.trim() || !nuevoTelefono.trim()) {
-      Alert.alert("Error", "El nombre y teléfono no pueden estar vacíos.");
-      return;
-    }
-
+  const guardarCambios = async (data:PerfilData) => {
     try {
       let fotoURL = usuario.profile_pic_url;
 
@@ -110,8 +131,8 @@ const MiPerfilScreen = () => {
       }
       await AuthService.actualizarPerfil(
         usuario.user_id,
-        nuevoNombre,
-        nuevoTelefono,
+        data.nuevoNombre,
+        data.nuevoTelefono,
         usuario.rol_id === 3,
         provinciaSeleccionada??0,
         municipioSeleccionado??0,
@@ -119,8 +140,8 @@ const MiPerfilScreen = () => {
       );
       setUsuario((prev) => ({
         ...prev,
-        name: nuevoNombre,
-        phone: nuevoTelefono,
+        name: data.nuevoNombre,
+        phone: data.nuevoTelefono,
         profile_pic_url: fotoURL,
         municipio_id: municipioSeleccionado,
         provincia_id: provinciaSeleccionada
@@ -194,34 +215,67 @@ const MiPerfilScreen = () => {
       {/* 📝 Campos de usuario */}
       <View style={styles.campoContainer}>
         <Text style={styles.label}>Nombre:</Text>
-        {editando ? (
+        <Controller
+        control={control}
+        name="nuevoNombre"
+        rules={{ required: 'Nombre es requerida' }}
+        render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             style={styles.input}
-            value={nuevoNombre}
-            onChangeText={setNuevoNombre}
+            placeholder="Nombre"
+            editable={editando}
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            multiline
           />
-        ) : (
-          <Text style={styles.texto}>{usuario.name}</Text>
         )}
+      />
+      {errors.nuevoNombre && (
+        <Text style={styles.errorText}>{errors.nuevoNombre.message}</Text>
+      )}
       </View>
 
       <View style={styles.campoContainer}>
         <Text style={styles.label}>Correo:</Text>
-        <Text style={styles.texto}>{usuario.email}</Text>
+        <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            editable={false}
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            multiline
+          />
+        )}
+      />
       </View>
 
       <View style={styles.campoContainer}>
         <Text style={styles.label}>Teléfono:</Text>
-        {editando ? (
+        <Controller
+        control={control}
+        name="nuevoTelefono"
+        rules={{ required: 'Numero de Telefono es requerido' }}
+        render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
             style={styles.input}
-            value={nuevoTelefono}
-            keyboardType="phone-pad"
-            onChangeText={setNuevoTelefono}
+            placeholder="Telefono"
+            editable={editando}
+            value={value}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            multiline
           />
-        ) : (
-          <Text style={styles.texto}>{usuario.phone}</Text>
         )}
+      />
+      {errors.nuevoTelefono && (
+        <Text style={styles.errorText}>{errors.nuevoTelefono.message}</Text>
+      )}
       </View>
 
       {/* 📌 Botón para editar/guardar */}
@@ -243,7 +297,7 @@ const MiPerfilScreen = () => {
           <TouchableOpacity
             style={styles.botonGuardar}
             onPress={() => {
-              guardarCambios();
+              handleSubmit(guardarCambios)();
               animarBoton();
             }}
           >
@@ -283,9 +337,8 @@ const MiPerfilScreen = () => {
                           styles.opcionActiva,
                       ]}
                       onPress={() => {
-                        setProvinciaSeleccionada(item.id);
-                        setNombreProvinciaSeleccionada(item.nombre);
-                        setMunicipioSeleccionado(null);
+                        setValue('provincia_id',item.id||0);
+                        setNombreProvinciaSeleccionada(item.nombre||"");
                         setMunicipios([]);
                         setMostrarMunicipios(true); // Cambia a mostrar municipios
                       }}
@@ -306,7 +359,7 @@ const MiPerfilScreen = () => {
                 <Text style={styles.modalTitulo}>Selecciona un Municipio</Text>
                 <FlatList
                   data={municipios}
-                  keyExtractor={(item) => item.id.toString()}
+                  keyExtractor={(item) => item.id?.toString()||""}
                   renderItem={({ item }) => (
                     <TouchableOpacity
                       style={[
@@ -315,8 +368,8 @@ const MiPerfilScreen = () => {
                           styles.opcionActiva,
                       ]}
                       onPress={() => {
-                        setMunicipioSeleccionado(item.id);
-                        setNombreMunicipioSeleccionado(item.name);
+                        setValue('municipio_id',item.id||0);
+                        setNombreMunicipioSeleccionado(item.name||"");
                         setModalVisible(false);
                       }}
                     >
