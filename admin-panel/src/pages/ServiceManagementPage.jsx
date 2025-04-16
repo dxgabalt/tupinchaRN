@@ -8,14 +8,22 @@ const ServiceManagementPage = () => {
   const [filtro, setFiltro] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState("Todos");
   const [modalAbierto, setModalAbierto] = useState(false);
+  const [modalContraofertaAbierto, setModalContraofertaAbierto] = useState(false);
   const [cotizaciones, setCotizaciones] = useState([]);
-
+  const [contraofertas, setContraofertas] = useState([]);
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [totalPaginas, setTotalPaginas] = useState(1);
+  const solicitudesPorPagina = 100; // Cambia el número de usuarios por página según lo desees
 
   // 📌 Cargar servicios desde el servicio
   useEffect(() => {
     const cargarServicios = async () => {
-      const data = await SolicitudService.obtenerTodosLosSolicitudes();
-      setServicios(data);
+      const solicitudes = await SolicitudService.obtenerTodosLosSolicitudes(1,solicitudesPorPagina);
+      const total_paginas =Math.ceil(
+        solicitudes.total / solicitudesPorPagina
+      );
+      setTotalPaginas(total_paginas);
+      setServicios(solicitudes.data);
     };
     cargarServicios();
   }, []);
@@ -32,6 +40,12 @@ const ServiceManagementPage = () => {
   const verCotizaciones = (cotizaciones) => {
     setCotizaciones(cotizaciones)
     setModalAbierto(true)
+  };  
+  const verContraoferta = (contraofertas) => {
+    console.log(contraofertas);
+    
+    setContraofertas(contraofertas)
+    setModalContraofertaAbierto(true)
   };
 
   // 📌 Eliminar servicio
@@ -48,6 +62,23 @@ const ServiceManagementPage = () => {
       servicio.services.category.toLowerCase().includes(filtro.toLowerCase()) &&
       (estadoFiltro === "Todos" || servicio.status === estadoFiltro)
   );
+   const manejarPaginaSiguiente = async () => {
+      if (paginaActual < totalPaginas) {
+        setPaginaActual(paginaActual + 1);
+        const numero_pagina = paginaActual + 1;
+        const solicitudesObtenidas = await SolicitudService.obtenerTodosLosSolicitudes(numero_pagina,solicitudesPorPagina)
+        setServicios(solicitudesObtenidas.data || []);
+      }
+    };
+  
+    const manejarPaginaAnterior = async () => {
+      if (paginaActual > 1) {
+        setPaginaActual(paginaActual - 1);
+        const numero_pagina = paginaActual - 1;
+        const solicitudesObtenidas = await  await SolicitudService.obtenerTodosLosSolicitudes(numero_pagina,solicitudesPorPagina)
+        setServicios(solicitudesObtenidas.data || []);
+      }
+    };
 
   return (
     <div className="dashboard">
@@ -105,6 +136,12 @@ const ServiceManagementPage = () => {
                     onClick={() => verCotizaciones(servicio.cotizaciones)}
                   >
                     Ver Cotización
+                  </button> 
+                  <button
+                    className="btn-approve"
+                    onClick={() => verContraoferta(servicio.contraofertas)}
+                  >
+                    Ver ContraOferta
                   </button>
                     {servicio.status === "Pendiente" && (
                       <>
@@ -143,6 +180,21 @@ const ServiceManagementPage = () => {
             )}
           </tbody>
         </table>
+         {/* Controles de paginación */}
+         <div className="paginacion">
+          <button onClick={manejarPaginaAnterior} disabled={paginaActual === 1}>
+            ⇦
+          </button>
+          <span>
+            Página {paginaActual} de {totalPaginas}
+          </span>
+          <button
+            onClick={manejarPaginaSiguiente}
+            disabled={paginaActual === totalPaginas}
+          >
+            ⇨
+          </button>
+        </div>
       </main>
       {modalAbierto && (
         <div className="modal">
@@ -199,6 +251,64 @@ const ServiceManagementPage = () => {
           </tbody>
         </table>
             <button onClick={() => setModalAbierto(false)}>❌ Cancelar</button>
+          </div>
+        </div>
+      )}      
+      {modalContraofertaAbierto && (
+        <div className="modal">
+          <div className="modal-content">
+            <h2>ContraOfertas</h2>
+             {/* 📌 Tabla de Servicios */}
+        <table className="service-table">
+          <thead>
+            <tr>
+              <th>Costo de mano de obra</th>
+              <th>Costo de materiales</th>
+              <th>Descripcion</th>
+              <th>Notas</th>
+            </tr>
+          </thead>
+          <tbody>
+            {contraofertas.length > 0 ? (
+              contraofertas.map((contraoferta) => (
+                <tr key={contraoferta.id}>
+                  <td>{contraoferta.costo_mano_obra}</td>
+                  <td>{contraoferta.costo_materiales}</td>
+                  <td>{contraoferta.descripcion}</td>
+                  <td>
+            <div className="chat-container">
+              {contraoferta.contraoferta_notas && contraoferta.contraoferta_notas.length > 0 ? (
+                contraoferta.contraoferta_notas.map((nota, index) => (
+                  <div key={index} className="chat-message">
+                    {nota.nota_client && (
+                      <div className="chat-bubble client">
+                        <span className="chat-label">Cliente:</span> {nota.nota_client}
+                        <span className="chat-time">{new Date(nota.created_at).toLocaleString()}</span>
+                      </div>
+                    )}
+                    {nota.nota_provider && (
+                      <div className="chat-bubble provider">
+                        <span className="chat-label">Proveedor:</span> {nota.nota_provider}
+                        <span className="chat-time">{new Date(nota.created_at).toLocaleString()}</span>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="chat-bubble no-notes">Sin notas</div>
+              )}
+            </div>
+          </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="no-results">No hay contraofertas disponibles.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+            <button onClick={() => setModalContraofertaAbierto(false)}>❌ Cancelar</button>
           </div>
         </div>
       )}

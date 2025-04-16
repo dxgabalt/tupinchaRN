@@ -1,37 +1,25 @@
-import React, { useState } from "react";
+import  { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import "../styles/global.css";
+import { PaymentService } from "../services/PaymentService";
 
 const PaymentManagementPage = () => {
-  // 🔢 Datos Simulados de Transacciones
-  const [pagos, setPagos] = useState([
-    {
-      id: 1,
-      usuario: "Carlos López",
-      metodo: "💳 Tarjeta de Crédito",
-      monto: "50.00 USD",
-      estado: "Aprobado",
-      fecha: "2024-02-01",
-    },
-    {
-      id: 2,
-      usuario: "Ana Pérez",
-      metodo: "📲 Transfermovil",
-      monto: "30.00 USD",
-      estado: "Pendiente",
-      fecha: "2024-02-05",
-    },
-    {
-      id: 3,
-      usuario: "Luis Ramírez",
-      metodo: "🔵 PayPal",
-      monto: "80.00 USD",
-      estado: "Rechazado",
-      fecha: "2024-02-10",
-    },
-  ]);
-
+  const [pagos, setPagos] = useState([]);
   const [filtroEstado, setFiltroEstado] = useState("Todos");
+
+  // 📥 Cargar pagos desde la API
+  useEffect(() => {
+    const fetchPagos = async () => {
+      try {
+        const data = await PaymentService.obtenerTodos();
+        setPagos(data);
+      } catch (error) {
+        console.error("Error al cargar pagos:", error);
+      }
+    };
+
+    fetchPagos();
+  }, []);
 
   // 📌 Filtrar pagos por estado
   const pagosFiltrados =
@@ -39,7 +27,7 @@ const PaymentManagementPage = () => {
       ? pagos
       : pagos.filter((pago) => pago.estado === filtroEstado);
 
-  // 📌 Validar un pago manualmente
+  // 📌 Aprobar pago localmente (o puedes hacer llamada al backend si es necesario)
   const aprobarPago = (id) => {
     setPagos((prevPagos) =>
       prevPagos.map((pago) =>
@@ -48,7 +36,7 @@ const PaymentManagementPage = () => {
     );
   };
 
-  // 📌 Descargar reporte de pagos en CSV
+  // 📌 Exportar pagos a CSV
   const exportarCSV = () => {
     let csv = "ID,Usuario,Método,Monto,Estado,Fecha\n";
     pagos.forEach((pago) => {
@@ -70,7 +58,6 @@ const PaymentManagementPage = () => {
       <main className="content">
         <h1>💳 Gestión de Pagos</h1>
 
-        {/* 🔍 Filtro de Estado de Pago */}
         <div className="filtro-container">
           <label>🔎 Filtrar por estado:</label>
           <select onChange={(e) => setFiltroEstado(e.target.value)}>
@@ -81,12 +68,10 @@ const PaymentManagementPage = () => {
           </select>
         </div>
 
-        {/* 📌 Botón para Exportar CSV */}
         <button className="btn-exportar" onClick={exportarCSV}>
           📥 Exportar CSV
         </button>
 
-        {/* 📌 Tabla de Pagos */}
         <table className="payment-table">
           <thead>
             <tr>
@@ -104,7 +89,7 @@ const PaymentManagementPage = () => {
               pagosFiltrados.map((pago) => (
                 <tr key={pago.id}>
                   <td>{pago.id}</td>
-                  <td>{pago.usuario}</td>
+                  <td>{pago.profiles?.name}</td>
                   <td>{pago.metodo}</td>
                   <td>{pago.monto}</td>
                   <td>

@@ -149,17 +149,26 @@ const PantallaGestionSolicitudes = () => {
   /** 📌 Cerrar Sesión */
   const cerrarSesion = async () => {
     try {
-      Alert.alert("Cerrar sesión", "¿Estás seguro de que deseas cerrar sesión?", [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Cerrar sesión",
-          style: "destructive",
-          onPress: async () => {
-            await AuthService.logout()
+      if (Platform.OS === "web") {
+        const confirmacion = window.confirm("¿Estás seguro de que deseas cerrar sesión?")
+        if (confirmacion) {
+          AuthService.logout().then(() => {
             navigation.replace("Login")
+          })
+        }
+      } else {
+        Alert.alert("Cerrar sesión", "¿Estás seguro de que deseas cerrar sesión?", [
+          { text: "Cancelar", style: "cancel" },
+          {
+            text: "Cerrar sesión",
+            style: "destructive",
+            onPress: async () => {
+              await AuthService.logout()
+              navigation.replace("Login")
+            },
           },
-        },
-      ])
+        ])
+      }
     } catch (error) {
       Alert.alert("Error", "No se pudo cerrar sesión.")
     }

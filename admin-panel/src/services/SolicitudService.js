@@ -41,20 +41,32 @@ class SolicitudService {
     return await this.obtenerSolicitudes({ provider_id: provider.id });
   }
   
-  static async obtenerTodosLosSolicitudes() {
-    return await this.obtenerSolicitudes();
+  static async obtenerTodosLosSolicitudes(page,perpage) {
+    return await this.obtenerSolicitudes(page,perpage);
   }
   
-  static async obtenerSolicitudes(filtro = {}) {
+  static async obtenerSolicitudes(page=1, perPage= 20,filtro = {}) {
     // Obtener solicitudes con proveedores y servicios
+    const from = (page - 1) * perPage;
+    const to = from + perPage - 1;
+    const { count, errorConteo } = await supabase_client
+    .from(this.TABLE_NAME)
+    .select("*", { count: "exact", head: true });
     const { data: solicitudes, error: errorSolicitud } = await supabase_client
       .from(this.TABLE_NAME)
       .select(
-        "id, provider_id,cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at)), providers(id, phone, profile_id, profiles(id, name, rating, profile_pic_url, phone)), service_id, services(id, category, tags), request_description, service_date, images, status, user_id"
+        "id, provider_id,cotizaciones(id,costo_mano_obra,costo_materiales,descripcion,cotizacion_notas(id,nota_client,nota_provider,created_at)),contraofertas(id,costo_mano_obra,costo_materiales,descripcion,contraoferta_notas(id,nota_client,nota_provider,created_at)), providers(id, phone, profile_id, profiles(id, name, rating, profile_pic_url, phone)), service_id, services(id, category, tags), request_description, service_date, images, status, user_id",
+        { count: "exact" }
       )
-      .match(filtro);
-  
-    if (errorSolicitud) {
+      .match(filtro)
+      .order("id", { ascending: false })
+      .range(from, to);
+      ;
+
+    if (errorConteo) {
+      console.error("Error contando solicitudes:", errorConteo);
+      return [];
+    }  if (errorSolicitud) {
       console.error("Error obteniendo solicitudes:", errorSolicitud);
       return [];
     }
@@ -73,10 +85,14 @@ class SolicitudService {
     const mapaPerfiles = new Map(perfiles.map((perfil) => [perfil.user_id, perfil]));
   
     // Asociar cada solicitud con su perfil correspondiente
-    return solicitudes.map((solicitud) => ({
+   const  data = solicitudes.map((solicitud) => ({
       ...solicitud,
       usuarioPerfil: mapaPerfiles.get(solicitud.user_id) || null,
     }));
+    return {
+      data,
+      total: count,  
+    }
   }
   
 
